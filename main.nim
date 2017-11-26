@@ -1,50 +1,70 @@
-from parseopt2 import getopt, cmdLongOption, cmdShortOption
+from strutils import format
+from sequtils import mapIt
 from posix import fork
+
+from parseopt2 import nil
+from logging import nil
+
+from utils import join, index
+
 
 proc printHelp() =
   echo """
     Help
     -v, --version - print version
-    -d, --debug - enable debug mode
+    --loglevel=[$logLevels] - specify log level
     -h, --help - print help
-  """
+  """.format([
+    "logLevels", logging.LevelNames.join("|"),
+  ])
 
-var debug = false;
-proc enableDebug() =
-  debug = true
+const
+  version = "0.1"
 
-const version = "0.1"
-proc printVersion() =
-  echo version
+var
+  logLevel = logging.Level.lvlWarn
 
 proc main() =
-  for kind, key, val in getopt():
+  # parse command line options
+  for kind, key, val in parseopt2.getopt():
     case kind
-      of cmdLongOption, cmdShortOption:
+      of parseopt2.cmdLongOption, parseopt2.cmdShortOption:
         case key
           of "version", "v":
-            printVersion()
+            echo version
             return
-          of "debug", "d":
-            enableDebug()
+          of "loglevel":
+            logLevel = logging.LevelNames.index(val)  # overwrite default log level
           of "help", "h":
             printHelp()
             return
-          else: echo "Unknown option: " , key , "=" , val
+          else:
+            echo "Unknown option: " , key , "=" , val
+            return
       else: discard
 
+  # separate this process into "client" and "server" processes
   let pid = fork()
   if pid < 0:
     raise newException(SystemError, "Error forking a process")
-  elif pid > 0:
-    echo "I am a parent, my child's pid is ", $(pid)
-    while true:
-      echo "Parent"
-  else:
-    echo "I am a child, my pid is ", $(pid)
-    while true:
-      echo "Child"
 
+  let
+    is_server_process = (if pid > 0: true else: false)
+    log_file = (if is_server_process: "server.log" else: "client.log")
+
+  # the following code will be executed by both processes
+  # set up logging
+  var logger = logging.newRollingFileLogger(log_file, maxLines=1000, levelThreshold=logLevel, fmtStr="[$datetime] $levelname: ")
+  logging.addHandler(logger)
+
+  if is_server_process:
+    # server process
+    logging.debug("Server process instantiated")
+    
+  else:
+    # client process
+    logging.debug("Client process instantiated")
+    
 
 when isMainModule:
   main()
