@@ -15,11 +15,14 @@ const
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level
     -h, --help - print help
+    -s, --server - launch server only (without client)
   """.format([
     "logLevels", logging.LevelNames.join("|"),
   ])
 
-var logLevel = logging.Level.lvlWarn  # default log level
+var 
+  logLevel = logging.Level.lvlWarn  # default log level
+  serverMode = false  # launch both server and client by default
 
 proc main() =
   # parse command line options
@@ -35,6 +38,8 @@ proc main() =
           of "help", "h":
             echo help
             return
+          of "server", "s":
+            serverMode = true
           else:
             echo "Unknown option: " , key , "=" , val
             return
@@ -42,8 +47,8 @@ proc main() =
 
   # separate this process into "client" and "server" processes
   let
-    pid = fork()
-    is_server_process = (if pid > 0: true else: false)
+    pid = (if serverMode: 0 else: fork())
+    is_server_process = (if pid == 0: true else: false)
  
   if pid < 0:
     raise newException(SystemError, "Error forking a process")
@@ -59,10 +64,12 @@ proc main() =
 
   if is_server_process:
     logging.debug("Server process instantiated")
-    
+    while true:
+      echo "server"
   else:
-    logging.debug("Client process instantiated")
-    
+    logging.debug("Client process instantiated, pid=$pid".format(["pid", $pid]))
+    while true:
+      echo "client"
 
 when isMainModule:
   main()
