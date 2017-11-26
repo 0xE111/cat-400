@@ -1,5 +1,4 @@
 from strutils import format
-from sequtils import mapIt
 from posix import fork
 from system import staticExec
 
@@ -47,27 +46,27 @@ proc main() =
 
   # separate this process into "client" and "server" processes
   let
-    pid = (if serverMode: 0 else: fork())
-    is_server_process = (if pid == 0: true else: false)
+    childPid = if serverMode: 1 else: fork()
+    isServerProcess = childPid != 0
  
-  if pid < 0:
+  if childPid < 0:
     raise newException(SystemError, "Error forking a process")
 
   # the following code will be executed by both processes
   # set up logging
   let
-    logFile = (if is_server_process: "server.log" else: "client.log")
+    logFile = if isServerProcess: "server.log" else: "client.log"
     logFmtStr = "[$datetime] $levelname: "
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & version)
 
-  if is_server_process:
+  if isServerProcess:
     logging.debug("Server process instantiated")
     while true:
-      echo "server"
+      echo "server" 
   else:
-    logging.debug("Client process instantiated, pid=$pid".format(["pid", $pid]))
+    logging.debug("Client process instantiated")
     while true:
       echo "client"
 

@@ -1,14 +1,14 @@
-### Funny diary ###
+## Funny diary
 
-#### 17.10.29 ####
+### 17.10.29
 Just created a small app - still trying to remember all nim basics, but looks like I totally forgot everything. Okay, nothing bad to start over, right?
 So I created a "main" module which can parse command line arguments, as well as forks into two processes - one for server, one for client. Next step will be to connect server and client with something fast and reliable. I've found ENET (http://enet.bespin.org/) - a protocol on top of UDP which is reliable as TCP but not too complicated. Hope I'll find a way to use it in nim. And... I'm really happy to use nim again.
 
-#### 26.11.17 ####
+### 26.11.17
 It is really painful to write code now. Every line of code produces an error, every statement is wrong. It's very hard to write something after using python which provides a lot of freedom and perfect syntax. Nim is not so beautiful, but still nice - at least better than C++.
 I had to reinvent str.join and array.index functions cause nim was missing them (why?). This is where I felt difference between static and dynamic typing
 
-Fucking nim! 
+#### Fucking nim! 
 
     nimble install compiler c2nim
 
@@ -35,3 +35,6 @@ Finally I did it:
 - installed latest nim from source
 - installed compiler@#head
 - installed c2nim@#head
+
+#### Fork and killing processes
+It's hard to believe but when you fork a process into parent and child, there's almost no reliable opportunity to kill one of them when another is being killed. Really, people invent dirty hacks just to make the processes depend on each other! Why the hell there's no solution for this? I will try to send a message from client to server or vice versa through network pipe when any of them is being killed.
