@@ -9,9 +9,9 @@ from logging import nil
 from utils import join, index
 
 
-proc printHelp() =
-  echo """
-    Help
+const 
+  version = staticExec("git describe --long --tags")
+  help = """
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level
     -h, --help - print help
@@ -19,10 +19,7 @@ proc printHelp() =
     "logLevels", logging.LevelNames.join("|"),
   ])
 
-const version = staticExec("git describe --long --tags")
-
-var
-  logLevel = logging.Level.lvlWarn
+var logLevel = logging.Level.lvlWarn  # default log level
 
 proc main() =
   # parse command line options
@@ -36,7 +33,7 @@ proc main() =
           of "loglevel":
             logLevel = logging.LevelNames.index(val)  # overwrite default log level
           of "help", "h":
-            printHelp()
+            echo help
             return
           else:
             echo "Unknown option: " , key , "=" , val
@@ -46,15 +43,10 @@ proc main() =
   # separate this process into "client" and "server" processes
   let
     pid = fork()
-
-  var is_server_process: bool
-  if pid > 0:
-    is_server_process = true
-  elif pid == 0:
-    is_server_process = false
-  else:
+    is_server_process = (if pid > 0: true else: false)
+ 
+  if pid < 0:
     raise newException(SystemError, "Error forking a process")
-  # let is_server_process = (if pid > 0: true else: false)
 
   # the following code will be executed by both processes
   # set up logging
@@ -66,11 +58,9 @@ proc main() =
   logging.debug("Version " & version)
 
   if is_server_process:
-    # server process
     logging.debug("Server process instantiated")
     
   else:
-    # client process
     logging.debug("Client process instantiated")
     
 
