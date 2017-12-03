@@ -4,6 +4,7 @@ from system import staticExec
 
 from parseopt2 import nil
 from logging import nil
+from server import nil
 
 from utils import join, index
 
@@ -61,14 +62,14 @@ proc main() =
   logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & version)
 
+  # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
+  # TODO: addQuitProc?
   if isServerProcess:
-    logging.debug("Server process instantiated")
-    while true:
-      echo "server" 
+    logging.debug("Server process created")
+    server.start()
   else:
-    logging.debug("Client process instantiated")
-    while true:
-      echo "client"
+    logging.debug("Client process created")
+    echo "client"
 
 when isMainModule:
   main()
