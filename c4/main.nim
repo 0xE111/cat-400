@@ -24,7 +24,7 @@ var
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default
 
-proc main() =
+proc run*() =
   # parse command line options
   for kind, key, val in parseopt2.getopt():
     case kind
@@ -70,6 +70,3 @@ proc main() =
   else:
     logging.debug("Client process created")
     echo "client"
-
-when isMainModule:
-  main()
