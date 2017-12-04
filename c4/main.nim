@@ -10,7 +10,7 @@ from utils import join, index
 
 
 const 
-  version = staticExec("git describe --long --tags")
+  version = staticExec("git describe --tags")
   help = """
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level

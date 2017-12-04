@@ -1,5 +1,7 @@
+from system import staticExec
+
 # Package
-version       = "0.1.0"
+version       = staticExec("git describe --tags --abbrev=0")
 author        = "c0ntribut0r"
 description   = "Game framework"
 license       = "MIT"
