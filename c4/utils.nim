@@ -2,8 +2,7 @@ from strutils import format
 
 
 proc join*(iterable: array|tuple|set, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
-  var
-    i = 0
+  var i = 0
   let length = iterable.len()
   
   result = ""
@@ -21,3 +20,6 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
   raise newException(ValueError, "Cannot find value $value".format([
     "value", value,
   ]))
+
+template getVersion*(): string =
+  staticExec("git describe --tags")

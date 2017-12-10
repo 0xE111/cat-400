@@ -1,16 +1,16 @@
 from strutils import format
 from posix import fork
-from system import staticExec
 
 from parseopt2 import nil
 from logging import nil
 from server import nil
+from config import Config
 
-from utils import join, index
+from utils import join, index, getVersion
 
 
 const 
-  version = staticExec("git describe --tags")
+  version = getVersion()
   help = """
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level
@@ -31,7 +31,8 @@ proc run*(conf: Config) =
       of parseopt2.cmdLongOption, parseopt2.cmdShortOption:
         case key
           of "version", "v":
-            echo conf.version
+            echo "Framework version " & version
+            echo "Project version " & conf.version
             return
           of "loglevel":
             logLevel = logging.LevelNames.index(val)  # overwrite default log level
