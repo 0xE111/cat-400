@@ -24,14 +24,14 @@ var
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default
 
-proc run*() =
+proc run*(conf: Config) =
   # parse command line options
   for kind, key, val in parseopt2.getopt():
     case kind
       of parseopt2.cmdLongOption, parseopt2.cmdShortOption:
         case key
           of "version", "v":
-            echo version
+            echo conf.version
             return
           of "loglevel":
             logLevel = logging.LevelNames.index(val)  # overwrite default log level
