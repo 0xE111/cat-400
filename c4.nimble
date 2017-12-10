@@ -1,5 +1,5 @@
 # Package
-version = "0.1"
+version = staticRead("c4/version.txt")
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MIT"

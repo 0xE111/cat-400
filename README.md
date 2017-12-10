@@ -3,13 +3,7 @@
 ### Ensure you can launch it
 First, install latest c4:
 
-    cd /tmp
-    # install latest c4
-    git clone https://github.com/c0ntribut0r/cat-400
-    cd cat-400
-    nimble install
-    # you should get smth like
-    # Success: c4 installed successfully.
+    nimble install https://github.com/c0ntribut0r/cat-400@#head
 
 Create test project:
 
@@ -20,8 +14,15 @@ Create test project:
 Now edit `testapp.nim`:
 
     from c4.main import run
-    run()  # here we just launch c4
+    from c4.config import Config
 
-Run your app:
 
-    nim c -r testapp.nim --loglevel=DEBUG
+    const conf: Config = (version: "0.1")
+
+    when isMainModule:  
+        run(conf)
+
+
+Check whether you can launch c4 and show version:
+
+    nim c -r testapp.nim --loglevel=DEBUG -v
