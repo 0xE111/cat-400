@@ -25,4 +25,4 @@ Now edit `testapp.nim`:
 
 Check whether you can launch c4 and show version:
 
-    nim c -r testapp.nim --loglevel=DEBUG -v
+    nim c -r testapp.nim -v
