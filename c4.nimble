@@ -8,7 +8,7 @@ const
   pinnedVersion = staticRead(versionFile)
 
 # Package
-version = pinnedVersion.split('-')[0]  # don't include number of updates
+version = staticRead(versionFile).split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MIT"

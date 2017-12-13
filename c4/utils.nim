@@ -22,8 +22,7 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
   ]))
 
 proc getVersion*(): string {.compileTime.} =
-  ## returns (version, n_updates)
-  staticExec("git describe --tags --long").split('-')[0..1].join("-")
+  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
 
 # proc getVersion*(versionFile:string): string {.compileTime.} =
 #   staticRead(versionFile)
