@@ -10,7 +10,7 @@ from utils import join, index, getVersion
 
 
 const 
-  version = staticRead("version.txt")
+  version = getVersion("version.txt")
   help = """
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level

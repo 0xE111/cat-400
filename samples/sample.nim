@@ -6,5 +6,5 @@ from c4.utils import getVersion
 const
   conf: Config = (version: getVersion())
 
-when isMainModule:  
+when isMainModule:
   run(conf)

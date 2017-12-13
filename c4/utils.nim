@@ -21,9 +21,9 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
     "value", value,
   ]))
 
-template getVersion*(): seq[string] =
+proc getVersion*(): string {.compileTime.} =
   ## returns (version, n_updates)
-  staticExec("git describe --tags --long").split('-')[0..1]
+  staticExec("git describe --tags --long").split('-')[0..1].join("-")
 
-template getVersion*(versionFile:string): seq[string] =
-  staticRead(versionFile).split('-')
+proc getVersion*(versionFile:string): string {.compileTime.} =
+  staticRead(versionFile)

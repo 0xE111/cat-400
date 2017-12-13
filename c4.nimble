@@ -1,13 +1,14 @@
 from strutils import format, parseInt
 from c4.utils import getVersion, join
+from strutils import split
 
 # Constants
 const
-  versionFile = "c4/version.txt"
+  versionFile = "version.txt"
   pinnedVersion = getVersion(versionFile)
 
 # Package
-version = pinnedVersion[0]  # don't include number of updates
+version = pinnedVersion.split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MIT"
@@ -23,7 +24,7 @@ task pinVersion, "Update version file":
   const gitVersion = getVersion()
 
   if gitVersion != pinnedVersion:
-    writeFile(versionFile, gitVersion.join("-"))
+    writeFile(versionFile, gitVersion)
     discard staticExec("git add " & versionFile)
     discard staticExec("git commit --amend --no-edit")
  
