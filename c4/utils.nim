@@ -25,5 +25,5 @@ proc getVersion*(): string {.compileTime.} =
   ## returns (version, n_updates)
   staticExec("git describe --tags --long").split('-')[0..1].join("-")
 
-proc getVersion*(versionFile:string): string {.compileTime.} =
-  staticRead(versionFile)
+# proc getVersion*(versionFile:string): string {.compileTime.} =
+#   staticRead(versionFile)

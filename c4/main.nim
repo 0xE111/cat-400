@@ -6,11 +6,11 @@ from logging import nil
 from server import nil
 from config import Config
 
-from utils import join, index, getVersion
+from utils import join, index
 
 
 const 
-  version = getVersion("version.txt")
+  version = staticRead("version.txt")
   help = """
     -v, --version - print version
     --loglevel=[$logLevels] - specify log level

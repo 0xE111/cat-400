@@ -4,8 +4,8 @@ from strutils import split
 
 # Constants
 const
-  versionFile = "version.txt"
-  pinnedVersion = getVersion(versionFile)
+  versionFile = "c4/version.txt"
+  pinnedVersion = staticRead(versionFile)
 
 # Package
 version = pinnedVersion.split('-')[0]  # don't include number of updates
