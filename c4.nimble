@@ -1,7 +1,13 @@
-from strutils import format, split
+from strutils import format, parseInt
+from c4.utils import getVersion, join
+
+# Constants
+const
+  versionFile = "c4/version.txt"
+  pinnedVersion = getVersion(versionFile)
 
 # Package
-version = staticRead("c4/version.txt").split('-')[0]
+version = pinnedVersion[0]  # don't include number of updates
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MIT"
@@ -13,17 +19,15 @@ skipDirs = @["samples"]
 requires "nim >= 0.17.3"
 
 # Tasks
-task pinVersion, "Update version.txt file":
-  const
-    file = "c4/version.txt"
-    currentVersion = staticRead(file)
-    newVersion = staticExec("git describe --tags")  # honestly this is a previous version
-    
-  if newVersion == currentVersion:
-    raise newException(ValueError, "Version hasn't changed ($cur)".format(["cur", currentVersion]))
+task pinVersion, "Update version file":
+  const gitVersion = getVersion()
 
-  writeFile(file, newVersion)
-  echo("Updated version [$cur] -> [$new]".format([
-      "cur", currentVersion,
-      "new", newVersion,
-  ]))
+  if gitVersion != pinnedVersion:
+    writeFile(versionFile, gitVersion.join("-"))
+    discard staticExec("git add " & versionFile)
+    discard staticExec("git commit --amend --no-edit")
+ 
+    echo("Updated version [$cur] -> [$new]".format([
+      "cur", $pinnedVersion,
+      "new", $gitVersion,
+    ]))

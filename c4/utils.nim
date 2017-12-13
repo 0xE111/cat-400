@@ -1,7 +1,7 @@
-from strutils import format
+from strutils import format, split
 
 
-proc join*(iterable: array|tuple|set, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
+proc join*(iterable: array|tuple|set|seq, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
   var i = 0
   let length = iterable.len()
   
@@ -21,5 +21,9 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
     "value", value,
   ]))
 
-template getVersion*(): string =
-  staticExec("git describe --tags")
+template getVersion*(): seq[string] =
+  ## returns (version, n_updates)
+  staticExec("git describe --tags --long").split('-')[0..1]
+
+template getVersion*(versionFile:string): seq[string] =
+  staticRead(versionFile).split('-')
