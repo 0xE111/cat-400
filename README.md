@@ -14,10 +14,10 @@ https://github.com/ftsf/nico |
 https://github.com/rnentjes/nim-ludens |
 https://github.com/dustinlacewell/dadren |
 https://github.com/Polkm/nimatoad |
-https://github.com/dadren/dadren |
-https://github.com/copygirl/gaem | Looks promising
-https://github.com/hcorion/Jonah-Engine | 
-https://github.com/jsudlow/cush |
+https://github.com/dadren/dadren | X
+https://github.com/copygirl/gaem |
+https://github.com/hcorion/Jonah-Engine | X
+https://github.com/jsudlow/cush | X
 https://github.com/sheosi/tart |
 
 
