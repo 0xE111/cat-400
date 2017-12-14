@@ -1,5 +1,26 @@
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
+### List of other nim game engines/frameworks
+
+Link | Development
+---- | -------
+https://github.com/yglukhov/rod | 
+https://github.com/fragworks/frag | X
+https://github.com/zacharycarter/zengine | 
+https://github.com/Vladar4/nimgame | X
+https://github.com/Vladar4/nimgame2 | 
+https://github.com/def-/nim-platformer | X
+https://github.com/ftsf/nico | 
+https://github.com/rnentjes/nim-ludens |
+https://github.com/dustinlacewell/dadren |
+https://github.com/Polkm/nimatoad |
+https://github.com/dadren/dadren |
+https://github.com/copygirl/gaem | Looks promising
+https://github.com/hcorion/Jonah-Engine | 
+https://github.com/jsudlow/cush |
+https://github.com/sheosi/tart |
+
+
 ### Ensure you can launch it
 First, install latest c4:
 
