@@ -34,7 +34,7 @@ Create test project:
     
 Now edit `testapp.nim`:
 
-    from c4.main import run
+    from c4.core import run
     from c4.config import Config
 
 

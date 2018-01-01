@@ -26,3 +26,8 @@ proc getVersion*(): string {.compileTime.} =
 
 # proc getVersion*(versionFile:string): string {.compileTime.} =
 #   staticRead(versionFile)
+from utils.classes import State, Command
+from server import Loading
+
+proc handleCommand*(state: ref State, command: ref Command) =
+  discard
