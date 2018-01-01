@@ -34,15 +34,15 @@ Create test project:
     
 Now edit `testapp.nim`:
 
-    from c4.core import run
-    from c4.config import Config
+    from c4.core import config, run
 
 
-    const conf: Config = (version: "0.1")
+    config = (
+        version: "0.1"
+    )
 
-    when isMainModule:  
-        run(conf)
-
+    when isMainModule:
+        run()
 
 Check whether you can launch c4 and show version:
 

@@ -1,13 +1,15 @@
 from strutils import format
 from posix import fork
-
 from parseopt2 import nil
 from logging import nil
-from server import nil
-from config import Config
 
+from server import nil
 from utils import join, index
 
+
+type
+  Config* = tuple
+    version: string
 
 const 
   version = staticRead("version.txt")
@@ -20,11 +22,12 @@ const
     "logLevels", logging.LevelNames.join("|"),
   ])
 
-var 
+var
+  config*: Config  # user should populate config
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default
 
-proc run*(conf: Config) =
+proc run*() =
   # parse command line options
   for kind, key, val in parseopt2.getopt():
     case kind
@@ -32,7 +35,7 @@ proc run*(conf: Config) =
         case key
           of "version", "v":
             echo "Framework version " & version
-            echo "Project version " & conf.version
+            echo "Project version " & config.version
             return
           of "loglevel":
             logLevel = logging.LevelNames.index(val)  # overwrite default log level

@@ -14,7 +14,7 @@ description = "Game framework"
 license = "MIT"
 
 # Dirs
-skipDirs = @["samples"]
+skipDirs = @["sample"]
 
 # Dependencies
 requires "nim >= 0.17.3"
