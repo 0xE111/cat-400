@@ -34,8 +34,9 @@ proc run*() =
       of parseopt2.cmdLongOption, parseopt2.cmdShortOption:
         case key
           of "version", "v":
-            echo "Framework version " & version
-            echo "Project version " & config.version
+            echo("Nim version " & NimVersion)
+            echo("Framework version " & version)
+            echo("Project version " & config.version)
             return
           of "loglevel":
             logLevel = logging.LevelNames.index(val)  # overwrite default log level

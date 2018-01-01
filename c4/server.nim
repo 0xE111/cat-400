@@ -17,8 +17,6 @@ proc update(dt:float) =
 method switch*(fr: ref State, to: ref State) =  # TODO: rename "fr" to "from"
   echo("Default switch")
 
-import "sample/states"
-
 proc start*() =
   state.switch(new(ref Loading))
   runLoop(updatesPerSecond = 30, fixedFrequencyHandlers = @[update])
