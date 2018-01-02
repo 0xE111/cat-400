@@ -48,7 +48,7 @@ proc run*() =
           of "server", "s":
             serverMode = true
           else:
-            echo "Unknown option: " , key , "=" , val
+            echo("Unknown option: " & key & "=" & val)
             return
       else: discard
 

@@ -1,7 +1,9 @@
 import times
+from logging import nil
+
 
 type
-  UpdateProc = proc(dt: float) {.nimcall.}
+  UpdateProc = proc(dt: float): bool {.nimcall.}
 
 proc runLoop*(updatesPerSecond = 30, fixedFrequencyHandlers:seq[UpdateProc] = @[], maxFrequencyHandlers:seq[UpdateProc] = @[]) =
   # handlers will receive dt - delta time between two last calls
@@ -23,7 +25,8 @@ proc runLoop*(updatesPerSecond = 30, fixedFrequencyHandlers:seq[UpdateProc] = @[
     while (times.epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
       now = times.epochTime()
       for handler in fixedFrequencyHandlers:
-        handler(now - lastFixedUpdateTime)
+        if not handler(now - lastFixedUpdateTime):
+          return
 
       lastFixedUpdateTime = now
       nextFixedUpdateTime += skipSeconds
@@ -31,7 +34,8 @@ proc runLoop*(updatesPerSecond = 30, fixedFrequencyHandlers:seq[UpdateProc] = @[
     
     now = times.epochTime()
     for handler in maxFrequencyHandlers:
-      handler(now - lastMaxUpdateTime)
+      if not handler(now - lastMaxUpdateTime):
+        return
     lastMaxUpdateTime = now
 
 proc getFps*(dt:float): int =

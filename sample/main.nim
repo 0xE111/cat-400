@@ -1,5 +1,5 @@
 from c4.core import config, run
-import server_states
+import server.state
 
 config = (
   version: "0.1"
