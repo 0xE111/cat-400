@@ -1,5 +1,5 @@
 from strutils import format, parseInt
-from c4.utils import getVersion, join
+from c4.utils.helpers import getVersion, join
 from strutils import split
 
 # Constants

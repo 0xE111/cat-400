@@ -4,7 +4,7 @@ from parseopt2 import nil
 from logging import nil
 
 from server import nil
-from utils import join, index
+from utils.helpers import join, index
 
 
 type
@@ -23,7 +23,9 @@ const
   ])
 
 var
-  config*: Config  # user should populate config
+  config*: Config = (  # user should populate config
+    version: "0.0"
+  )
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default
 
@@ -59,7 +61,9 @@ proc run*() =
     raise newException(SystemError, "Error forking a process")
 
   # the following code will be executed by both processes
+
   # set up logging
+  # TODO: make log files appear in the same dir as execulable, not in current dir
   let
     logFile = if isServerProcess: "server.log" else: "client.log"
     logFmtStr = "[$datetime] $levelname: "
