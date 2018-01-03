@@ -3,10 +3,14 @@ from posix import fork
 from parseopt2 import nil
 from logging import nil
 
-from server import nil
 from utils.helpers import join, index
-import backends.network.base
+
+from server import start
+from client import start
+
+from backends.network.base import NetworkBackend
 from backends.network.enet import EnetBackend
+
 
 type
   Config = tuple[
@@ -70,7 +74,7 @@ proc run*() =
   # TODO: make log files appear in the same dir as execulable, not in current dir
   let
     logFile = if isServerProcess: "server.log" else: "client.log"
-    logFmtStr = "[$datetime] $levelname: "
+    logFmtStr = "[$datetime] " & (if isServerProcess: "SERVER" else: "CLIENT") & " $levelname: "
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & version)
@@ -78,8 +82,7 @@ proc run*() =
   # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
   # TODO: addQuitProc?
   if isServerProcess:
-    logging.debug("Server process created")
     server.start()
   else:
-    logging.debug("Client process created")
-    echo "client"
+    client.start()
+

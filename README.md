@@ -1,6 +1,8 @@
+# Cat-400
+
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
-### List of other nim game engines/frameworks
+## List of other nim game engines/frameworks
 
 Link | Comments
 ---- | -------
@@ -20,14 +22,20 @@ https://github.com/jsudlow/cush | X
 https://github.com/def-/nim-platformer | X
 https://github.com/Vladar4/nimgame | X
 
-### Brief overview
+## Brief overview
+
 C4 is being developed for custom needs. Please note that it's more educational project rather then professional software, however if you like it you may use it and make contributions.
 
 The main benefit of c4 is its documentation - I try to make code and docs changes side by side, so docs should always be up-to-date. This is the thing many projects lack.
 
 Less words - let's try to build something.
 
+## Tutorial
+
+Learn by coding your first game with c4!
+
 ### Install & display version
+
 First, install latest c4 right from github:
 
 ```shell
@@ -41,7 +49,7 @@ mkdir /tmp/test
 cd /tmp/test
 touch main.nim
 ```
-    
+
 Now edit `main.nim`. Let's just launch plain c4 without any custom code.
 
 ```nim
@@ -70,6 +78,7 @@ Our `main.nim` looks empty, but the main job is done under the hood when calling
 Now let's start customizing.
 
 ### Framework configuration
+
 Configuring c4 is nothing more than changing a tuple. The framework uses some reasonable defaults for your project's config (like version: "0.0") but we won't go far without changing them. Oh, let's start with `version`:
 
 ```nim
@@ -84,6 +93,7 @@ when isMainModule:
 Now `nim c -r main.nim -v` will say that our project version is `0.1` which is better than default `0.0`. Well, now you know almost everything you need to create your game.
 
 ### Client-server
+
 C4 uses client-server architecture. This means that unlike other nim game engines, c4 launches two separate processes (not threads!), one for client and the other for server. Client does all the job for displaying graphics and UI, playing audio and reading user input. Server does the real job - it launches world simulation, handles physics, processes user input etc.
 
 Important fact is that server is always launched. Even if you play a single player mode, your client is still connecting to a local server on the same machine. If you connect to remote host, you may use your local server for client-side prediction (which is an advanced topic).
@@ -103,6 +113,7 @@ Note that we passed `--loglevel` flag to the executable so that we can better kn
 We haven't defined any specific behavior, so server just stops right after creation. Now it's time for "hello world" program!
 
 ### States
+
 States are something you'll find very helpful while building your app. I won't do redundant job and explaing what `State` is - just go to excellent Robert Nystrom's website: http://gameprogrammingpatterns.com/state.html.
 
 C4 relies heavily on states, but it's still developer's job to define states themself as well as transitions between them. Developer also has to choose between "static" and "instantiated" states.
@@ -124,10 +135,10 @@ Create new folder for server-related code:
 
 ```shell
 mkdir server
-touch server/state.nim
+touch server/server_states.nim
 ```
 
-Edit `state.nim` and define a transition from `None` to `Loading` state. Transition is defined by `switch` method like this:
+Edit `server_states.nim` and define a transition from `None` to `Loading` state. Transition is defined by `switch` method like this:
 
 ```nim
 from c4.utils.states import State, None
@@ -139,7 +150,7 @@ method switch*(fr: ref None, to: ref Loading): ref State =  # define a transitio
   logging.debug("Server loading")  # do some preparations (like level/assets loading etc)
   result = to  # successfully switch to new state
 ```
-      
+
 If we now compile our code we'll see no changes:
 
 ```shell
@@ -153,7 +164,7 @@ That's because c4 doesn't see our custom transition definition. Let's fix this b
 
 ```nim
 from c4.core import config, run
-import server.state
+import server.server_states
 
 config = (
   version: "0.1"
@@ -216,9 +227,7 @@ nim c -r main.nim --loglevel=DEBUG -s
 
 It worked! We defined a state graph like this:
 
-```
-None -> Loading -> Intro -> Running -> None
-```
+`None -> Loading -> Intro -> Running -> None`
 
 It's plain now which means that if you try to switch from `Running` back to `Intro` nothing will happen. However you can allow such a switch by defining another `switch` method. So, each arrow is a method, and a set of methods allow you to define your own state graph. Also please don't forget that `None -> Loading` transition will be called automatically on server startup (if defined, of course), but all further state transitions are your responsibility. We'll dive deeper onwards.
 
@@ -246,8 +255,58 @@ method switch*(fr: ref Running, to: ref None): ref State =
 
 Time to set up a client.
 
-### Backends
-Unlike other game engines, C4 isn't tied to any specific physics/graphics/ui/audio/etc libraries. Instead these systems have interfaces and "backends" - some specific implementations of the interfaces. For example, c4 video system could have an interface like this:
+### Client
+
+Let's quickly set up a minimal client. It's the same as setting up a server - create `client_states.nim` and import it:
+
+```shell
+mkdir client
+touch client/client_states.nim
+```
+
+```nim
+# client_states.nim
+from c4.utils.states import State, None, switch
+from c4.client import Loading, Running
+from logging import nil
+
+
+method switch*(fr: ref None, to: ref Loading): ref State =
+  logging.debug("Loading")
+  result = to.switch(new(ref Running))
+
+method switch*(fr: ref Loading, to: ref Running): ref State =
+  logging.debug("Running")
+  result = to.switch(new(ref None))
+
+method switch*(fr: ref Running, to: ref None): ref State =
+  result = to
+```
+
+Ensure your app can launch client and server simultaneously (exclude `-s` flag for now):
+
+```shell
+nim c -r main.nim --loglevel=DEBUG
+...
+[2018-01-04T00:50:39] SERVER DEBUG: Version 0.1.1-15
+[2018-01-04T00:50:39] CLIENT DEBUG: Version 0.1.1-15
+[2018-01-04T00:50:39] SERVER DEBUG: Process created
+[2018-01-04T00:50:39] CLIENT DEBUG: Process created
+[2018-01-04T00:50:39] SERVER DEBUG: Loading
+[2018-01-04T00:50:39] CLIENT DEBUG: Loading
+[2018-01-04T00:50:39] SERVER DEBUG: Running
+[2018-01-04T00:50:39] CLIENT DEBUG: Running
+[2018-01-04T00:50:39] SERVER DEBUG: Process stopped
+[2018-01-04T00:50:39] CLIENT DEBUG: Process stopped
+```
+
+As we can see, both client and server are run simultaneously which is perfect.
+
+Before we move further we need to know how everything works.
+
+### Systems & backends
+
+Unlike other game engines, C4 isn't tied to any specific physics/graphics/ui/audio/etc libraries. Instead these "systems" have interfaces and backends (some specific implementations of the interfaces). For example, c4 video system could have an interface like this:
 
 ```nim
 type
@@ -275,10 +334,15 @@ C4 is shipped with few default backends. Use them to quickly prototype your app 
 ```nim
 # main.nim
 ...
-from backends.network import MySuperNetworkBackend
+from backends.network import MySuperFastNetworkBackend
 
-config.networkBackend = new(ref MySuperNetworkBackend)
+config.networkBackend = new(ref MySuperFastNetworkBackend)
 ...
 ```
 
-However, currently defaults are enough for our needs so we won't change anything here. Just keep in mind that there's no magic and all we see is a result of different backends' work.
+However, defaults for prototyping are enough for our needs so we won't change anything here. Just keep in mind that there's no magic and all we see is a result of different backends' work.
+
+### Network system
+
+It's fine that we can launch client and server, but how do they communicate? Network system is here to help us! It's automatically initialized right after starting server and client and is ready to send/receive messages. By default c4 uses Enet library (working over UDP) as a backend for client-server communications but you can change it by setting `config.networkBackend`. Now let's make client talk to server.
+
