@@ -5,11 +5,14 @@ from logging import nil
 
 from server import nil
 from utils.helpers import join, index
-
+import backends.network.base
+from backends.network.enet import EnetBackend
 
 type
-  Config* = tuple
-    version: string
+  Config = tuple[
+    version: string,
+    networkBackend: ref NetworkBackend,
+  ]
 
 const 
   version = staticRead("version.txt")
@@ -24,7 +27,8 @@ const
 
 var
   config*: Config = (  # user should populate config
-    version: "0.0"
+    version: "0.0",
+    networkBackend: new(ref EnetBackend),
   )
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default

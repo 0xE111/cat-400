@@ -53,7 +53,7 @@ Check whether you can launch c4 and show version:
     Framework version 0.1.1-12
     Project version 0.0
 
-Our `main.nim` looks empty, but the main job is done under the hood when calling `run()`. C4 initializes loggers, splits process into client and server, launches infinite loops and does many other things. We don't have to implement it ourselves which lets us focus on really important things! You may have a look at which options are available for your app by default:
+Our `main.nim` looks empty, but the main job is done under the hood when calling `run()`. C4 initializes loggers, splits process into client and server, launches infinite loops and does many other things. We don't have to implement it ourselves which lets us focus on really important things! You may have a look at options which are available for your app by default:
 
     > ./main -h
 
@@ -191,3 +191,54 @@ It worked! We defined a state graph like this:
 It's plain now which means that if you try to switch from `Running` back to `Intro` nothing will happen. However you can allow such a switch by defining another `switch` method. So, each arrow is a method, and a set of methods allow you to define your own state graph. Also please don't forget that `None -> Loading` transition will be called automatically on server startup (if defined, of course), but all further state transitions are your responsibility. We'll dive deeper onwards.
 
 Of course it's a dumb idea to play movie on server (it's client's task), and we definitely should do something more than logging messages. But that was a good start!
+
+Now let's leave just a required minimum for our server (`None -> Loading -> Running -> None`):
+
+    from c4.utils.states import State, None, switch
+    from c4.server import Loading, Running
+    from logging import nil
+
+
+    method switch*(fr: ref None, to: ref Loading): ref State =
+      logging.debug("Loading")
+      result = to.switch(new(ref Running))  # after resource loading switch from Loading to Intro
+
+    method switch*(fr: ref Loading, to: ref Running): ref State =
+      logging.debug("Running")
+      result = to.switch(new(ref None))
+
+    method switch*(fr: ref Running, to: ref None): ref State =
+      result = to
+
+Time to set up a client.
+
+### Backends
+Unlike other game engines, C4 isn't tied to any specific physics/graphics/ui/audio/etc libraries. Instead these systems have interfaces and "backends" - some specific implementations of the interfaces. For example, c4 video system could have an interface like this:
+
+    type
+      VideoBackend = object of RootObj
+    
+    proc init(video: ref VideoBackend, width: int, height: int) {.inline.} = discard
+    proc drawText(video: ref VideoBackend, value: string) {.inline.} = discard
+    proc exit(video: ref VideoBackend) {.inline.} = discard
+    
+Now every class that implements these `init`, `drawText` and `exit` procs can be used as a video backend. So, for example, when starting your game you could implement a test backend which just prints text to the console:
+
+    type
+      ConsoleBackend = object of Video
+
+    proc drawText(video: ref ConsoleBackend, value: string) {.inline.} =
+      echo(value)
+
+Next when you get ready you could create a fully-featured `OpenglBackend` which would use sdl+opengl to open a fullscreen window and draw some text.
+
+C4 is shipped with few default backends. Use them to quickly prototype your app and get an MVP. Once you're done you can extend existing backends or write your own ones that will fit exactly your needs. Backends may be set in config:
+
+    # main.nim
+    ...
+    from backends.network import MySuperNetworkBackend
+
+    config.networkBackend = new(ref MySuperNetworkBackend)
+    ...
+
+However, currently defaults are enough for our needs so we won't change anything here. Just keep in mind that there's no magic and all we see is a result of different backends' work.
