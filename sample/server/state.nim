@@ -5,7 +5,7 @@ from logging import nil
 
 method switch*(fr: ref None, to: ref Loading): ref State =
   logging.debug("Loading")
-  result = to.switch(new(ref Running))  # after resource loading switch from Loading to Intro
+  result = to.switch(new(ref Running))
 
 method switch*(fr: ref Loading, to: ref Running): ref State =
   logging.debug("Running")
