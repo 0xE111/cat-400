@@ -4,19 +4,11 @@ from parseopt2 import nil
 from logging import nil
 
 from utils.helpers import join, index
+# from utils.process import Process, start
 
-from server import start
-from client import start
+from conf import config
+from server import Server, run
 
-from backends.network.base import NetworkBackend
-from backends.network.enet import EnetBackend
-
-
-type
-  Config = tuple[
-    version: string,
-    networkBackend: ref NetworkBackend,
-  ]
 
 const 
   version = staticRead("version.txt")
@@ -30,10 +22,6 @@ const
   ])
 
 var
-  config*: Config = (  # user should populate config
-    version: "0.0",
-    networkBackend: new(ref EnetBackend),
-  )
   logLevel = logging.Level.lvlWarn  # default log level
   serverMode = false  # launch both server and client by default
 
@@ -82,7 +70,8 @@ proc run*() =
   # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
   # TODO: addQuitProc?
   if isServerProcess:
-    server.start()
+    var server = Server()
+    server.run(config=config.server)
   else:
-    client.start()
-
+    echo("client")
+    # Process().start()

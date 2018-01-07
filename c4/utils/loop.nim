@@ -1,13 +1,11 @@
 import times
-from logging import nil
 
 
 type
-  UpdateProc = proc(dt: float): bool {.nimcall.}
+  UpdateProc* = proc(dt: float): bool
 
 proc runLoop*(updatesPerSecond = 30, fixedFrequencyHandlers:seq[UpdateProc] = @[], maxFrequencyHandlers:seq[UpdateProc] = @[]) =
   # handlers will receive dt - delta time between two last calls
-
   let 
     skipSeconds = 1 / updatesPerSecond
     maxUpdatesSkip = int(updatesPerSecond.float * 0.3)

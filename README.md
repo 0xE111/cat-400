@@ -283,6 +283,17 @@ method switch*(fr: ref Running, to: ref None): ref State =
   result = to
 ```
 
+```nim
+# main.nim
+from c4.core import config, run
+import server.server_states, client.client_states
+
+config.version = "0.1"
+
+when isMainModule:
+  run()
+```
+
 Ensure your app can launch client and server simultaneously (exclude `-s` flag for now):
 
 ```shell

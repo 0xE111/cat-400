@@ -26,3 +26,7 @@ proc getVersion*(): string {.compileTime.} =
 
 # proc getVersion*(versionFile:string): string {.compileTime.} =
 #   staticRead(versionFile)
+
+
+# proc getAppPath*(): string =
+#   result = currentSourcePath()
