@@ -79,10 +79,11 @@ Now let's start customizing.
 
 ### Framework configuration
 
-Configuring c4 is nothing more than changing a tuple. The framework uses some reasonable defaults for your project's config (like version: "0.0") but we won't go far without changing them. Oh, let's start with `version`:
+Configuring c4 is nothing more than changing a tuple. The framework uses some reasonable defaults for your project's config (like version: "0.0") but sometimes we'll need to change them. Oh, let's start with `version`:
 
 ```nim
-from c4.core import config, run
+from c4.core import run
+from c4.conf import config
 
 config.version = "0.1"
 
@@ -98,57 +99,69 @@ C4 uses client-server architecture. This means that unlike other nim game engine
 
 Important fact is that server is always launched. Even if you play a single player mode, your client is still connecting to a local server on the same machine. If you connect to remote host, you may use your local server for client-side prediction (which is an advanced topic).
 
-C4 allows you to launch your app in a "headless mode" - just a server without a client. This is useful if you want to just serve the game and you don't need the client at all. We will also use this mode during first steps so that we don't have to care about the client. Use `-s` flag to launch server only:
+C4 allows you to launch your app in a "headless mode" - just a server without a client. This is useful if you want to launch your custom server on VPS or so and you don't need the client at all. We will also use this mode during first steps so that we don't have to care about the client. Use `-s` flag to launch server only. You will see something like this (output may vary depending on c4 version):
 
 ```shell
 nim c -r main.nim --loglevel=DEBUG -s
 ...
-[2018-01-03T00:29:32] DEBUG: Version 0.1.1-13
-[2018-01-03T00:29:32] DEBUG: Server process created
-[2018-01-03T00:29:32] DEBUG: Server stopped
+[2018-01-10T21:48:07] SERVER DEBUG: Version 0.1.1-19
+[2018-01-10T21:48:07] SERVER DEBUG: Starting server
+[2018-01-10T21:48:07] SERVER DEBUG: Server is Loading
+[2018-01-10T21:48:07] SERVER DEBUG: EnetNetworkSystem init
+[2018-01-10T21:48:07] SERVER DEBUG: Server is Running
 ```
 
-Note that we passed `--loglevel` flag to the executable so that we can better know what's going on.
+Quit with `ctrl+C`. Note that we passed `--loglevel` flag to the executable so that we can better know what's going on under the hood.
 
-We haven't defined any specific behavior, so server just stops right after creation. Now it's time for "hello world" program!
+We haven't defined any specific behavior, so server just runs by default. Now it's time for "hello world" program!
 
 ### States
 
-States are something you'll find very helpful while building your app. I won't do redundant job and explaing what `State` is - just go to excellent Robert Nystrom's website: http://gameprogrammingpatterns.com/state.html.
+States are something you'll find very helpful while building your app. Explaing what `State` is would be a redundand job - just go to excellent Robert Nystrom's website: http://gameprogrammingpatterns.com/state.html.
 
-C4 relies heavily on states, but it's still developer's job to define states themself as well as transitions between them. Developer also has to choose between "static" and "instantiated" states.
+C4 relies heavily on states. You will see (and hopefully use) it very often. Let's see an example right now.
 
-Our server also has a state. Predefined values are:
+C4 has a `Server` object. Let's omit its internals and just focus on its `state` property:
 
 ```nim
 type
-  Loading* = object of State
-  Running* = object of State
-  Paused* = object of State
+  Server = object of RootObj
+    state: ref State
+    # ...
 ```
 
-We may use these values but we can create our own ones as well.
+Server may be in several reasonable states, like `None` (unitialized), `Loading` (initializing internals), `Running` (running subsystems) etc:
 
-When server starts its state is `None` which means "no state". By design server tries to switch state to `Loading` but we haven't defined the transition `None -> Loading` so the state doesn't change. Then server sees `None` state and quits. Let's make server reach `Loading` state and do something.
+```nim
+type
+  None* = object of State
+  Loading* = object of State
+  Running* = object of State
+```
 
-Create new folder for server-related code:
+Each state not only represents what an object is doing, but also allows to perform some state-related actions. For example, when `Server` enters `Loading` state it initializes all its subsystems; when `Server` enters `Running` it launches infinite game loop.
+
+Now let's be destructive and make server just output "hello world" instead of launching that boring game loop! Create new folder for server-related code:
 
 ```shell
 mkdir server
-touch server/server_states.nim
+touch server/states.nim
 ```
 
-Edit `server_states.nim` and define a transition from `None` to `Loading` state. Transition is defined by `switch` method like this:
+Edit `states.nim` and define a transition to `Loading` state. Transition is defined by `switch` method like this:
 
 ```nim
-from c4.utils.states import State, None
-from c4.server import Loading  # use built-in Loading state
-from logging import nil  # logging is already set up by c4
+import c4.utils.state
+import c4.server
+from logging import nil
 
 
-method switch*(fr: ref None, to: ref Loading): ref State =  # define a transition from None to Loading
-  logging.debug("Server loading")  # do some preparations (like level/assets loading etc)
-  result = to  # successfully switch to new state
+method switch*(self: var ref State, newState: ref Running, instance: ref Server) =
+  # this method will shadow default server's one (which is not a good idea)
+  if self of ref Loading:  # if we came from Loading state
+    self = newState  # actually swich current (Loading) state to Running
+    echo("Hello world")
+
 ```
 
 If we now compile our code we'll see no changes:
@@ -156,14 +169,18 @@ If we now compile our code we'll see no changes:
 ```shell
 nim c -r main.nim --loglevel=DEBUG -s
 ...
-[2018-01-03T01:23:43] DEBUG: Server process created
-[2018-01-03T01:23:43] DEBUG: Server stopped
+[2018-01-10T22:46:53] SERVER DEBUG: Version 0.1.1-19
+[2018-01-10T22:46:53] SERVER DEBUG: Starting server
+[2018-01-10T22:46:53] SERVER DEBUG: Server is Loading
+[2018-01-10T22:46:53] SERVER DEBUG: EnetNetworkSystem init
+[2018-01-10T22:46:53] SERVER DEBUG: Server is Running
 ```
 
 That's because c4 doesn't see our custom transition definition. Let's fix this by importing our `state` module before calling `run()`:
 
 ```nim
-from c4.core import config, run
+from c4.core import run
+from c4.conf import config
 import server.server_states
 
 config = (
@@ -174,87 +191,20 @@ when isMainModule:
   run()
 ```
 
-Now our program will hang in "Loading" state cause we haven't defined what to do next:
-
 ```shell
 nim c -r main.nim --loglevel=DEBUG -s
 ...
-[2018-01-03T01:25:59] DEBUG: Version 0.1.1-13
-[2018-01-03T01:25:59] DEBUG: Server process created
-[2018-01-03T01:25:59] DEBUG: Server loading
+[2018-01-10T22:48:25] SERVER DEBUG: Version 0.1.1-19
+[2018-01-10T22:48:25] SERVER DEBUG: Starting server
+[2018-01-10T22:48:25] SERVER DEBUG: Server is Loading
+[2018-01-10T22:48:25] SERVER DEBUG: EnetNetworkSystem init
+Hello world
 ```
 
-Press `ctrl+c` to abort execution. Let's define a fake full cycle - launching server, loading resources, showing intro, running the game and exiting. This will give us a brief overview of possible server state usage.
+Nice! We just broke our server startup in favor of "Hello world" output. Now revert the destructive changes and go on.
 
-```nim
-from c4.utils.states import State, None, switch  # import "switch" which will act like a forward declaration and suppress linter errors
-from c4.server import Loading, Running
-from logging import nil
-
-type
-  Intro = object of State  # our custom state which is not included in c4 by default
-
-method switch*(fr: ref None, to: ref Loading): ref State =  # None -> Loading
-  logging.debug("Loading assets, building world")
-  result = to.switch(new(ref Intro))  # after resource loading switch from Loading to Intro
-
-method switch*(fr: ref Loading, to: ref Intro): ref State =  # Loading -> Intro
-  logging.debug("Playing intro movie")
-  result = to.switch(new(ref Running))  # after playing movie run the game
-
-method switch*(fr: ref Intro, to: ref Running): ref State =  # Intro -> Running
-  logging.debug("Running our awesome game")
-  result = to.switch(new(ref None))  # after running the game, switch to None which means exit
-
-method switch*(fr: ref Running, to: ref None): ref State =  # Running -> None
-  logging.debug("Moving to final state")
-  result = to  # just switch to None
-```
-
-Now compile and launch:
-
-```shell
-nim c -r main.nim --loglevel=DEBUG -s
-...
-[2018-01-03T02:17:28] DEBUG: Version 0.1.1-13
-[2018-01-03T02:17:28] DEBUG: Server process created
-[2018-01-03T02:17:28] DEBUG: Loading assets, building world
-[2018-01-03T02:17:28] DEBUG: Playing intro movie
-[2018-01-03T02:17:28] DEBUG: Running our awesome game
-[2018-01-03T02:17:28] DEBUG: Moving to final state
-[2018-01-03T02:17:28] DEBUG: Server stopped
-```
-
-It worked! We defined a state graph like this:
-
-`None -> Loading -> Intro -> Running -> None`
-
-It's plain now which means that if you try to switch from `Running` back to `Intro` nothing will happen. However you can allow such a switch by defining another `switch` method. So, each arrow is a method, and a set of methods allow you to define your own state graph. Also please don't forget that `None -> Loading` transition will be called automatically on server startup (if defined, of course), but all further state transitions are your responsibility. We'll dive deeper onwards.
-
-Of course it's a dumb idea to play movie on server (it's client's task), and we definitely should do something more than logging messages. But that was a good start!
-
-Now let's leave just a required minimum for our server (`None -> Loading -> Running -> None`):
-
-```nim
-from c4.utils.states import State, None, switch
-from c4.server import Loading, Running
-from logging import nil
-
-
-method switch*(fr: ref None, to: ref Loading): ref State =
-  logging.debug("Loading")
-  result = to.switch(new(ref Running))
-
-method switch*(fr: ref Loading, to: ref Running): ref State =
-  logging.debug("Running")
-  result = to.switch(new(ref None))
-
-method switch*(fr: ref Running, to: ref None): ref State =
-  result = to
-```
-
-Time to set up a client.
-
+*Warning:* Avoid calling `switch` inside of `switch`. If your state graph is cyclic (i.e. you may switch to already visited states) you may face stack overflow error.
+<!-- 
 ### Client
 
 Let's quickly set up a minimal client. It's the same as setting up a server - create `client_states.nim` and import it:
@@ -285,7 +235,8 @@ method switch*(fr: ref Running, to: ref None): ref State =
 
 ```nim
 # main.nim
-from c4.core import config, run
+from c4.core import run
+from c4.conf import config
 import server.server_states, client.client_states
 
 config.version = "0.1"
@@ -356,4 +307,4 @@ However, defaults for prototyping are enough for our needs so we won't change an
 ### Network system
 
 It's fine that we can launch client and server, but how do they communicate? Network system is here to help us! It's automatically initialized right after starting server and client and is ready to send/receive messages. By default c4 uses Enet library (working over UDP) as a backend for client-server communications but you can change it by setting `config.networkBackend`. Now let's make client talk to server.
-
+ -->
