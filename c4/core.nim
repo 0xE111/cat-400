@@ -4,7 +4,6 @@ from parseopt2 import nil
 from logging import nil
 
 from utils.helpers import join, index
-# from utils.process import Process, start
 
 from conf import config
 from server import Server, run
@@ -70,7 +69,7 @@ proc run*() =
   # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
   # TODO: addQuitProc?
   if isServerProcess:
-    var server = Server()
+    var server = new(ref Server)
     server.run(config=config.server)
   else:
     echo("client")

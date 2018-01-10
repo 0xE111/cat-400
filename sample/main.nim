@@ -1,6 +1,6 @@
 from c4.core import run
 from c4.conf import config
-# import server.server_states, client.client_states
+import server.states
 
 config.version = "0.1"
 

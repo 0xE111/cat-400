@@ -1,32 +1,6 @@
-# from logging import nil
-# from utils.loop import runLoop
-# from utils.states import State, None, switch
-# from conf import config
-
-
-# type
-#   Loading* = object of State
-#   Running* = object of State
-#   Paused* = object of State
-
-# var
-#   state: ref State = new(ref None)  # TODO: add "not nil"
-
-# let
-#   network* = config.networkBackend
-
-# proc update(dt:float): bool =
-#   return not (state of ref None)
-
-# proc start*() =
-#   logging.debug("Process created")
-#   state = state.switch(new(ref Loading))
-#   runLoop(updatesPerSecond = 30, fixedFrequencyHandlers = @[update])
-#   logging.debug("Process stopped")
-
-
-# from utils.process import Process
 from utils.loop import runLoop
+from utils.state import State, switch
+from logging import nil
 
 import systems.network
 
@@ -36,22 +10,37 @@ type
     network: ref NetworkSystem,
   ]
 
+  None* = object of State
+  Loading* = object of State
+  Running* = object of State
+
   Server* = object of RootObj
-    # state
-    # config: ServerConfig
+    state: ref State
+    config: ServerConfig
 
+method switch(self: var ref State, newState: ref Loading, instance: ref Server) =
+  if self of ref None:
+    self = newState
 
-# proc init*(self: var Server, config: ServerConfig) =
-#   self.config = config
+    logging.debug("Server is Loading")
+    instance.config.network.init()
 
-proc run*(self: Server, config: ServerConfig) =
-  config.network.init()
+    self.switch(new(ref Running), instance=instance)
 
-  # state switch
+method switch(self: var ref State, newState: ref Running, instance: ref Server) =
+  if self of ref Loading:
+    self = newState
+    logging.debug("Server is Running")
 
-  runLoop(
-    updatesPerSecond = 30,
-    fixedFrequencyHandlers = @[
-      proc(dt: float): bool = config.network.update(dt),  # anonymous proc
-    ], 
-  )
+    runLoop(
+      updatesPerSecond = 30,
+      fixedFrequencyHandlers = @[
+        proc(dt: float): bool = instance.config.network.update(dt),  # anonymous proc
+      ], 
+    )
+
+proc run*(self: ref Server, config: ServerConfig) =
+  logging.debug("Starting server")
+  self.config = config
+  self.state = new(ref None)
+  self.state.switch(new(ref Loading), instance=self)
