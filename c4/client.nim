@@ -1,23 +1,51 @@
-# from logging import nil
-# from utils.loop import runLoop
-# from utils.states import State, None, switch
+from utils.loop import runLoop
+from utils.state import State, switch
+from logging import nil
+
+import systems.network
 
 
-# # TODO: maybe DRY? (see server.nim)
-# type
-#   Loading* = object of State
-#   Running* = object of State
-#   Paused* = object of State
+type
+  ClientConfig* = tuple[
+    network: ref NetworkSystem,
+  ]
 
-# var state: ref State = new(ref None)  # TODO: add "not nil"
+  None* = object of State
+  Loading* = object of State
+  Running* = object of State
 
-# proc update(dt:float): bool =
-#   return not (state of ref None)
+  Client* = object of RootObj
+    state: ref State
+    config: ClientConfig
 
-# proc start*() =
-#   logging.debug("Process created")
-#   state = state.switch(new(ref Loading))
-#   runLoop(updatesPerSecond = 30, fixedFrequencyHandlers = @[update])
-#   logging.debug("Process stopped")
+let
+  noneState = new(ref None)
+  loadingState = new(ref Loading)
+  runningState = new(ref Running)
 
+method switch(self: var ref State, newState: ref Loading, instance: ref Client) =
+  if self of ref None:
+    self = newState
 
+    logging.debug("Loading")
+    instance.config.network.init()
+
+method switch(self: var ref State, newState: ref Running, instance: ref Client) =
+  if self of ref Loading:
+    self = newState
+    logging.debug("Running")
+
+    runLoop(
+      updatesPerSecond = 30,
+      fixedFrequencyHandlers = @[
+        proc(dt: float): bool = instance.config.network.update(dt),  # anonymous proc
+        proc(dt: float): bool = instance.state of Running,  # check whether state is 'Running'
+      ], 
+    )
+
+proc run*(self: ref Client, config: ClientConfig) =
+  logging.debug("Starting client")
+  self.config = config
+  self.state = noneState
+  self.state.switch(loadingState, instance=self)
+  self.state.switch(runningState, instance=self)

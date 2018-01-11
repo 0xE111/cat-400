@@ -1,3 +1,21 @@
+#ifdef C2NIM
+#  dynlib enet
+#  cdecl
+#  if defined(windows)
+#    define enet "enet.dll"
+#  elif defined(macosx)
+#    define enet "enet.dylib"
+#  else
+#    define enet "libenet.so"
+#  endif
+
+#  if defined(windows)
+#    include "win32.h"
+#  else
+#    include "unix.h"
+
+#endif
+
 /** 
  @file  enet.h
  @brief ENet public header file
@@ -5,23 +23,12 @@
 #ifndef __ENET_ENET_H__
 #define __ENET_ENET_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stdlib.h>
 
-#ifdef _WIN32
-#include "enet/win32.h"
-#else
-#include "enet/unix.h"
-#endif
-
-#include "enet/types.h"
-#include "enet/protocol.h"
-#include "enet/list.h"
-#include "enet/callbacks.h"
+#include "types.h"
+#include "protocol.h"
+#include "list.h"
+#include "callbacks.h"
 
 #define ENET_VERSION_MAJOR 1
 #define ENET_VERSION_MINOR 3
@@ -583,10 +590,6 @@ ENET_API size_t enet_range_coder_compress (void *, const ENetBuffer *, size_t, s
 ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t, enet_uint8 *, size_t);
    
 extern size_t enet_protocol_command_size (enet_uint8);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* __ENET_ENET_H__ */
 

@@ -27,13 +27,13 @@ method switch(self: var ref State, newState: ref Loading, instance: ref Server) 
   if self of ref None:
     self = newState
 
-    logging.debug("Server is Loading")
+    logging.debug("Loading")
     instance.config.network.init()
 
 method switch(self: var ref State, newState: ref Running, instance: ref Server) =
   if self of ref Loading:
     self = newState
-    logging.debug("Server is Running")
+    logging.debug("Running")
 
     runLoop(
       updatesPerSecond = 30,
