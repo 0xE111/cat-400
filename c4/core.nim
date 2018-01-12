@@ -2,6 +2,8 @@ from strutils import format
 from posix import fork
 from parseopt2 import nil
 from logging import nil
+from ospaths import joinPath
+from os import getAppDir
 
 from utils.helpers import join, index
 
@@ -46,6 +48,7 @@ proc run*() =
 
   # separate this process into "client" and "server" processes
   # TODO: `fork()` is available in Unix only; user some other function
+  # https://nim-lang.org/docs/osproc.html
   let
     childPid = if config.mode == Mode.server: 1 else: fork()
     isServerProcess = childPid != 0
@@ -56,9 +59,8 @@ proc run*() =
   # the following code will be executed by both processes
 
   # set up logging
-  # TODO: make log files appear in the same dir as execulable, not in current dir
   let
-    logFile = if isServerProcess: "server.log" else: "client.log"
+    logFile = joinPath(getAppDir(), (if isServerProcess: "server.log" else: "client.log"))
     logFmtStr = "[$datetime] " & (if isServerProcess: "SERVER" else: "CLIENT") & " $levelname: "
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=config.logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
