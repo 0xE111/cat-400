@@ -1,11 +1,6 @@
-/** 
- @file  protocol.h
- @brief ENet protocol
-*/
-#ifndef __ENET_PROTOCOL_H__
-#define __ENET_PROTOCOL_H__
+# skipcomments
 
-#include "enet/types.h"
+#include "types.h"
 
 enum
 {
@@ -53,13 +48,16 @@ typedef enum _ENetProtocolFlag
    ENET_PROTOCOL_HEADER_SESSION_SHIFT   = 12
 } ENetProtocolFlag;
 
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#define ENET_PACKED
-#elif defined(__GNUC__) || defined(__clang__)
-#define ENET_PACKED __attribute__ ((packed))
-#else
-#define ENET_PACKED
+// #ifdef _MSC_VER
+// #pragma pack(push, 1)
+// #define ENET_PACKED
+// #elif defined(__GNUC__) || defined(__clang__)
+// #define ENET_PACKED __attribute__ ((packed))
+// #else
+// #define ENET_PACKED
+// #endif
+#ifdef C2NIM
+#  def ENET_PACKED 
 #endif
 
 typedef struct _ENetProtocolHeader
@@ -190,9 +188,6 @@ typedef union _ENetProtocol
    ENetProtocolThrottleConfigure throttleConfigure;
 } ENET_PACKED ENetProtocol;
 
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
-#endif /* __ENET_PROTOCOL_H__ */
-
+// #ifdef _MSC_VER
+// #pragma pack(pop)
+// #endif

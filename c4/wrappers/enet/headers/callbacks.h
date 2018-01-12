@@ -1,11 +1,18 @@
-/** 
- @file  callbacks.h
- @brief ENet callbacks
-*/
-#ifndef __ENET_CALLBACKS_H__
-#define __ENET_CALLBACKS_H__
+#ifdef C2NIM
+#  skipcomments
+#  dynlib lib
+#  cdecl
+#  if defined(windows)
+#    define lib "enet.dll"
+#  elif defined(macosx)
+#    define lib "enet.dylib"
+#  else
+#    define lib "libenet.so"
+#  endif
+# def ENET_CALLBACK
+#endif
 
-#include <stdlib.h>
+
 
 typedef struct _ENetCallbacks
 {
@@ -14,14 +21,5 @@ typedef struct _ENetCallbacks
     void (ENET_CALLBACK * no_memory) (void);
 } ENetCallbacks;
 
-/** @defgroup callbacks ENet internal callbacks
-    @{
-    @ingroup private
-*/
 extern void * enet_malloc (size_t);
 extern void   enet_free (void *);
-
-/** @} */
-
-#endif /* __ENET_CALLBACKS_H__ */
-

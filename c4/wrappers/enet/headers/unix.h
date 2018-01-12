@@ -1,9 +1,6 @@
-/** 
- @file  unix.h
- @brief ENet Unix header
-*/
-#ifndef __ENET_UNIX_H__
-#define __ENET_UNIX_H__
+#ifdef C2NIM
+# skipcomments
+#endif
 
 #include <stdlib.h>
 #include <sys/time.h>
@@ -34,7 +31,10 @@ typedef struct
 
 #define ENET_CALLBACK
 
-#define ENET_API extern
+// #define ENET_API extern
+#ifdef C2NIM
+#  def ENET_API 
+#endif
 
 typedef fd_set ENetSocketSet;
 
@@ -42,6 +42,3 @@ typedef fd_set ENetSocketSet;
 #define ENET_SOCKETSET_ADD(sockset, socket)    FD_SET (socket, & (sockset))
 #define ENET_SOCKETSET_REMOVE(sockset, socket) FD_CLR (socket, & (sockset))
 #define ENET_SOCKETSET_CHECK(sockset, socket)  FD_ISSET (socket, & (sockset))
-    
-#endif /* __ENET_UNIX_H__ */
-
