@@ -28,11 +28,13 @@ C4 is being developed for custom needs. Please note that it's more educational p
 
 The main benefit of c4 is its documentation - I try to make code and docs changes side by side, so docs should always be up-to-date. This is the thing many projects lack.
 
-Less words - let's try to build something.
+## ★ Your help required!
+
+C4 tries to be clear and well-designed. Your contribution is highly appreciated! Sometimes even an idea or better design/implementation would be very helpful. Check out [current issues](https://github.com/c0ntribut0r/cat-400/issues).
 
 ## Tutorial
 
-Learn by coding your first game with c4!
+Learn by coding your first game with c4! Less words - let's try to build something.
 
 ### Install & display version
 
