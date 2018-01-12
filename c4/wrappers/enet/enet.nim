@@ -1,94 +1,314 @@
- {.deadCodeElim: on.}
+# Credits to https://github.com/fowlmouth/nimrod-enet/blob/master/enet.nim
+{.deadCodeElim: on.}
 when defined(windows):
-  const
-    lib* = "enet.dll"
+  const lib* = "enet.dll"
 elif defined(macosx):
-  const
-    lib* = "enet.dylib"
+  const lib* = "enet.dylib"
+elif defined(unix):
+  const lib* = "libenet.so"
 else:
-  const
-    lib* = "libenet.so"
+  {.error: "Unsupported platform"}
+
 when defined(windows):
-  import
-    ./win32
+  import winlean
+  
+  type
+    ENetSocket* = SOCKET
+    ENetBuffer* {.bycopy.} = object
+      dataLength*: csize
+      data*: pointer
+    ENetSocketSet* = TFdSet
+
+  const
+    ENET_SOCKET_NULL* = INVALID_SOCKET
 
 else:
-  import
-    ./unix
+  import posix
 
-import
-  types, protocol, list, callbacks
+  type
+    ENetSocket* = cint
+    ENetBuffer* {.bycopy.} = object
+      data*: pointer
+      dataLength*: csize
+    ENetSocketSet* = TFdSet
+
+  # when defined(MSG_MAXIOVLEN):
+  #   const ENET_BUFFER_MAXIMUM* = MSG_MAXIOVLEN
+
+  const
+    ENET_SOCKET_NULL* = -1
+    ENET_CALLBACK* = true
+
+template ENET_HOST_TO_NET_16*(value: untyped): untyped = (htons(value))
+template ENET_HOST_TO_NET_32*(value: untyped): untyped = (htonl(value))
+template ENET_NET_TO_HOST_16*(value: untyped): untyped = (ntohs(value))
+template ENET_NET_TO_HOST_32*(value: untyped): untyped = (ntohl(value))
+template ENET_SOCKETSET_EMPTY*(sockset: untyped): untyped = FD_ZERO(addr((sockset)))
+template ENET_SOCKETSET_ADD*(sockset, socket: untyped): untyped = FD_SET(socket, addr((sockset)))
+template ENET_SOCKETSET_REMOVE*(sockset, socket: untyped): untyped = FD_CLR(socket, addr((sockset)))
+template ENET_SOCKETSET_CHECK*(sockset, socket: untyped): untyped = FD_ISSET(socket, addr((sockset)))
+
+template ENET_VERSION_CREATE*(major, minor, patch: untyped): untyped = (((major) shl 16) or ((minor) shl 8) or (patch))
+template ENET_VERSION_GET_MAJOR*(version: untyped): untyped = (((version) shr 16) and 0x000000FF)
+template ENET_VERSION_GET_MINOR*(version: untyped): untyped = (((version) shr 8) and 0x000000FF)
+template ENET_VERSION_GET_PATCH*(version: untyped): untyped = ((version) and 0x000000FF)
+
+template enet_list_begin*(list: untyped): untyped = ((list).sentinel.next)
+template enet_list_end*(list: untyped): untyped = (addr((list).sentinel))
+template enet_list_empty*(list: untyped): untyped = (enet_list_begin(list) == enet_list_end(list))
+template enet_list_next*(`iterator`: untyped): untyped = ((`iterator`).next)
+template enet_list_previous*(`iterator`: untyped): untyped = ((`iterator`).previous)
+template enet_list_front*(list: untyped): untyped = (cast[pointer]((list).sentinel.next))
+template enet_list_back*(list: untyped): untyped = (cast[pointer]((list).sentinel.previous))
+
+template ENET_TIME_LESS*(a, b: untyped): untyped = ((a) - (b) >= ENET_TIME_OVERFLOW)
+template ENET_TIME_GREATER*(a, b: untyped): untyped = ((b) - (a) >= ENET_TIME_OVERFLOW)
+template ENET_TIME_LESS_EQUAL*(a, b: untyped): untyped = (not ENET_TIME_GREATER(a, b))
+template ENET_TIME_GREATER_EQUAL*(a, b: untyped): untyped = (not ENET_TIME_LESS(a, b))
+template ENET_TIME_DIFFERENCE*(a, b: untyped): untyped = (if (a) - (b) >= ENET_TIME_OVERFLOW: (b) - (a) else: (a) - (b))
+
+template ENET_MAX*(x, y: untyped): untyped = (if (x) > (y): (x) else: (y))
+template ENET_MIN*(x, y: untyped): untyped = (if (x) < (y): (x) else: (y))
 
 const
   ENET_VERSION_MAJOR* = 1
   ENET_VERSION_MINOR* = 3
   ENET_VERSION_PATCH* = 13
-
-template ENET_VERSION_CREATE*(major, minor, patch: untyped): untyped =
-  (((major) shl 16) or ((minor) shl 8) or (patch))
-
-template ENET_VERSION_GET_MAJOR*(version: untyped): untyped =
-  (((version) shr 16) and 0x000000FF)
-
-template ENET_VERSION_GET_MINOR*(version: untyped): untyped =
-  (((version) shr 8) and 0x000000FF)
-
-template ENET_VERSION_GET_PATCH*(version: untyped): untyped =
-  ((version) and 0x000000FF)
-
-const
-  ENET_VERSION* = ENET_VERSION_CREATE(ENET_VERSION_MAJOR, ENET_VERSION_MINOR,
-                                    ENET_VERSION_PATCH)
-
-type
-  ENetVersion* = enet_uint32
-  _ENetHost* {.bycopy.} = object
-  
-  _ENetEvent* {.bycopy.} = object
-  
-  _ENetPacket* {.bycopy.} = object
-  
-  ENetSocketType* {.size: sizeof(cint).} = enum
-    ENET_SOCKET_TYPE_STREAM = 1, ENET_SOCKET_TYPE_DATAGRAM = 2
-  ENetSocketWait* {.size: sizeof(cint).} = enum
-    ENET_SOCKET_WAIT_NONE = 0, ENET_SOCKET_WAIT_SEND = (1 shl 0),
-    ENET_SOCKET_WAIT_RECEIVE = (1 shl 1), ENET_SOCKET_WAIT_INTERRUPT = (1 shl 2)
-  ENetSocketOption* {.size: sizeof(cint).} = enum
-    ENET_SOCKOPT_NONBLOCK = 1, ENET_SOCKOPT_BROADCAST = 2, ENET_SOCKOPT_RCVBUF = 3,
-    ENET_SOCKOPT_SNDBUF = 4, ENET_SOCKOPT_REUSEADDR = 5, ENET_SOCKOPT_RCVTIMEO = 6,
-    ENET_SOCKOPT_SNDTIMEO = 7, ENET_SOCKOPT_ERROR = 8, ENET_SOCKOPT_NODELAY = 9
-  ENetSocketShutdown* {.size: sizeof(cint).} = enum
-    ENET_SOCKET_SHUTDOWN_READ = 0, ENET_SOCKET_SHUTDOWN_WRITE = 1,
-    ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
-
-
-
-
-
-const
+  ENET_VERSION_FULL* = ENET_VERSION_CREATE(  # originally "ENET_VERSION"
+    ENET_VERSION_MAJOR,
+    ENET_VERSION_MINOR,
+    ENET_VERSION_PATCH
+  )
   ENET_HOST_ANY* = 0
   ENET_HOST_BROADCAST* = 0xFFFFFFFF
   ENET_PORT_ANY* = 0
-
+  ENET_HOST_RECEIVE_BUFFER_SIZE* = 256 * 1024
+  ENET_HOST_SEND_BUFFER_SIZE* = 256 * 1024
+  ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL* = 1000
+  ENET_HOST_DEFAULT_MTU* = 1400
+  ENET_HOST_DEFAULT_MAXIMUM_PACKET_SIZE* = 32 * 1024 * 1024
+  ENET_HOST_DEFAULT_MAXIMUM_WAITING_DATA* = 32 * 1024 * 1024
+  ENET_PEER_DEFAULT_ROUND_TRIP_TIME* = 500
+  ENET_PEER_DEFAULT_PACKET_THROTTLE* = 32
+  ENET_PEER_PACKET_THROTTLE_SCALE* = 32
+  ENET_PEER_PACKET_THROTTLE_COUNTER* = 7
+  ENET_PEER_PACKET_THROTTLE_ACCELERATION* = 2
+  ENET_PEER_PACKET_THROTTLE_DECELERATION* = 2
+  ENET_PEER_PACKET_THROTTLE_INTERVAL* = 5000
+  ENET_PEER_PACKET_LOSS_SCALE* = (1 shl 16)
+  ENET_PEER_PACKET_LOSS_INTERVAL* = 10000
+  ENET_PEER_WINDOW_SIZE_SCALE* = 64 * 1024
+  ENET_PEER_TIMEOUT_LIMIT* = 32
+  ENET_PEER_TIMEOUT_MINIMUM* = 5000
+  ENET_PEER_TIMEOUT_MAXIMUM* = 30000
+  ENET_PEER_PING_INTERVAL* = 500
+  ENET_PEER_UNSEQUENCED_WINDOWS* = 64
+  ENET_PEER_UNSEQUENCED_WINDOW_SIZE* = 1024
+  ENET_PEER_FREE_UNSEQUENCED_WINDOWS* = 32
+  ENET_PEER_RELIABLE_WINDOWS* = 16
+  ENET_PEER_RELIABLE_WINDOW_SIZE* = 0x00001000
+  ENET_PEER_FREE_RELIABLE_WINDOWS* = 8
+  ENET_PROTOCOL_MINIMUM_MTU* = 576
+  ENET_PROTOCOL_MAXIMUM_MTU* = 4096
+  ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS* = 32
+  ENET_PROTOCOL_MINIMUM_WINDOW_SIZE* = 4096
+  ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE* = 65536
+  ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT* = 1
+  ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT* = 255
+  ENET_PROTOCOL_MAXIMUM_PEER_ID* = 0x00000FFF
+  ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT* = 1024 * 1024
+  ENET_BUFFER_MAXIMUM = (1 + 2 * ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS)
+  ENET_TIME_OVERFLOW* = 86400000
 
 type
+  enet_uint8* = cuchar
+  enet_uint16* = cushort
+  enet_uint32* = cuint
+
+  ENetVersion* = enet_uint32
+
+  # list
+  ENetListNode* {.bycopy.} = object
+    next*: pointer  # _ENetListNode
+    previous*: pointer  # _ENetListNode
+
+  ENetListIterator* = ptr ENetListNode
+  ENetList* {.bycopy.} = object
+    sentinel*: ENetListNode
+  
+  # protocols
+  ENetProtocolCommand* = enum
+    ENET_PROTOCOL_COMMAND_NONE = 0,
+    ENET_PROTOCOL_COMMAND_ACKNOWLEDGE = 1,
+    ENET_PROTOCOL_COMMAND_CONNECT = 2,
+    ENET_PROTOCOL_COMMAND_VERIFY_CONNECT = 3,
+    ENET_PROTOCOL_COMMAND_DISCONNECT = 4,
+    ENET_PROTOCOL_COMMAND_PING = 5,
+    ENET_PROTOCOL_COMMAND_SEND_RELIABLE = 6,
+    ENET_PROTOCOL_COMMAND_SEND_UNRELIABLE = 7,
+    ENET_PROTOCOL_COMMAND_SEND_FRAGMENT = 8,
+    ENET_PROTOCOL_COMMAND_SEND_UNSEQUENCED = 9,
+    ENET_PROTOCOL_COMMAND_BANDWIDTH_LIMIT = 10,
+    ENET_PROTOCOL_COMMAND_THROTTLE_CONFIGURE = 11,
+    ENET_PROTOCOL_COMMAND_SEND_UNRELIABLE_FRAGMENT = 12,
+    ENET_PROTOCOL_COMMAND_COUNT = 13,
+    ENET_PROTOCOL_COMMAND_MASK = 0x0000000F
+
+  ENetProtocolFlag* = enum
+    ENET_PROTOCOL_HEADER_SESSION_SHIFT = 12,
+    ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED = (1 shl 6),
+    ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE = (1 shl 7),
+    ENET_PROTOCOL_HEADER_SESSION_MASK = (3 shl 12),
+    ENET_PROTOCOL_HEADER_FLAG_COMPRESSED = (1 shl 14),
+    ENET_PROTOCOL_HEADER_FLAG_SENT_TIME = (1 shl 15),
+    ENET_PROTOCOL_HEADER_FLAG_MASK = ENET_PROTOCOL_HEADER_FLAG_COMPRESSED.cint or ENET_PROTOCOL_HEADER_FLAG_SENT_TIME.cint
+
+  ENetProtocolHeader* {.bycopy.} = object
+    peerID*: enet_uint16
+    sentTime*: enet_uint16
+
+  ENetProtocolCommandHeader* {.bycopy.} = object
+    command*: enet_uint8
+    channelID*: enet_uint8
+    reliableSequenceNumber*: enet_uint16
+
+  ENetProtocolAcknowledge* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    receivedReliableSequenceNumber*: enet_uint16
+    receivedSentTime*: enet_uint16
+
+  ENetProtocolConnect* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    outgoingPeerID*: enet_uint16
+    incomingSessionID*: enet_uint8
+    outgoingSessionID*: enet_uint8
+    mtu*: enet_uint32
+    windowSize*: enet_uint32
+    channelCount*: enet_uint32
+    incomingBandwidth*: enet_uint32
+    outgoingBandwidth*: enet_uint32
+    packetThrottleInterval*: enet_uint32
+    packetThrottleAcceleration*: enet_uint32
+    packetThrottleDeceleration*: enet_uint32
+    connectID*: enet_uint32
+    data*: enet_uint32
+
+  ENetProtocolVerifyConnect* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    outgoingPeerID*: enet_uint16
+    incomingSessionID*: enet_uint8
+    outgoingSessionID*: enet_uint8
+    mtu*: enet_uint32
+    windowSize*: enet_uint32
+    channelCount*: enet_uint32
+    incomingBandwidth*: enet_uint32
+    outgoingBandwidth*: enet_uint32
+    packetThrottleInterval*: enet_uint32
+    packetThrottleAcceleration*: enet_uint32
+    packetThrottleDeceleration*: enet_uint32
+    connectID*: enet_uint32
+
+  ENetProtocolBandwidthLimit* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    incomingBandwidth*: enet_uint32
+    outgoingBandwidth*: enet_uint32
+
+  ENetProtocolThrottleConfigure* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    packetThrottleInterval*: enet_uint32
+    packetThrottleAcceleration*: enet_uint32
+    packetThrottleDeceleration*: enet_uint32
+
+  ENetProtocolDisconnect* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    data*: enet_uint32
+
+  ENetProtocolPing* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+
+  ENetProtocolSendReliable* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    dataLength*: enet_uint16
+
+  ENetProtocolSendUnreliable* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    unreliableSequenceNumber*: enet_uint16
+    dataLength*: enet_uint16
+
+  ENetProtocolSendUnsequenced* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    unsequencedGroup*: enet_uint16
+    dataLength*: enet_uint16
+
+  ENetProtocolSendFragment* {.bycopy.} = object
+    header*: ENetProtocolCommandHeader
+    startSequenceNumber*: enet_uint16
+    dataLength*: enet_uint16
+    fragmentCount*: enet_uint32
+    fragmentNumber*: enet_uint32
+    totalLength*: enet_uint32
+    fragmentOffset*: enet_uint32
+
+  ENetProtocol* {.bycopy.} = object {.union.}
+    header*: ENetProtocolCommandHeader
+    acknowledge*: ENetProtocolAcknowledge
+    connect*: ENetProtocolConnect
+    verifyConnect*: ENetProtocolVerifyConnect
+    disconnect*: ENetProtocolDisconnect
+    ping*: ENetProtocolPing
+    sendReliable*: ENetProtocolSendReliable
+    sendUnreliable*: ENetProtocolSendUnreliable
+    sendUnsequenced*: ENetProtocolSendUnsequenced
+    sendFragment*: ENetProtocolSendFragment
+    bandwidthLimit*: ENetProtocolBandwidthLimit
+    throttleConfigure*: ENetProtocolThrottleConfigure
+
+  # callbacks
+  ENetCallbacks* {.bycopy.} = object
+    malloc*: proc (size: csize): pointer {.cdecl.}
+    free*: proc (memory: pointer) {.cdecl.}
+    no_memory*: proc () {.cdecl.}
+
+  # enet
+  ENetSocketType* {.size: sizeof(cint).} = enum
+    ENET_SOCKET_TYPE_STREAM = 1,
+    ENET_SOCKET_TYPE_DATAGRAM = 2,
+  
+  ENetSocketWait* {.size: sizeof(cint).} = enum
+    ENET_SOCKET_WAIT_NONE = 0,
+    ENET_SOCKET_WAIT_SEND = (1 shl 0),
+    ENET_SOCKET_WAIT_RECEIVE = (1 shl 1),
+    ENET_SOCKET_WAIT_INTERRUPT = (1 shl 2),
+  
+  ENetSocketOption* {.size: sizeof(cint).} = enum
+    ENET_SOCKOPT_NONBLOCK = 1,
+    ENET_SOCKOPT_BROADCAST = 2,
+    ENET_SOCKOPT_RCVBUF = 3,
+    ENET_SOCKOPT_SNDBUF = 4,
+    ENET_SOCKOPT_REUSEADDR = 5,
+    ENET_SOCKOPT_RCVTIMEO = 6,
+    ENET_SOCKOPT_SNDTIMEO = 7,
+    ENET_SOCKOPT_ERROR = 8,
+    ENET_SOCKOPT_NODELAY = 9,
+  
+  ENetSocketShutdown* {.size: sizeof(cint).} = enum
+    ENET_SOCKET_SHUTDOWN_READ = 0,
+    ENET_SOCKET_SHUTDOWN_WRITE = 1,
+    ENET_SOCKET_SHUTDOWN_READ_WRITE = 2,
+  
   ENetAddress* {.bycopy.} = object
     host*: enet_uint32
     port*: enet_uint16
 
-
-
-type
   ENetPacketFlag* {.size: sizeof(cint).} = enum
-    ENET_PACKET_FLAG_RELIABLE = (1 shl 0), ENET_PACKET_FLAG_UNSEQUENCED = (1 shl 1),
+    ENET_PACKET_FLAG_RELIABLE = (1 shl 0),
+    ENET_PACKET_FLAG_UNSEQUENCED = (1 shl 1),
     ENET_PACKET_FLAG_NO_ALLOCATE = (1 shl 2),
     ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT = (1 shl 3),
     ENET_PACKET_FLAG_SENT = (1 shl 8)
-  ENetPacketFreeCallback* = proc (a2: ptr _ENetPacket) {.cdecl.}
 
+  ENetPacketFreeCallback* = proc (a2: pointer) {.cdecl.}  # _ENetPacket
 
-
-type
   ENetPacket* {.bycopy.} = object
     referenceCount*: csize
     flags*: enet_uint32
@@ -126,43 +346,17 @@ type
     packet*: ptr ENetPacket
 
   ENetPeerState* {.size: sizeof(cint).} = enum
-    ENET_PEER_STATE_DISCONNECTED = 0, ENET_PEER_STATE_CONNECTING = 1,
+    ENET_PEER_STATE_DISCONNECTED = 0,
+    ENET_PEER_STATE_CONNECTING = 1,
     ENET_PEER_STATE_ACKNOWLEDGING_CONNECT = 2,
     ENET_PEER_STATE_CONNECTION_PENDING = 3,
-    ENET_PEER_STATE_CONNECTION_SUCCEEDED = 4, ENET_PEER_STATE_CONNECTED = 5,
-    ENET_PEER_STATE_DISCONNECT_LATER = 6, ENET_PEER_STATE_DISCONNECTING = 7,
-    ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT = 8, ENET_PEER_STATE_ZOMBIE = 9
+    ENET_PEER_STATE_CONNECTION_SUCCEEDED = 4,
+    ENET_PEER_STATE_CONNECTED = 5,
+    ENET_PEER_STATE_DISCONNECT_LATER = 6,
+    ENET_PEER_STATE_DISCONNECTING = 7,
+    ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT = 8,
+    ENET_PEER_STATE_ZOMBIE = 9
 
-
-const
-  ENET_HOST_RECEIVE_BUFFER_SIZE* = 256 * 1024
-  ENET_HOST_SEND_BUFFER_SIZE* = 256 * 1024
-  ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL* = 1000
-  ENET_HOST_DEFAULT_MTU* = 1400
-  ENET_HOST_DEFAULT_MAXIMUM_PACKET_SIZE* = 32 * 1024 * 1024
-  ENET_HOST_DEFAULT_MAXIMUM_WAITING_DATA* = 32 * 1024 * 1024
-  ENET_PEER_DEFAULT_ROUND_TRIP_TIME* = 500
-  ENET_PEER_DEFAULT_PACKET_THROTTLE* = 32
-  ENET_PEER_PACKET_THROTTLE_SCALE* = 32
-  ENET_PEER_PACKET_THROTTLE_COUNTER* = 7
-  ENET_PEER_PACKET_THROTTLE_ACCELERATION* = 2
-  ENET_PEER_PACKET_THROTTLE_DECELERATION* = 2
-  ENET_PEER_PACKET_THROTTLE_INTERVAL* = 5000
-  ENET_PEER_PACKET_LOSS_SCALE* = (1 shl 16)
-  ENET_PEER_PACKET_LOSS_INTERVAL* = 10000
-  ENET_PEER_WINDOW_SIZE_SCALE* = 64 * 1024
-  ENET_PEER_TIMEOUT_LIMIT* = 32
-  ENET_PEER_TIMEOUT_MINIMUM* = 5000
-  ENET_PEER_TIMEOUT_MAXIMUM* = 30000
-  ENET_PEER_PING_INTERVAL* = 500
-  ENET_PEER_UNSEQUENCED_WINDOWS* = 64
-  ENET_PEER_UNSEQUENCED_WINDOW_SIZE* = 1024
-  ENET_PEER_FREE_UNSEQUENCED_WINDOWS* = 32
-  ENET_PEER_RELIABLE_WINDOWS* = 16
-  ENET_PEER_RELIABLE_WINDOW_SIZE* = 0x00001000
-  ENET_PEER_FREE_RELIABLE_WINDOWS* = 8
-
-type
   ENetChannel* {.bycopy.} = object
     outgoingReliableSequenceNumber*: enet_uint16
     outgoingUnreliableSequenceNumber*: enet_uint16
@@ -173,12 +367,9 @@ type
     incomingReliableCommands*: ENetList
     incomingUnreliableCommands*: ENetList
 
-
-
-type
   ENetPeer* {.bycopy.} = object
     dispatchList*: ENetListNode
-    host*: ptr _ENetHost
+    host*: pointer  # _ENetHost
     outgoingPeerID*: enet_uint16
     incomingPeerID*: enet_uint16
     connectID*: enet_uint32
@@ -238,30 +429,16 @@ type
     eventData*: enet_uint32
     totalWaitingData*: csize
 
-
-
-type
   ENetCompressor* {.bycopy.} = object
     context*: pointer
-    compress*: proc (context: pointer; inBuffers: ptr ENetBuffer; inBufferCount: csize;
-                   inLimit: csize; outData: ptr enet_uint8; outLimit: csize): csize {.
-        cdecl.}
-    decompress*: proc (context: pointer; inData: ptr enet_uint8; inLimit: csize;
-                     outData: ptr enet_uint8; outLimit: csize): csize {.cdecl.}
+    compress*: proc (context: pointer; inBuffers: ptr ENetBuffer; inBufferCount: csize; inLimit: csize; outData: ptr enet_uint8; outLimit: csize): csize {.cdecl.}
+    decompress*: proc (context: pointer; inData: ptr enet_uint8; inLimit: csize; outData: ptr enet_uint8; outLimit: csize): csize {.cdecl.}
     destroy*: proc (context: pointer) {.cdecl.}
 
+  ENetChecksumCallback* = proc (buffers: ptr ENetBuffer; bufferCount: csize): enet_uint32 {.cdecl.}
 
+  ENetInterceptCallback* = proc (host: pointer; event: pointer): cint {.cdecl.}  # _ENetHost, _ENetEvent
 
-type
-  ENetChecksumCallback* = proc (buffers: ptr ENetBuffer; bufferCount: csize): enet_uint32 {.
-      cdecl.}
-
-
-type
-  ENetInterceptCallback* = proc (host: ptr _ENetHost; event: ptr _ENetEvent): cint {.cdecl.}
-
-
-type
   ENetHost* {.bycopy.} = object
     socket*: ENetSocket
     address*: ENetAddress
@@ -300,16 +477,10 @@ type
     maximumPacketSize*: csize
     maximumWaitingData*: csize
 
-
-
-type
   ENetEventType* {.size: sizeof(cint).} = enum
     ENET_EVENT_TYPE_NONE = 0, ENET_EVENT_TYPE_CONNECT = 1,
     ENET_EVENT_TYPE_DISCONNECT = 2, ENET_EVENT_TYPE_RECEIVE = 3
 
-
-
-type
   ENetEvent* {.bycopy.} = object
     `type`*: ENetEventType
     peer*: ptr ENetPeer
@@ -317,157 +488,80 @@ type
     data*: enet_uint32
     packet*: ptr ENetPacket
 
+{.push cdecl, dynlib:lib, importc:"enet_$1".}
+proc initialize*(): cint
+proc initialize_with_callbacks*(version: ENetVersion; inits: ptr ENetCallbacks): cint
+proc deinitialize*()
+proc linked_version*(): ENetVersion
+proc time_get*(): enet_uint32
+proc time_set*(a2: enet_uint32)
+proc socket_create*(a2: ENetSocketType): ENetSocket
+proc socket_bind*(a2: ENetSocket; a3: ptr ENetAddress): cint
+proc socket_get_address*(a2: ENetSocket; a3: ptr ENetAddress): cint  
+proc socket_listen*(a2: ENetSocket; a3: cint): cint  
+proc socket_accept*(a2: ENetSocket; a3: ptr ENetAddress): ENetSocket  
+proc socket_connect*(a2: ENetSocket; a3: ptr ENetAddress): cint  
+proc socket_send*(a2: ENetSocket; a3: ptr ENetAddress; a4: ptr ENetBuffer; a5: csize): cint  
+proc socket_receive*(a2: ENetSocket; a3: ptr ENetAddress; a4: ptr ENetBuffer; a5: csize): cint  
+proc socket_wait*(a2: ENetSocket; a3: ptr enet_uint32; a4: enet_uint32): cint  
+proc socket_set_option*(a2: ENetSocket; a3: ENetSocketOption; a4: cint): cint  
+proc socket_get_option*(a2: ENetSocket; a3: ENetSocketOption; a4: ptr cint): cint  
+proc socket_shutdown*(a2: ENetSocket; a3: ENetSocketShutdown): cint  
+proc socket_destroy*(a2: ENetSocket)  
+proc socketset_select*(a2: ENetSocket; a3: ptr ENetSocketSet; a4: ptr ENetSocketSet; a5: enet_uint32): cint  
+proc address_set_host*(address: ptr ENetAddress; hostName: cstring): cint  
+proc address_get_host_ip*(address: ptr ENetAddress; hostName: cstring; nameLength: csize): cint  
+proc address_get_host*(address: ptr ENetAddress; hostName: cstring; nameLength: csize): cint  
+proc packet_create*(a2: pointer; a3: csize; a4: enet_uint32): ptr ENetPacket  
+proc packet_destroy*(a2: ptr ENetPacket)
+proc packet_resize*(a2: ptr ENetPacket; a3: csize): cint
+proc crc32*(a2: ptr ENetBuffer; a3: csize): enet_uint32
+proc host_create*(a2: ptr ENetAddress; a3: csize; a4: csize; a5: enet_uint32; a6: enet_uint32): ptr ENetHost
+proc host_destroy*(a2: ptr ENetHost)
+proc host_connect*(a2: ptr ENetHost; a3: ptr ENetAddress; a4: csize; a5: enet_uint32): ptr ENetPeer  
+proc host_check_events*(a2: ptr ENetHost; a3: ptr ENetEvent): cint
+proc host_service*(a2: ptr ENetHost; a3: ptr ENetEvent; a4: enet_uint32): cint  
+proc host_flush*(a2: ptr ENetHost)
+proc host_broadcast*(a2: ptr ENetHost; a3: enet_uint8; a4: ptr ENetPacket)
+proc host_compress*(a2: ptr ENetHost; a3: ptr ENetCompressor)
+proc host_compress_with_range_coder*(host: ptr ENetHost): cint
+proc host_channel_limit*(a2: ptr ENetHost; a3: csize)
+proc host_bandwidth_limit*(a2: ptr ENetHost; a3: enet_uint32; a4: enet_uint32)  
+proc host_bandwidth_throttle*(a2: ptr ENetHost)
+proc host_random_seed*(): enet_uint32
+proc peer_send*(a2: ptr ENetPeer; a3: enet_uint8; a4: ptr ENetPacket): cint
+proc peer_receive*(a2: ptr ENetPeer; channelID: ptr enet_uint8): ptr ENetPacket  
+proc peer_ping*(a2: ptr ENetPeer)  
+proc peer_ping_interval*(a2: ptr ENetPeer; a3: enet_uint32)
+proc peer_timeout*(a2: ptr ENetPeer; a3: enet_uint32; a4: enet_uint32; a5: enet_uint32)
+proc peer_reset*(a2: ptr ENetPeer)
+proc peer_disconnect*(a2: ptr ENetPeer; a3: enet_uint32)
+proc peer_disconnect_now*(a2: ptr ENetPeer; a3: enet_uint32)
+proc peer_disconnect_later*(a2: ptr ENetPeer; a3: enet_uint32)
+proc peer_throttle_configure*(a2: ptr ENetPeer; a3: enet_uint32; a4: enet_uint32; a5: enet_uint32)
+proc peer_throttle*(a2: ptr ENetPeer; a3: enet_uint32): cint
+proc peer_reset_queues*(a2: ptr ENetPeer)
+proc peer_setup_outgoing_command*(a2: ptr ENetPeer; a3: ptr ENetOutgoingCommand)  
+proc peer_queue_outgoing_command*(a2: ptr ENetPeer; a3: ptr ENetProtocol; a4: ptr ENetPacket; a5: enet_uint32; a6: enet_uint16): ptr ENetOutgoingCommand  
+proc peer_queue_incoming_command*(a2: ptr ENetPeer; a3: ptr ENetProtocol; a4: pointer; a5: csize; a6: enet_uint32; a7: enet_uint32): ptr ENetIncomingCommand  
+proc peer_queue_acknowledgement*(a2: ptr ENetPeer; a3: ptr ENetProtocol; a4: enet_uint16): ptr ENetAcknowledgement
+proc peer_dispatch_incoming_unreliable_commands*(a2: ptr ENetPeer; a3: ptr ENetChannel)
+proc peer_dispatch_incoming_reliable_commands*(a2: ptr ENetPeer; a3: ptr ENetChannel)
+proc peer_on_connect*(a2: ptr ENetPeer)
+proc peer_on_disconnect*(a2: ptr ENetPeer)
+proc range_coder_create*(): pointer
+proc range_coder_destroy*(a2: pointer)
+proc range_coder_compress*(a2: pointer; a3: ptr ENetBuffer; a4: csize; a5: csize; a6: ptr enet_uint8; a7: csize): csize
+proc range_coder_decompress*(a2: pointer; a3: ptr enet_uint8; a4: csize; a5: ptr enet_uint8; a6: csize): csize
+proc protocol_command_size*(a2: enet_uint8): csize
 
+# list
+proc list_clear*(a2: ptr ENetList)  
+proc list_insert*(a2: ENetListIterator; a3: pointer): ENetListIterator  
+proc list_remove*(a2: ENetListIterator): pointer  
+proc list_move*(a2: ENetListIterator; a3: pointer; a4: pointer): ENetListIterator
+proc list_size*(a2: ptr ENetList): csize  
 
-proc enet_initialize*(): cint {.cdecl, importc: "enet_initialize", dynlib: lib.}
-
-proc enet_initialize_with_callbacks*(version: ENetVersion; inits: ptr ENetCallbacks): cint {.
-    cdecl, importc: "enet_initialize_with_callbacks", dynlib: lib.}
-
-proc enet_deinitialize*() {.cdecl, importc: "enet_deinitialize", dynlib: lib.}
-
-proc enet_linked_version*(): ENetVersion {.cdecl, importc: "enet_linked_version",
-                                        dynlib: lib.}
-
-proc enet_time_get*(): enet_uint32 {.cdecl, importc: "enet_time_get", dynlib: lib.}
-
-proc enet_time_set*(a2: enet_uint32) {.cdecl, importc: "enet_time_set", dynlib: lib.}
-
-proc enet_socket_create*(a2: ENetSocketType): ENetSocket {.cdecl,
-    importc: "enet_socket_create", dynlib: lib.}
-proc enet_socket_bind*(a2: ENetSocket; a3: ptr ENetAddress): cint {.cdecl,
-    importc: "enet_socket_bind", dynlib: lib.}
-proc enet_socket_get_address*(a2: ENetSocket; a3: ptr ENetAddress): cint {.cdecl,
-    importc: "enet_socket_get_address", dynlib: lib.}
-proc enet_socket_listen*(a2: ENetSocket; a3: cint): cint {.cdecl,
-    importc: "enet_socket_listen", dynlib: lib.}
-proc enet_socket_accept*(a2: ENetSocket; a3: ptr ENetAddress): ENetSocket {.cdecl,
-    importc: "enet_socket_accept", dynlib: lib.}
-proc enet_socket_connect*(a2: ENetSocket; a3: ptr ENetAddress): cint {.cdecl,
-    importc: "enet_socket_connect", dynlib: lib.}
-proc enet_socket_send*(a2: ENetSocket; a3: ptr ENetAddress; a4: ptr ENetBuffer; a5: csize): cint {.
-    cdecl, importc: "enet_socket_send", dynlib: lib.}
-proc enet_socket_receive*(a2: ENetSocket; a3: ptr ENetAddress; a4: ptr ENetBuffer;
-                         a5: csize): cint {.cdecl, importc: "enet_socket_receive",
-    dynlib: lib.}
-proc enet_socket_wait*(a2: ENetSocket; a3: ptr enet_uint32; a4: enet_uint32): cint {.
-    cdecl, importc: "enet_socket_wait", dynlib: lib.}
-proc enet_socket_set_option*(a2: ENetSocket; a3: ENetSocketOption; a4: cint): cint {.
-    cdecl, importc: "enet_socket_set_option", dynlib: lib.}
-proc enet_socket_get_option*(a2: ENetSocket; a3: ENetSocketOption; a4: ptr cint): cint {.
-    cdecl, importc: "enet_socket_get_option", dynlib: lib.}
-proc enet_socket_shutdown*(a2: ENetSocket; a3: ENetSocketShutdown): cint {.cdecl,
-    importc: "enet_socket_shutdown", dynlib: lib.}
-proc enet_socket_destroy*(a2: ENetSocket) {.cdecl, importc: "enet_socket_destroy",
-    dynlib: lib.}
-proc enet_socketset_select*(a2: ENetSocket; a3: ptr ENetSocketSet;
-                           a4: ptr ENetSocketSet; a5: enet_uint32): cint {.cdecl,
-    importc: "enet_socketset_select", dynlib: lib.}
-
-proc enet_address_set_host*(address: ptr ENetAddress; hostName: cstring): cint {.cdecl,
-    importc: "enet_address_set_host", dynlib: lib.}
-
-proc enet_address_get_host_ip*(address: ptr ENetAddress; hostName: cstring;
-                              nameLength: csize): cint {.cdecl,
-    importc: "enet_address_get_host_ip", dynlib: lib.}
-
-proc enet_address_get_host*(address: ptr ENetAddress; hostName: cstring;
-                           nameLength: csize): cint {.cdecl,
-    importc: "enet_address_get_host", dynlib: lib.}
-
-proc enet_packet_create*(a2: pointer; a3: csize; a4: enet_uint32): ptr ENetPacket {.
-    cdecl, importc: "enet_packet_create", dynlib: lib.}
-proc enet_packet_destroy*(a2: ptr ENetPacket) {.cdecl,
-    importc: "enet_packet_destroy", dynlib: lib.}
-proc enet_packet_resize*(a2: ptr ENetPacket; a3: csize): cint {.cdecl,
-    importc: "enet_packet_resize", dynlib: lib.}
-proc enet_crc32*(a2: ptr ENetBuffer; a3: csize): enet_uint32 {.cdecl,
-    importc: "enet_crc32", dynlib: lib.}
-proc enet_host_create*(a2: ptr ENetAddress; a3: csize; a4: csize; a5: enet_uint32;
-                      a6: enet_uint32): ptr ENetHost {.cdecl,
-    importc: "enet_host_create", dynlib: lib.}
-proc enet_host_destroy*(a2: ptr ENetHost) {.cdecl, importc: "enet_host_destroy",
-                                        dynlib: lib.}
-proc enet_host_connect*(a2: ptr ENetHost; a3: ptr ENetAddress; a4: csize; a5: enet_uint32): ptr ENetPeer {.
-    cdecl, importc: "enet_host_connect", dynlib: lib.}
-proc enet_host_check_events*(a2: ptr ENetHost; a3: ptr ENetEvent): cint {.cdecl,
-    importc: "enet_host_check_events", dynlib: lib.}
-proc enet_host_service*(a2: ptr ENetHost; a3: ptr ENetEvent; a4: enet_uint32): cint {.
-    cdecl, importc: "enet_host_service", dynlib: lib.}
-proc enet_host_flush*(a2: ptr ENetHost) {.cdecl, importc: "enet_host_flush",
-                                      dynlib: lib.}
-proc enet_host_broadcast*(a2: ptr ENetHost; a3: enet_uint8; a4: ptr ENetPacket) {.cdecl,
-    importc: "enet_host_broadcast", dynlib: lib.}
-proc enet_host_compress*(a2: ptr ENetHost; a3: ptr ENetCompressor) {.cdecl,
-    importc: "enet_host_compress", dynlib: lib.}
-proc enet_host_compress_with_range_coder*(host: ptr ENetHost): cint {.cdecl,
-    importc: "enet_host_compress_with_range_coder", dynlib: lib.}
-proc enet_host_channel_limit*(a2: ptr ENetHost; a3: csize) {.cdecl,
-    importc: "enet_host_channel_limit", dynlib: lib.}
-proc enet_host_bandwidth_limit*(a2: ptr ENetHost; a3: enet_uint32; a4: enet_uint32) {.
-    cdecl, importc: "enet_host_bandwidth_limit", dynlib: lib.}
-proc enet_host_bandwidth_throttle*(a2: ptr ENetHost) {.cdecl,
-    importc: "enet_host_bandwidth_throttle", dynlib: lib.}
-proc enet_host_random_seed*(): enet_uint32 {.cdecl,
-    importc: "enet_host_random_seed", dynlib: lib.}
-proc enet_peer_send*(a2: ptr ENetPeer; a3: enet_uint8; a4: ptr ENetPacket): cint {.cdecl,
-    importc: "enet_peer_send", dynlib: lib.}
-proc enet_peer_receive*(a2: ptr ENetPeer; channelID: ptr enet_uint8): ptr ENetPacket {.
-    cdecl, importc: "enet_peer_receive", dynlib: lib.}
-proc enet_peer_ping*(a2: ptr ENetPeer) {.cdecl, importc: "enet_peer_ping", dynlib: lib.}
-proc enet_peer_ping_interval*(a2: ptr ENetPeer; a3: enet_uint32) {.cdecl,
-    importc: "enet_peer_ping_interval", dynlib: lib.}
-proc enet_peer_timeout*(a2: ptr ENetPeer; a3: enet_uint32; a4: enet_uint32;
-                       a5: enet_uint32) {.cdecl, importc: "enet_peer_timeout",
-                                        dynlib: lib.}
-proc enet_peer_reset*(a2: ptr ENetPeer) {.cdecl, importc: "enet_peer_reset",
-                                      dynlib: lib.}
-proc enet_peer_disconnect*(a2: ptr ENetPeer; a3: enet_uint32) {.cdecl,
-    importc: "enet_peer_disconnect", dynlib: lib.}
-proc enet_peer_disconnect_now*(a2: ptr ENetPeer; a3: enet_uint32) {.cdecl,
-    importc: "enet_peer_disconnect_now", dynlib: lib.}
-proc enet_peer_disconnect_later*(a2: ptr ENetPeer; a3: enet_uint32) {.cdecl,
-    importc: "enet_peer_disconnect_later", dynlib: lib.}
-proc enet_peer_throttle_configure*(a2: ptr ENetPeer; a3: enet_uint32; a4: enet_uint32;
-                                  a5: enet_uint32) {.cdecl,
-    importc: "enet_peer_throttle_configure", dynlib: lib.}
-proc enet_peer_throttle*(a2: ptr ENetPeer; a3: enet_uint32): cint {.cdecl,
-    importc: "enet_peer_throttle", dynlib: lib.}
-proc enet_peer_reset_queues*(a2: ptr ENetPeer) {.cdecl,
-    importc: "enet_peer_reset_queues", dynlib: lib.}
-proc enet_peer_setup_outgoing_command*(a2: ptr ENetPeer; a3: ptr ENetOutgoingCommand) {.
-    cdecl, importc: "enet_peer_setup_outgoing_command", dynlib: lib.}
-proc enet_peer_queue_outgoing_command*(a2: ptr ENetPeer; a3: ptr ENetProtocol;
-                                      a4: ptr ENetPacket; a5: enet_uint32;
-                                      a6: enet_uint16): ptr ENetOutgoingCommand {.
-    cdecl, importc: "enet_peer_queue_outgoing_command", dynlib: lib.}
-proc enet_peer_queue_incoming_command*(a2: ptr ENetPeer; a3: ptr ENetProtocol;
-                                      a4: pointer; a5: csize; a6: enet_uint32;
-                                      a7: enet_uint32): ptr ENetIncomingCommand {.
-    cdecl, importc: "enet_peer_queue_incoming_command", dynlib: lib.}
-proc enet_peer_queue_acknowledgement*(a2: ptr ENetPeer; a3: ptr ENetProtocol;
-                                     a4: enet_uint16): ptr ENetAcknowledgement {.
-    cdecl, importc: "enet_peer_queue_acknowledgement", dynlib: lib.}
-proc enet_peer_dispatch_incoming_unreliable_commands*(a2: ptr ENetPeer;
-    a3: ptr ENetChannel) {.cdecl, importc: "enet_peer_dispatch_incoming_unreliable_commands",
-                        dynlib: lib.}
-proc enet_peer_dispatch_incoming_reliable_commands*(a2: ptr ENetPeer;
-    a3: ptr ENetChannel) {.cdecl, importc: "enet_peer_dispatch_incoming_reliable_commands",
-                        dynlib: lib.}
-proc enet_peer_on_connect*(a2: ptr ENetPeer) {.cdecl,
-    importc: "enet_peer_on_connect", dynlib: lib.}
-proc enet_peer_on_disconnect*(a2: ptr ENetPeer) {.cdecl,
-    importc: "enet_peer_on_disconnect", dynlib: lib.}
-proc enet_range_coder_create*(): pointer {.cdecl,
-                                        importc: "enet_range_coder_create",
-                                        dynlib: lib.}
-proc enet_range_coder_destroy*(a2: pointer) {.cdecl,
-    importc: "enet_range_coder_destroy", dynlib: lib.}
-proc enet_range_coder_compress*(a2: pointer; a3: ptr ENetBuffer; a4: csize; a5: csize;
-                               a6: ptr enet_uint8; a7: csize): csize {.cdecl,
-    importc: "enet_range_coder_compress", dynlib: lib.}
-proc enet_range_coder_decompress*(a2: pointer; a3: ptr enet_uint8; a4: csize;
-                                 a5: ptr enet_uint8; a6: csize): csize {.cdecl,
-    importc: "enet_range_coder_decompress", dynlib: lib.}
-proc enet_protocol_command_size*(a2: enet_uint8): csize {.cdecl,
-    importc: "enet_protocol_command_size", dynlib: lib.}
+proc malloc*(a2: csize): pointer  
+proc free*(a2: pointer)  
+{.pop.}
