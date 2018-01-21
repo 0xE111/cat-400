@@ -28,7 +28,7 @@ method switch(self: var ref State, newState: ref Loading, instance: ref Server) 
     self = newState
 
     logging.debug("Loading")
-    instance.config.network.init()
+    instance.config.network.init(kind=NetworkSystemKind.Server)
 
 method switch(self: var ref State, newState: ref Running, instance: ref Server) =
   if self of ref Loading:

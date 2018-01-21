@@ -1,4 +1,5 @@
 from strutils import format, split
+from logging import nil
 
 
 proc join*(iterable: array|tuple|set|seq, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
@@ -30,3 +31,6 @@ proc getVersion*(): string {.compileTime.} =
 
 # proc getAppPath*(): string =
 #   result = currentSourcePath()
+
+
+# TODO: add logger helper - include file name (and possibly line) in log message

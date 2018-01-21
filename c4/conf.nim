@@ -3,7 +3,7 @@ from logging import nil
 from server import ServerConfig
 
 from systems.network import NetworkSystem
-from systems.network.enet import EnetNetworkSystem
+from systems.network_enet import EnetNetworkSystem
 
 
 type
@@ -16,6 +16,7 @@ type
 
   # TODO: get rid of `Config` type and just use auto type when initializing `config` var
   Config* = tuple[
+    # may use currentSourcePath()
     version: string,
     logLevel: logging.Level,
     mode: Mode,
