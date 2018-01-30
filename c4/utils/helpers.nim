@@ -1,5 +1,4 @@
 from strutils import format, split
-from logging import nil
 
 
 proc join*(iterable: array|tuple|set|seq, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
@@ -22,9 +21,6 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
     "value", value,
   ]))
 
-proc getVersion*(): string {.compileTime.} =
-  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
-
 # proc getVersion*(versionFile:string): string {.compileTime.} =
 #   staticRead(versionFile)
 
@@ -34,3 +30,6 @@ proc getVersion*(): string {.compileTime.} =
 
 
 # TODO: add logger helper - include file name (and possibly line) in log message
+
+proc getVersion*(): string =
+  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
