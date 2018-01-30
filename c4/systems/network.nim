@@ -1,12 +1,24 @@
 type
-  NetworkSystemKind* {.pure.} = enum
-    Server, Client
+  Host = string
+  Port = uint16
+  Address = tuple[
+    host: Host,
+    port: Port,
+  ]
+  NetworkKind* = enum
+    nkServer, nkClient
 
-  NetworkSystem* = object of RootObj
+  Network* = object {.inheritable.}
 
 
-method init*(self: ref NetworkSystem, kind: NetworkSystemKind) {.base.} =
+method init*(self: ref Network, kind: NetworkKind, port: Port = 0) {.base.} =
   doAssert(false, "Not implemented")
 
-method update*(self: ref NetworkSystem, dt: float): bool {.base.} =
+method connect*(self: ref Network, address: Address) {.base.} =
+  doAssert(false, "Not implemented")
+
+method update*(self: ref Network, dt: float): bool {.base.} =
+  doAssert(false, "Not implemented")
+
+method destroy*(self: ref Network) {.base.} =
   doAssert(false, "Not implemented")

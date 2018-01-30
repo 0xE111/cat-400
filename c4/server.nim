@@ -7,7 +7,8 @@ import systems.network
 
 type
   ServerConfig* = tuple[
-    network: ref NetworkSystem,
+    network: ref Network,
+    port: uint16,
   ]
 
   None* = object of State
@@ -28,7 +29,7 @@ method switch(self: var ref State, newState: ref Loading, instance: ref Server) 
     self = newState
 
     logging.debug("Loading")
-    instance.config.network.init(kind=NetworkSystemKind.Server)
+    instance.config.network.init(kind=nkServer, port=instance.config.port)
 
 method switch(self: var ref State, newState: ref Running, instance: ref Server) =
   if self of ref Loading:

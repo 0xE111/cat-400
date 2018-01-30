@@ -79,9 +79,9 @@ const
     VERSION_MINOR,
     VERSION_PATCH
   )
-  HOST_ANY*: uint32 = 0
+  HOST_ANY* = 0'u32
   HOST_BROADCAST* = 0xFFFFFFFF
-  PORT_ANY*: uint16 = 0
+  PORT_ANY* = 0'u16
   HOST_RECEIVE_BUFFER_SIZE* = 256 * 1024
   HOST_SEND_BUFFER_SIZE* = 256 * 1024
   HOST_BANDWIDTH_THROTTLE_INTERVAL* = 1000
@@ -121,9 +121,9 @@ const
   TIME_OVERFLOW* = 86400000
 
 type
-  uint8* = cuchar
-  uint16* = cushort
-  uint32* = cuint
+  # uint8* = cuchar
+  # uint16* = cushort
+  # uint32* = cuint
 
   Version* = uint32
 

@@ -2,8 +2,8 @@ from logging import nil
 
 from server import ServerConfig
 
-from systems.network import NetworkSystem
-from systems.network_enet import EnetNetworkSystem
+from systems.network import Network
+from systems.network_enet import EnetNetwork
 
 
 type
@@ -11,7 +11,7 @@ type
     default, server
 
   ClientConfig* = tuple[
-    network: ref NetworkSystem,
+    network: ref Network,
   ]
 
   # TODO: get rid of `Config` type and just use auto type when initializing `config` var
@@ -30,10 +30,11 @@ var
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
     server: (
-      network: new(ref EnetNetworkSystem),
+      network: new(ref EnetNetwork),
+      port: 11477'u16,
     ),
     client: (
-      network: new(ref EnetNetworkSystem),
+      network: new(ref EnetNetwork),
     )
   )
 
