@@ -31,5 +31,5 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
 
 # TODO: add logger helper - include file name (and possibly line) in log message
 
-proc getVersion*(): string =
+proc getVersion*(): string {.compileTime.} =
   staticExec("git describe --tags --long").split('-')[0..^2].join("-")

@@ -1,8 +1,6 @@
 import logging
 import network
-import ../wrappers/enet/[
-  enet,
-]
+import ../wrappers/enet/enet
 
 
 template debug(message: string) =
@@ -30,6 +28,9 @@ proc createHost(address: ptr enet.Address, numClients = 32, numChannels = 2, inB
 proc `$`*(host: ptr enet.Host): string =
   $host.address.host & ":" & $host.address.port
 
+proc `$`*(peer: ptr enet.Peer): string =
+  $peer.address
+
 
 # ==== implementation ====
 method init*(self: ref EnetNetwork, kind: NetworkKind, port = enet.PORT_ANY) =
@@ -52,4 +53,14 @@ method destroy*(self: ref EnetNetwork) =
   debug("Deinitialization successful")
 
 method update*(self: ref EnetNetwork, dt: float): bool =
-  result = true
+    result = true
+
+    var event: enet.Event
+    if enet.host_service(self.host, addr(event), 0.uint32) == 0:
+      return
+
+    case event.`type`
+      of EVENT_TYPE_CONNECT:
+        debug("New peer connected: " & $event.peer)
+      of EVENT_TYPE_RECEIVE:
+        debug("Received packet [" & $event.packet & "] from peer " & $event.peer)
