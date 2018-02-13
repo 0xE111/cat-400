@@ -1,18 +1,14 @@
 from logging import nil
 
 from server import ServerConfig
+from client import ClientConfig
 
-from systems.network import Network
-from systems.network_enet import EnetNetwork
+from systems.network_enet import EnetServerNetwork, EnetClientNetwork
 
 
 type
   Mode* {.pure.} = enum
     default, server
-
-  ClientConfig* = tuple[
-    network: ref Network,
-  ]
 
   # TODO: get rid of `Config` type and just use auto type when initializing `config` var
   Config* = tuple[
@@ -30,11 +26,11 @@ var
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
     server: (
-      network: new(ref EnetNetwork),
+      network: new(ref EnetServerNetwork),
       port: 11477'u16,
     ),
     client: (
-      network: new(ref EnetNetwork),
+      network: new(ref EnetClientNetwork),
     )
   )
 

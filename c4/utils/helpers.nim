@@ -33,3 +33,6 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
 
 proc getVersion*(): string {.compileTime.} =
   staticExec("git describe --tags --long").split('-')[0..^2].join("-")
+
+template notImplemented*() =
+  doAssert(false, "Not implemented")

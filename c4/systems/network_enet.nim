@@ -8,16 +8,26 @@ template debug(message: string) =
 
 
 type
-  EnetNetwork* = object of Network
+  EnetServerNetwork* = object of ServerNetwork
     host: ptr enet.Host
-    case kind: NetworkKind
-      of nkClient:
-        server: enet.Address
-      else:
-        nil
+
+  EnetClientNetwork* = object of ClientNetwork
+    host: ptr enet.Host
+    server: enet.Address
 
 
-# ==== helpers ====
+# ---- Helpers ----
+proc initEnet() =
+  if enet.initialize() != 0.cint:
+    let err = "An error occurred during initialization"
+    debug(err)
+    raise newException(LibraryError, err)
+  debug("Initialization successful")
+
+proc destroyEnet() =
+  enet.deinitialize()
+  debug("Deinitialization successful")
+
 proc createHost(address: ptr enet.Address, numClients = 32, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr enet.Host =
   result = enet.host_create(address, numClients.csize, numChannels.csize, inBandwidth.uint32, outBandwidth.uint32)
   if result == nil:
@@ -31,36 +41,45 @@ proc `$`*(host: ptr enet.Host): string =
 proc `$`*(peer: ptr enet.Peer): string =
   $peer.address
 
+proc `$`*(packet: ptr Packet): string =
+  "[" & $packet.dataLength & "]"
 
-# ==== implementation ====
-method init*(self: ref EnetNetwork, kind: NetworkKind, port = enet.PORT_ANY) =
-  if enet.initialize() != 0.cint:
-    let err = "An error occurred during initialization"
-    debug(err)
-    raise newException(LibraryError, err)
-  debug("Initialization successful")
 
-  if kind == nkServer:
-    var address = enet.Address(host: enet.HOST_ANY, port: port)
-    self.host = createHost(addr(address))
-    debug("Server started: " & $self.host)
-  else:
-    self.host = createHost(nil, numClients=1.csize)
-    debug("Client started: " & $self.host)
+# ---- Server implementation ----
+method init*(self: ref EnetServerNetwork, port = enet.PORT_ANY) =
+  initEnet()
+  var address = enet.Address(host: enet.HOST_ANY, port: port)  # TODO: is this approach correct?
+  self.host = createHost(addr(address))
+  debug("Server started: " & $self.host)
 
-method destroy*(self: ref EnetNetwork) =
-  enet.deinitialize()
-  debug("Deinitialization successful")
+method destroy*(self: ref EnetServerNetwork) =
+  destroyEnet()
 
-method update*(self: ref EnetNetwork, dt: float): bool =
-    result = true
+method update*(self: ref EnetServerNetwork, dt: float): bool =
+  result = true
 
-    var event: enet.Event
-    if enet.host_service(self.host, addr(event), 0.uint32) == 0:
-      return
+  var event: enet.Event
+  if enet.host_service(self.host, addr(event), 0.uint32) == 0:
+    return
 
-    case event.`type`
-      of EVENT_TYPE_CONNECT:
-        debug("New peer connected: " & $event.peer)
-      of EVENT_TYPE_RECEIVE:
-        debug("Received packet [" & $event.packet & "] from peer " & $event.peer)
+  case event.`type`
+    of EVENT_TYPE_CONNECT:
+      debug("New peer connected: " & $event.peer)
+    of EVENT_TYPE_RECEIVE:
+      debug("Received packet [" & $event.packet & "] from peer " & $event.peer)
+      enet.packet_destroy(event.packet)
+    of EVENT_TYPE_DISCONNECT:
+      debug("Peer disconnected: " & $event.peer)
+    of EVENT_TYPE_NONE:
+      discard
+
+
+
+# ---- Client implementation ----
+method init*(self: ref EnetClientNetwork) =
+  initEnet()
+  self.host = createHost(nil, numClients=1.csize)
+  debug("Client started: " & $self.host)
+
+method destroy*(self: ref EnetClientNetwork) =
+  destroyEnet()

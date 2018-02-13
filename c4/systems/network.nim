@@ -1,3 +1,4 @@
+from ../utils/helpers import notImplemented
 type
   Host = string
   Port = uint16
@@ -5,20 +6,18 @@ type
     host: Host,
     port: Port,
   ]
-  NetworkKind* = enum
-    nkServer, nkClient
 
-  Network* = object {.inheritable.}
+  ServerNetwork* = object {.inheritable.}
+  ClientNetwork* = object {.inheritable.}
 
 
-method init*(self: ref Network, kind: NetworkKind, port: Port = 0) {.base.} =
-  doAssert(false, "Not implemented")
+# ---- Server interface ----
+method init*(self: ref ServerNetwork, port: Port = 0) {.base.} = notImplemented()
+method update*(self: ref ServerNetwork, dt: float): bool {.base.} = notImplemented()
+method destroy*(self: ref ServerNetwork) {.base.} = notImplemented()
 
-method connect*(self: ref Network, address: Address) {.base.} =
-  doAssert(false, "Not implemented")
-
-method update*(self: ref Network, dt: float): bool {.base.} =
-  doAssert(false, "Not implemented")
-
-method destroy*(self: ref Network) {.base.} =
-  doAssert(false, "Not implemented")
+# ---- Client interface ----
+method init*(self: ref ClientNetwork) {.base.} = notImplemented()
+method connect*(self: ref ClientNetwork, address: Address) {.base.} = notImplemented()
+method update*(self: ref ClientNetwork, dt: float): bool {.base.} = notImplemented()
+method destroy*(self: ref ClientNetwork) {.base.} = notImplemented()
