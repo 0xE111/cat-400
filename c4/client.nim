@@ -46,6 +46,6 @@ method switch(self: var ref State, newState: ref Running, instance: ref Client) 
 proc run*(self: ref Client, config: ClientConfig) =
   logging.debug("Starting client")
   self.config = config
-  self.state = noneState
-  self.state.switch(loadingState, instance=self)
-  self.state.switch(runningState, instance=self)
+
+  self.config.network.init()
+  
