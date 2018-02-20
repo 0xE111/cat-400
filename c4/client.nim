@@ -1,51 +1,20 @@
-from utils.loop import runLoop
-from utils.state import State, switch
 from logging import nil
-
 import systems.network
+from utils.loop import runLoop
 
 
 type
-  ClientConfig* = tuple[
-    network: ref ClientNetwork,
-  ]
+  Config* = tuple[]
 
-  None* = object of State
-  Loading* = object of State
-  Running* = object of State
 
-  Client* = object of RootObj
-    state: ref State
-    config: ClientConfig
-
-let
-  noneState = new(ref None)
-  loadingState = new(ref Loading)
-  runningState = new(ref Running)
-
-method switch(self: var ref State, newState: ref Loading, instance: ref Client) =
-  if self of ref None:
-    self = newState
-
-    logging.debug("Loading")
-    instance.config.network.init()
-
-method switch(self: var ref State, newState: ref Running, instance: ref Client) =
-  if self of ref Loading:
-    self = newState
-    logging.debug("Running")
-
-    runLoop(
+proc run*(config: Config) =
+  logging.debug("Starting client")
+  var network = NetworkClient()
+  network.init()
+  
+  runLoop(
       updatesPerSecond = 30,
       fixedFrequencyHandlers = @[
-        proc(dt: float): bool = instance.config.network.update(dt),  # anonymous proc
-        proc(dt: float): bool = instance.state of Running,  # check whether state is 'Running'
+        proc(dt: float): bool = network.update(dt),  # anonymous proc
       ], 
     )
-
-proc run*(self: ref Client, config: ClientConfig) =
-  logging.debug("Starting client")
-  self.config = config
-
-  self.config.network.init()
-  

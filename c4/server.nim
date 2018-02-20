@@ -1,29 +1,24 @@
-from utils.loop import runLoop
-from utils.state import State, switch
 from logging import nil
 
 import systems.network
+from utils.loop import runLoop
 
 
 type
-  ServerConfig* = tuple[
-    network: ref ServerNetwork,
+  Config* = tuple[
     port: uint16,
   ]
 
-  Server* = object of RootObj
-    config: ServerConfig
 
-
-proc run*(self: ref Server, config: ServerConfig) =
+proc run*(config: Config) =
   logging.debug("Starting server")
-  self.config = config
+ 
+  var network = NetworkServer()
+  network.init(port=config.port)
 
-  self.config.network.init(port=self.config.port)
-  
   runLoop(
     updatesPerSecond = 30,
     fixedFrequencyHandlers = @[
-        proc(dt: float): bool = self.config.network.update(dt),  # anonymous proc
+        proc(dt: float): bool = network.update(dt),
       ],
   )

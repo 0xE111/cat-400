@@ -1,13 +1,37 @@
 # NimEnet - high-level wrapper of Enet library
 import enet
+import logging
 
 # ---- types ----
 type
   Host* = string
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
-  Server* = enet.Host
-  Client* = enet.Host
+
+  ConnectionEventHandler* = proc(peer: ptr enet.Peer)
+  PacketEventHandler* = proc(peer: ptr enet.Peer, channelId: uint8, packet: ptr enet.Packet)
+  
+  Server* = object
+    host: ptr enet.Host
+    onConnect: ConnectionEventHandler
+    onDisconnect: ConnectionEventHandler
+    onReceive: PacketEventHandler
+    # clients: seq[ptr enet.Peer]
+
+  Client* = object
+    host: ptr enet.Host
+    # server: ptr enet.Host
+
+  # EventKind* = enum
+  #   ekConnect, ekReceive, ekDisconnect
+  # Event* = object
+  #   peer: ptr enet.Peer
+  #   case kind: EventKind
+  #     of ekReceive:
+  #       channelId: uint8
+  #       packet: enet.Packet
+  #     else:
+  #       discard
 
 
 # ---- stringifiers ----
@@ -15,13 +39,13 @@ proc `$`*(address: enet.Address): string =
   $address.host & ":" & $address.port
 
 proc `$`*(host: enet.Host|Server|Client): string =
-  $host.address
+  "Host: " & $host.address
 
 proc `$`*(peer: enet.Peer): string =
-  $peer.address
+  "Peer: " & $peer.address
 
 proc `$`*(packet: ptr Packet): string =
-  "[Packet of size " & $packet.dataLength & "]"
+  "Packet of size " & $packet.dataLength
     
 # ---- converters ----
 # proc getAddress(host: string, port: uint16): enet.Address =
@@ -29,47 +53,88 @@ proc `$`*(packet: ptr Packet): string =
 #   result.port = port
 
 
-# ---- procs ----
+# ---- global ----
 proc init*() =
+  ## Init library
   if enet.initialize() != 0.cint:
     raise newException(LibraryError, "An error occurred during initialization")
 
 proc destroy*() =
+  ## Shutdown library
   enet.deinitialize()
 
-
 # ---- server ----
-proc newServer*(port: Port, numConnections = 32, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr Server =
+proc onConnect(peer: ptr enet.Peer) =
+  logging.debug("Peer connected: " & $peer[])
+
+proc onDisconnect(peer: ptr enet.Peer) =
+  logging.debug("Peer disconnected: " & $peer[])
+
+proc onReceive(peer: ptr enet.Peer, channelId: uint8, packet: ptr enet.Packet) =
+  logging.debug("Received packet " & $packet[] & " from peer " & $peer[])
+
+proc init*(
+  self: var Server,
+  port: Port,
+  numConnections = 32,
+  numChannels = 2,
+  inBandwidth = 0,
+  outBandwidth = 0,
+  onConnect: ConnectionEventHandler = onConnect,
+  onDisconnect: ConnectionEventHandler = onDisconnect,
+  onReceive: PacketEventHandler = onReceive,
+) =
+  ## Initialize server with selected properties
   var address = enet.Address(host: enet.HOST_ANY, port: port)
-  result = enet.host_create(
+  self.host = enet.host_create(
     address.addr,
     numConnections.csize,
     numChannels.csize,
     inBandwidth.uint16,
     outBandwidth.uint16
   )
-  if result == nil:
+  if self.host == nil:
     raise newException(LibraryError, "An error occured while trying to create server")
 
-proc destroy*(self: ptr Server|Client) =
-  enet.host_destroy(self)
+  # set up handlers
+  self.onConnect = onConnect
+  self.onDisconnect = onDisconnect
+  self.onReceive = onReceive
 
+proc poll*(self: var Server) =
+  ## Check whether there is any network event and process if any
+  var event: enet.Event
+  if enet.host_service(self.host, addr(event), 0.uint32) == 0:
+    return
+  
+  # for each event type call corresponding handlers
+  case event.`type`
+    of EVENT_TYPE_CONNECT:
+      self.onConnect(event.peer)
+    of EVENT_TYPE_RECEIVE:
+      self.onReceive(event.peer, event.channelID, event.packet)
+      enet.packet_destroy(event.packet)
+    of EVENT_TYPE_DISCONNECT:
+      self.onDisconnect(event.peer)
+    else:
+      discard
 
-# ---- client ----
-proc newClient*(numConnections = 1, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr Client =
-  result = enet.host_create(
-    nil,
-    numConnections.csize,
-    numChannels.csize,
-    inBandwidth.uint16,
-    outBandwidth.uint16
-  )
-  if result == nil:
-    raise newException(LibraryError, "An error occured while trying to create client")
+# # ---- client ----
+# proc newClient*(numConnections = 1, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr Client =
+#   result = enet.host_create(
+#     nil,
+#     numConnections.csize,
+#     numChannels.csize,
+#     inBandwidth.uint16,
+#     outBandwidth.uint16
+#   )
+#   if result == nil:
+#     raise newException(LibraryError, "An error occured while trying to create client")
 
-init()
-var client = newClient()
-client.destroy()
+# ---- both ----
+proc destroy*(self: var Server| var Client) =
+  ## Destroy server or client
+  enet.host_destroy(self.host)
 
 # proc createPacket(data: string, kind=enet.PACKET_FLAG_UNRELIABLE_FRAGMENT): ptr enet.Packet =
 # var data = 

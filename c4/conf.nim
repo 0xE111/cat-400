@@ -1,9 +1,6 @@
 from logging import nil
-
-from server import ServerConfig
-from client import ClientConfig
-
-from systems.network_enet import EnetServerNetwork, EnetClientNetwork
+import server
+import client
 
 
 type
@@ -11,13 +8,14 @@ type
     default, server
 
   # TODO: get rid of `Config` type and just use auto type when initializing `config` var
+
   Config* = tuple[
     # may use currentSourcePath()
     version: string,
     logLevel: logging.Level,
     mode: Mode,
-    server: ServerConfig,
-    client: ClientConfig,    
+    server: server.Config,
+    client: client.Config,
   ]
 
 var
@@ -26,20 +24,8 @@ var
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
     server: (
-      network: new(ref EnetServerNetwork),
       port: 11477'u16,
     ),
     client: (
-      network: new(ref EnetClientNetwork),
-    )
+    ),
   )
-
-
-# when declared(strutils.find):
-#   discard
-
-# when compiles($foo):
-#   discard
-
-# - Init proc
-# - Conditional import

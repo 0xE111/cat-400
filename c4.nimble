@@ -1,7 +1,6 @@
 from strutils import format, split
 from c4.utils.helpers import getVersion, join
 
-
 # Constants
 const
   versionFile = "c4/version.txt"

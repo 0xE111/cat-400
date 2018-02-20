@@ -8,8 +8,8 @@ from os import getAppDir
 from utils.helpers import join, index
 
 from conf import config, Mode
-from server import Server, run
-from client import Client, run
+from server import run
+from client import run
 
 
 const 
@@ -69,8 +69,6 @@ proc run*() =
   # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
   # TODO: addQuitProc?
   if isServerProcess:
-    var server = new(ref Server)
     server.run(config=config.server)
   else:
-    var client = new(ref Client)
     client.run(config=config.client)
