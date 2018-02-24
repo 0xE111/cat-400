@@ -495,60 +495,60 @@ proc deinitialize*()
 proc linked_version*(): Version
 proc time_get*(): uint32
 proc time_set*(a2: uint32)
-proc socket_create*(a2: SocketType): Socket
-proc socket_bind*(a2: Socket; a3: ptr Address): cint
-proc socket_get_address*(a2: Socket; a3: ptr Address): cint  
-proc socket_listen*(a2: Socket; a3: cint): cint  
-proc socket_accept*(a2: Socket; a3: ptr Address): Socket  
-proc socket_connect*(a2: Socket; a3: ptr Address): cint  
-proc socket_send*(a2: Socket; a3: ptr Address; a4: ptr Buffer; a5: csize): cint  
-proc socket_receive*(a2: Socket; a3: ptr Address; a4: ptr Buffer; a5: csize): cint  
-proc socket_wait*(a2: Socket; a3: ptr uint32; a4: uint32): cint  
-proc socket_set_option*(a2: Socket; a3: SocketOption; a4: cint): cint  
-proc socket_get_option*(a2: Socket; a3: SocketOption; a4: ptr cint): cint  
-proc socket_shutdown*(a2: Socket; a3: SocketShutdown): cint  
-proc socket_destroy*(a2: Socket)  
-proc socketset_select*(a2: Socket; a3: ptr SocketSet; a4: ptr SocketSet; a5: uint32): cint  
+proc socket_create*(socketType: SocketType): Socket
+proc socket_bind*(socket: Socket; address: ptr Address): cint
+proc socket_get_address*(socket: Socket; address: ptr Address): cint  
+proc socket_listen*(socket: Socket; a3: cint): cint  
+proc socket_accept*(socket: Socket; address: ptr Address): Socket  
+proc socket_connect*(socket: Socket; address: ptr Address): cint
+proc socket_send*(socket: Socket; address: ptr Address; buffer: ptr Buffer; a5: csize): cint  
+proc socket_receive*(socket: Socket; address: ptr Address; buffer: ptr Buffer; a5: csize): cint  
+proc socket_wait*(socket: Socket; a3: ptr uint32; a4: uint32): cint  
+proc socket_set_option*(socket: Socket; socketOption: SocketOption; a4: cint): cint  
+proc socket_get_option*(socket: Socket; socketOption: SocketOption; a4: ptr cint): cint  
+proc socket_shutdown*(socket: Socket; socketShutdown: SocketShutdown): cint  
+proc socket_destroy*(socket: Socket)  
+proc socketset_select*(socket: Socket; socketSet1: ptr SocketSet; socketSet2: ptr SocketSet; a5: uint32): cint  
 proc address_set_host*(address: ptr Address; hostName: cstring): cint  
 proc address_get_host_ip*(address: ptr Address; hostName: cstring; nameLength: csize): cint  
 proc address_get_host*(address: ptr Address; hostName: cstring; nameLength: csize): cint  
-proc packet_create*(a2: pointer; a3: csize; a4: uint32): ptr Packet  
-proc packet_destroy*(a2: ptr Packet)
-proc packet_resize*(a2: ptr Packet; a3: csize): cint
-proc crc32*(a2: ptr Buffer; a3: csize): uint32
-proc host_create*(a2: ptr Address; a3: csize; a4: csize; a5: uint32; a6: uint32): ptr Host
-proc host_destroy*(a2: ptr Host)
-proc host_connect*(a2: ptr Host; a3: ptr Address; a4: csize; a5: uint32): ptr Peer  
-proc host_check_events*(a2: ptr Host; a3: ptr Event): cint
-proc host_service*(a2: ptr Host; a3: ptr Event; a4: uint32): cint  
-proc host_flush*(a2: ptr Host)
-proc host_broadcast*(a2: ptr Host; a3: uint8; a4: ptr Packet)
-proc host_compress*(a2: ptr Host; a3: ptr Compressor)
+proc packet_create*(data: pointer; length: csize; packetFlag: PacketFlag): ptr Packet  
+proc packet_destroy*(packet: ptr Packet)
+proc packet_resize*(packet: ptr Packet; newSize: csize): cint
+proc crc32*(buffer: ptr Buffer; a3: csize): uint32
+proc host_create*(address: ptr Address; numConnections: csize; numChannels: csize; inBandwidth: uint32; outBandwidth: uint32): ptr Host
+proc host_destroy*(host: ptr Host)
+proc host_connect*(host: ptr Host; address: ptr Address; numChannels: csize; a5: uint32): ptr Peer  
+proc host_check_events*(host: ptr Host; event: ptr Event): cint
+proc host_service*(host: ptr Host; event: ptr Event; timeout: uint32): cint  
+proc host_flush*(host: ptr Host)
+proc host_broadcast*(host: ptr Host; a3: uint8; a4: ptr Packet)
+proc host_compress*(host: ptr Host; a3: ptr Compressor)
 proc host_compress_with_range_coder*(host: ptr Host): cint
-proc host_channel_limit*(a2: ptr Host; a3: csize)
-proc host_bandwidth_limit*(a2: ptr Host; a3: uint32; a4: uint32)  
-proc host_bandwidth_throttle*(a2: ptr Host)
+proc host_channel_limit*(host: ptr Host; a3: csize)
+proc host_bandwidth_limit*(host: ptr Host; a3: uint32; a4: uint32)  
+proc host_bandwidth_throttle*(host: ptr Host)
 proc host_random_seed*(): uint32
-proc peer_send*(a2: ptr Peer; a3: uint8; a4: ptr Packet): cint
-proc peer_receive*(a2: ptr Peer; channelID: ptr uint8): ptr Packet  
-proc peer_ping*(a2: ptr Peer)  
-proc peer_ping_interval*(a2: ptr Peer; a3: uint32)
-proc peer_timeout*(a2: ptr Peer; a3: uint32; a4: uint32; a5: uint32)
-proc peer_reset*(a2: ptr Peer)
-proc peer_disconnect*(a2: ptr Peer; a3: uint32)
-proc peer_disconnect_now*(a2: ptr Peer; a3: uint32)
-proc peer_disconnect_later*(a2: ptr Peer; a3: uint32)
-proc peer_throttle_configure*(a2: ptr Peer; a3: uint32; a4: uint32; a5: uint32)
-proc peer_throttle*(a2: ptr Peer; a3: uint32): cint
-proc peer_reset_queues*(a2: ptr Peer)
-proc peer_setup_outgoing_command*(a2: ptr Peer; a3: ptr OutgoingCommand)  
-proc peer_queue_outgoing_command*(a2: ptr Peer; a3: ptr Protocol; a4: ptr Packet; a5: uint32; a6: uint16): ptr OutgoingCommand  
-proc peer_queue_incoming_command*(a2: ptr Peer; a3: ptr Protocol; a4: pointer; a5: csize; a6: uint32; a7: uint32): ptr IncomingCommand  
-proc peer_queue_acknowledgement*(a2: ptr Peer; a3: ptr Protocol; a4: uint16): ptr Acknowledgement
-proc peer_dispatch_incoming_unreliable_commands*(a2: ptr Peer; a3: ptr Channel)
-proc peer_dispatch_incoming_reliable_commands*(a2: ptr Peer; a3: ptr Channel)
-proc peer_on_connect*(a2: ptr Peer)
-proc peer_on_disconnect*(a2: ptr Peer)
+proc peer_send*(peer: ptr Peer; channelId: uint8; packet: ptr Packet): cint
+proc peer_receive*(peer: ptr Peer; channelID: ptr uint8): ptr Packet  
+proc peer_ping*(peer: ptr Peer)  
+proc peer_ping_interval*(peer: ptr Peer; a3: uint32)
+proc peer_timeout*(peer: ptr Peer; a3: uint32; a4: uint32; a5: uint32)
+proc peer_reset*(peer: ptr Peer)
+proc peer_disconnect*(peer: ptr Peer; a3: uint32)
+proc peer_disconnect_now*(peer: ptr Peer; a3: uint32)
+proc peer_disconnect_later*(peer: ptr Peer; a3: uint32)
+proc peer_throttle_configure*(peer: ptr Peer; a3: uint32; a4: uint32; a5: uint32)
+proc peer_throttle*(peer: ptr Peer; a3: uint32): cint
+proc peer_reset_queues*(peer: ptr Peer)
+proc peer_setup_outgoing_command*(peer: ptr Peer; a3: ptr OutgoingCommand)  
+proc peer_queue_outgoing_command*(peer: ptr Peer; protocol: ptr Protocol; a4: ptr Packet; a5: uint32; a6: uint16): ptr OutgoingCommand  
+proc peer_queue_incoming_command*(peer: ptr Peer; protocol: ptr Protocol; a4: pointer; a5: csize; a6: uint32; a7: uint32): ptr IncomingCommand  
+proc peer_queue_acknowledgement*(peer: ptr Peer; protocol: ptr Protocol; a4: uint16): ptr Acknowledgement
+proc peer_dispatch_incoming_unreliable_commands*(peer: ptr Peer; channel: ptr Channel)
+proc peer_dispatch_incoming_reliable_commands*(peer: ptr Peer; channel: ptr Channel)
+proc peer_on_connect*(peer: ptr Peer)
+proc peer_on_disconnect*(peer: ptr Peer)
 proc range_coder_create*(): pointer
 proc range_coder_destroy*(a2: pointer)
 proc range_coder_compress*(a2: pointer; a3: ptr Buffer; a4: csize; a5: csize; a6: ptr uint8; a7: csize): csize
@@ -556,12 +556,12 @@ proc range_coder_decompress*(a2: pointer; a3: ptr uint8; a4: csize; a5: ptr uint
 proc protocol_command_size*(a2: uint8): csize
 
 # list
-proc list_clear*(a2: ptr List)  
-proc list_insert*(a2: ListIterator; a3: pointer): ListIterator  
-proc list_remove*(a2: ListIterator): pointer  
-proc list_move*(a2: ListIterator; a3: pointer; a4: pointer): ListIterator
-proc list_size*(a2: ptr List): csize  
+proc list_clear*(list: ptr List)  
+proc list_insert*(listIterator: ListIterator; a3: pointer): ListIterator  
+proc list_remove*(listIterator: ListIterator): pointer  
+proc list_move*(listIterator: ListIterator; a3: pointer; a4: pointer): ListIterator
+proc list_size*(list: ptr List): csize  
 
-proc malloc*(a2: csize): pointer  
-proc free*(a2: pointer)  
+proc malloc*(size: csize): pointer  
+proc free*(data: pointer)  
 {.pop.}

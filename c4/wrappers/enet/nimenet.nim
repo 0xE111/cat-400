@@ -1,4 +1,4 @@
-# NimEnet - high-level wrapper of Enet library
+# NimEnet - high-level wrapper for Enet library
 import enet
 import logging
 
@@ -8,8 +8,8 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  ConnectionEventHandler* = proc(peer: ptr enet.Peer)
-  PacketEventHandler* = proc(peer: ptr enet.Peer, channelId: uint8, packet: ptr enet.Packet)
+  ConnectionEventHandler* = proc(peer: enet.Peer)
+  PacketEventHandler* = proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
   
   Server* = object
     host: ptr enet.Host
@@ -64,14 +64,14 @@ proc destroy*() =
   enet.deinitialize()
 
 # ---- server ----
-proc onConnect(peer: ptr enet.Peer) =
-  logging.debug("Peer connected: " & $peer[])
+proc onConnect(peer: enet.Peer) =
+  logging.debug("Peer connected: " & $peer)
 
-proc onDisconnect(peer: ptr enet.Peer) =
-  logging.debug("Peer disconnected: " & $peer[])
+proc onDisconnect(peer: enet.Peer) =
+  logging.debug("Peer disconnected: " & $peer)
 
-proc onReceive(peer: ptr enet.Peer, channelId: uint8, packet: ptr enet.Packet) =
-  logging.debug("Received packet " & $packet[] & " from peer " & $peer[])
+proc onReceive(peer: enet.Peer, channelId: uint8, packet: enet.Packet) =
+  logging.debug("Received packet " & $packet & " from peer " & $peer)
 
 proc init*(
   self: var Server,
@@ -110,14 +110,25 @@ proc poll*(self: var Server) =
   # for each event type call corresponding handlers
   case event.`type`
     of EVENT_TYPE_CONNECT:
-      self.onConnect(event.peer)
+      self.onConnect(event.peer[])
     of EVENT_TYPE_RECEIVE:
-      self.onReceive(event.peer, event.channelID, event.packet)
+      self.onReceive(event.peer[], event.channelID, event.packet[])
       enet.packet_destroy(event.packet)
     of EVENT_TYPE_DISCONNECT:
-      self.onDisconnect(event.peer)
+      self.onDisconnect(event.peer[])
     else:
       discard
+
+proc send*(self: Server|Client, peer: enet.Peer, channelId: uint8, data: string, reliable = false, immediate = false) =
+  var packet = enet.packet_create(
+    data.cstring,
+    (data.cstring.len + 1).csize,
+    if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE_FRAGMENT,
+  )
+  enet.peer_send(peer.addr, channelId, packet.addr)
+
+  if immediate:
+    enet.host_flush(self.host)
 
 # # ---- client ----
 # proc newClient*(numConnections = 1, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr Client =
