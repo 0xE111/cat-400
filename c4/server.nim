@@ -13,12 +13,13 @@ type
 proc run*(config: Config) =
   logging.debug("Starting server")
  
-  var network = NetworkServer()
-  network.init(port=config.port)
+  network.init()
+  var networkServer = network.Server()
+  networkServer.init(port=config.port)
 
   runLoop(
     updatesPerSecond = 30,
     fixedFrequencyHandlers = @[
-        proc(dt: float): bool = network.update(dt),
+        proc(dt: float): bool = networkServer.update(dt),
       ],
   )

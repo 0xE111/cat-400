@@ -13,26 +13,19 @@ type
   
   Server* = object
     host: ptr enet.Host
+    peers: seq[ptr enet.Peer]
+
     onConnect: ConnectionEventHandler
     onDisconnect: ConnectionEventHandler
     onReceive: PacketEventHandler
-    # clients: seq[ptr enet.Peer]
 
   Client* = object
     host: ptr enet.Host
-    # server: ptr enet.Host
-
-  # EventKind* = enum
-  #   ekConnect, ekReceive, ekDisconnect
-  # Event* = object
-  #   peer: ptr enet.Peer
-  #   case kind: EventKind
-  #     of ekReceive:
-  #       channelId: uint8
-  #       packet: enet.Packet
-  #     else:
-  #       discard
-
+    peers: seq[ptr enet.Peer]
+    
+    onConnect: ConnectionEventHandler
+    onDisconnect: ConnectionEventHandler
+    onReceive: PacketEventHandler
 
 # ---- stringifiers ----
 proc `$`*(address: enet.Address): string =
@@ -59,7 +52,7 @@ proc init*() =
   if enet.initialize() != 0.cint:
     raise newException(LibraryError, "An error occurred during initialization")
 
-proc destroy*() =
+proc deinit*() =
   ## Shutdown library
   enet.deinitialize()
 
@@ -74,8 +67,8 @@ proc onReceive(peer: enet.Peer, channelId: uint8, packet: enet.Packet) =
   logging.debug("Received packet " & $packet & " from peer " & $peer)
 
 proc init*(
-  self: var Server,
-  port: Port,
+  self: var Server|var Client,
+  port: Port = 0,
   numConnections = 32,
   numChannels = 2,
   inBandwidth = 0,
@@ -84,17 +77,18 @@ proc init*(
   onDisconnect: ConnectionEventHandler = onDisconnect,
   onReceive: PacketEventHandler = onReceive,
 ) =
-  ## Initialize server with selected properties
-  var address = enet.Address(host: enet.HOST_ANY, port: port)
+  var
+    address = enet.Address(host: enet.HOST_ANY, port: port)
+
   self.host = enet.host_create(
-    address.addr,
+    if port: address.addr else: nil,
     numConnections.csize,
     numChannels.csize,
     inBandwidth.uint16,
     outBandwidth.uint16
   )
   if self.host == nil:
-    raise newException(LibraryError, "An error occured while trying to create server")
+    raise newException(LibraryError, "An error occured while trying to init host")
 
   # set up handlers
   self.onConnect = onConnect
@@ -110,12 +104,16 @@ proc poll*(self: var Server) =
   # for each event type call corresponding handlers
   case event.`type`
     of EVENT_TYPE_CONNECT:
+      self.peers.add(event.peer)
       self.onConnect(event.peer[])
     of EVENT_TYPE_RECEIVE:
       self.onReceive(event.peer[], event.channelID, event.packet[])
       enet.packet_destroy(event.packet)
     of EVENT_TYPE_DISCONNECT:
       self.onDisconnect(event.peer[])
+      let index = self.peers.find(event.peer)
+      assert(index != -1)
+      self.peers.del(index)
     else:
       discard
 
@@ -123,28 +121,16 @@ proc send*(self: Server|Client, peer: enet.Peer, channelId: uint8, data: string,
   var packet = enet.packet_create(
     data.cstring,
     (data.cstring.len + 1).csize,
-    if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE_FRAGMENT,
+    if reliable: enet.PACKET_FLAG_RELIABLE else: 0,
   )
   enet.peer_send(peer.addr, channelId, packet.addr)
 
   if immediate:
     enet.host_flush(self.host)
 
-# # ---- client ----
-# proc newClient*(numConnections = 1, numChannels = 2, inBandwidth = 0, outBandwidth = 0): ptr Client =
-#   result = enet.host_create(
-#     nil,
-#     numConnections.csize,
-#     numChannels.csize,
-#     inBandwidth.uint16,
-#     outBandwidth.uint16
-#   )
-#   if result == nil:
-#     raise newException(LibraryError, "An error occured while trying to create client")
-
 # ---- both ----
-proc destroy*(self: var Server| var Client) =
-  ## Destroy server or client
+{.experimental.}
+proc `=destroy`(self: var Server| var Client) =
   enet.host_destroy(self.host)
 
 # proc createPacket(data: string, kind=enet.PACKET_FLAG_UNRELIABLE_FRAGMENT): ptr enet.Packet =

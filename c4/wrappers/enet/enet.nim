@@ -514,18 +514,18 @@ proc address_get_host_ip*(address: ptr Address; hostName: cstring; nameLength: c
 proc address_get_host*(address: ptr Address; hostName: cstring; nameLength: csize): cint  
 proc packet_create*(data: pointer; length: csize; packetFlag: PacketFlag): ptr Packet  
 proc packet_destroy*(packet: ptr Packet)
-proc packet_resize*(packet: ptr Packet; newSize: csize): cint
+proc packet_resize*(packet: ptr Packet; size: csize): cint
 proc crc32*(buffer: ptr Buffer; a3: csize): uint32
 proc host_create*(address: ptr Address; numConnections: csize; numChannels: csize; inBandwidth: uint32; outBandwidth: uint32): ptr Host
 proc host_destroy*(host: ptr Host)
-proc host_connect*(host: ptr Host; address: ptr Address; numChannels: csize; a5: uint32): ptr Peer  
+proc host_connect*(host: ptr Host; address: ptr Address; numChannels: csize; data: uint32): ptr Peer  
 proc host_check_events*(host: ptr Host; event: ptr Event): cint
 proc host_service*(host: ptr Host; event: ptr Event; timeout: uint32): cint  
 proc host_flush*(host: ptr Host)
-proc host_broadcast*(host: ptr Host; a3: uint8; a4: ptr Packet)
-proc host_compress*(host: ptr Host; a3: ptr Compressor)
+proc host_broadcast*(host: ptr Host; channelId: uint8; packet: ptr Packet)
+proc host_compress*(host: ptr Host; compressor: ptr Compressor)
 proc host_compress_with_range_coder*(host: ptr Host): cint
-proc host_channel_limit*(host: ptr Host; a3: csize)
+proc host_channel_limit*(host: ptr Host; numChannels: csize)
 proc host_bandwidth_limit*(host: ptr Host; a3: uint32; a4: uint32)  
 proc host_bandwidth_throttle*(host: ptr Host)
 proc host_random_seed*(): uint32

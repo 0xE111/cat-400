@@ -9,12 +9,14 @@ type
 
 proc run*(config: Config) =
   logging.debug("Starting client")
-  var network = NetworkClient()
+
   network.init()
+  var networkClient = network.Client()
+  networkClient.init()
   
   runLoop(
       updatesPerSecond = 30,
       fixedFrequencyHandlers = @[
-        proc(dt: float): bool = network.update(dt),  # anonymous proc
+        proc(dt: float): bool = networkClient.update(dt),  # anonymous proc
       ], 
     )
