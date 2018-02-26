@@ -301,6 +301,7 @@ type
     port*: uint16
 
   PacketFlag* {.size: sizeof(cint).} = enum
+    PACKET_FLAG_UNRELIABLE = 0,
     PACKET_FLAG_RELIABLE = (1 shl 0),
     PACKET_FLAG_UNSEQUENCED = (1 shl 1),
     PACKET_FLAG_NO_ALLOCATE = (1 shl 2),
@@ -512,7 +513,7 @@ proc socketset_select*(socket: Socket; socketSet1: ptr SocketSet; socketSet2: pt
 proc address_set_host*(address: ptr Address; hostName: cstring): cint  
 proc address_get_host_ip*(address: ptr Address; hostName: cstring; nameLength: csize): cint  
 proc address_get_host*(address: ptr Address; hostName: cstring; nameLength: csize): cint  
-proc packet_create*(data: pointer; length: csize; packetFlag: PacketFlag): ptr Packet  
+proc packet_create*(data: pointer; length: csize; packetFlag: PacketFlag): ptr Packet
 proc packet_destroy*(packet: ptr Packet)
 proc packet_resize*(packet: ptr Packet; size: csize): cint
 proc crc32*(buffer: ptr Buffer; a3: csize): uint32
