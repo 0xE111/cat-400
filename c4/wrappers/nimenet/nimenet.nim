@@ -1,5 +1,5 @@
 # NimEnet - high-level wrapper for Enet library
-import enet
+import nimenet.enet
 import logging
 
 # ---- types ----
