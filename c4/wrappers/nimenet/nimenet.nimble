@@ -2,7 +2,7 @@ from strutils import split
 
 # Constants
 const
-  versionFile = "../../version.txt"
+  versionFile = "version.txt"
   pinnedVersion = staticRead(versionFile)
 
 # Package

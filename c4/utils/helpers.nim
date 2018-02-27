@@ -1,4 +1,4 @@
-from strutils import format, split
+from strutils import format
 
 
 proc join*(iterable: array|tuple|set|seq, delimiter: string): string =  # TODO: make iterable of type "iterable" or something
@@ -30,9 +30,6 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
 
 
 # TODO: add logger helper - include file name (and possibly line) in log message
-
-proc getVersion*(): string {.compileTime.} =
-  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
 
 template notImplemented*() =
   doAssert(false, "Not implemented")
