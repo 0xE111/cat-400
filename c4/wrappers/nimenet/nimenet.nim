@@ -32,7 +32,7 @@ proc `$`*(peer: enet.Peer): string =
 proc `$`*(packet: ptr Packet): string =
   "Packet of size " & $packet.dataLength
     
-proc remove[T](items: seq[T], value: T) =
+proc remove[T](items: var seq[T], value: T) =
   let index = items.find(value)
   if index != -1:
     items.del(index)
@@ -106,16 +106,17 @@ proc connect*(self: var Connection, address: Address, numChannels = 1) =
 proc disconnect*(self: var Connection, peer: ptr enet.Peer, force = false) =
   if not force:
     enet.peer_disconnect(peer, 0)
-    # further connection success / failure is handled by onConnect / onDisconnect procs
   else:
     enet.peer_reset(peer)
     self.peers.remove(peer)
   
+proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
+  discard enet.host_service(connection.host, addr(self), timeout.uint32)
+  
 proc poll*(self: var Connection) =
   ## Check whether there is any network event and process if any
   var event: enet.Event
-  if enet.host_service(self.host, addr(event), 0.uint32) == 0:
-    return
+  event.pollConnection(self)
   
   # for each event type call corresponding handlers
   case event.`type`

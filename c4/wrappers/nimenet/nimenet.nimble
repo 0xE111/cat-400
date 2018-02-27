@@ -16,4 +16,3 @@ skipDirs = @["headers"]
 
 # Dependencies
 requires "nim >= 0.17.3"
-requires "msgpack4nim >= 0.2.1"

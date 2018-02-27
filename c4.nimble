@@ -21,6 +21,7 @@ skipDirs = @["sample"]
 
 # Dependencies
 requires "nim >= 0.17.3"
+requires "msgpack4nim >= 0.2.1"
 
 # Tasks
 task pinVersion, "Update version file":
