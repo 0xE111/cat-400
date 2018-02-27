@@ -8,7 +8,7 @@ const
 
 # Helpers
 proc getGitVersion*(): string {.compileTime.} =
-  staticExec("git describe --long").split('-')[0..^2].join("-")
+  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
 
 # Package
 version = pinnedVersion.split('-')[0]  # don't include number of updates
