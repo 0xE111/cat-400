@@ -8,16 +8,16 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  ConnectionEventHandler* = proc(peer: enet.Peer)
-  PacketEventHandler* = proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
-  
-  Client* = object
+  Connection* = object
     host: ptr enet.Host
     peers: seq[ptr enet.Peer]
 
-    onConnect: ConnectionEventHandler
-    onDisconnect: ConnectionEventHandler
-    onReceive: PacketEventHandler
+    onConnect: proc(peer: enet.Peer)
+    onDisconnect:  proc(peer: enet.Peer)
+    onReceive: proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
+  
+# ---- vars ----
+var connectionsCount = 0  # init enet when connectionsCount > 0, deinit when == 0
 
 # ---- stringifiers ----
 proc `$`*(address: enet.Address): string =
@@ -59,18 +59,22 @@ proc onReceive(peer: enet.Peer, channelId: uint8, packet: enet.Packet) =
   logging.debug("Received packet " & $packet & " from peer " & $peer)
 
 proc init*(
-  self: var Client,
+  self: var Connection,
   port: Port = 0,
   numConnections = 32,
   numChannels = 2,
   inBandwidth = 0,
   outBandwidth = 0,
-  onConnect: ConnectionEventHandler = onConnect,
-  onDisconnect: ConnectionEventHandler = onDisconnect,
-  onReceive: PacketEventHandler = onReceive,
+  onConnect = onConnect,
+  onDisconnect = onDisconnect,
+  onReceive = onReceive,
 ) =
-  var
-    addressPtr: ptr enet.Address = nil
+  # init enet library if needed
+  if connectionsCount == 0:
+    init()
+  connectionsCount += 1
+
+  var addressPtr: ptr enet.Address = nil
   
   if port != 0:
     var address = enet.Address(host: enet.HOST_ANY, port: port)
@@ -91,7 +95,7 @@ proc init*(
   self.onDisconnect = onDisconnect
   self.onReceive = onReceive
 
-proc poll*(self: var Client) =
+proc poll*(self: var Connection) =
   ## Check whether there is any network event and process if any
   var event: enet.Event
   if enet.host_service(self.host, addr(event), 0.uint32) == 0:
@@ -113,21 +117,32 @@ proc poll*(self: var Client) =
     else:
       discard
 
-proc send*(self: Client, peer: enet.Peer, channelId: uint8, data: string, reliable = false, immediate = false) =
+proc send*(
+  self: Connection,
+  peer: ptr enet.Peer,
+  channelId: uint8,
+  data: string,
+  reliable = false,
+  immediate = false
+) =
   var packet = enet.packet_create(
     data.cstring,
     (data.cstring.len + 1).csize,
     if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
   )
-  discard enet.peer_send(peer.addr, channelId, packet)
+  discard enet.peer_send(peer, channelId, packet)
 
   if immediate:
     enet.host_flush(self.host)
 
 # ---- both ----
 {.experimental.}
-proc `=destroy`(self: var Client) =
+proc `=destroy`(self: var Connection) =
   enet.host_destroy(self.host)
+
+  connectionsCount -= 1
+  if connectionsCount == 0:
+    deinit()
 
 # proc createPacket(data: string, kind=enet.PACKET_FLAG_UNRELIABLE_FRAGMENT): ptr enet.Packet =
 # var data = 

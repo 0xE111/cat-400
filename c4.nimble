@@ -11,7 +11,7 @@ proc getGitVersion*(): string {.compileTime.} =
   staticExec("git describe --tags --long").split('-')[0..^2].join("-")
 
 # Package
-version = staticRead(versionFiles[0]).split('-')[0]  # don't include number of updates
+version = pinnedVersion.split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MIT"

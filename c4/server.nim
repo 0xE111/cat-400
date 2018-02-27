@@ -1,7 +1,7 @@
 from logging import nil
 
 import systems.network
-from utils.loop import runLoop
+from utils.loop import runLoop, getFps
 
 
 type
@@ -13,13 +13,12 @@ type
 proc run*(config: Config) =
   logging.debug("Starting server")
  
-  network.init()
-  var networkServer = network.Server()
-  networkServer.init(port=config.port)
+  var networkConnection = Connection()
+  networkConnection.init(port=config.port)
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyHandlers = @[
-        proc(dt: float): bool = networkServer.update(dt),
-      ],
+    maxFrequencyHandlers = @[
+      proc(dt: float): bool = networkConnection.poll(); logging.debug("NW polled @ fps " & $getFps(dt)); return true,
+    ]
   )

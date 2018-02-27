@@ -10,13 +10,12 @@ type
 proc run*(config: Config) =
   logging.debug("Starting client")
 
-  network.init()
-  var networkClient = network.Client()
-  networkClient.init()
+  var networkConnection = network.Connection()
+  networkConnection.init()
   
   runLoop(
       updatesPerSecond = 30,
-      fixedFrequencyHandlers = @[
-        proc(dt: float): bool = networkClient.update(dt),  # anonymous proc
-      ], 
+      maxFrequencyHandlers = @[
+        proc(dt: float): bool = networkConnection.poll(); return true,
+      ]
     )
