@@ -18,10 +18,10 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyHandlers = @[
-      proc(dt: float): bool {.closure.} = logging.debug("Server updated @ " & $getFps(dt) & " fps"); return true,
-    ],
+    # fixedFrequencyHandlers = @[
+    #   proc(dt: float): bool {.closure.} = return true,
+    # ],
     maxFrequencyHandlers = @[
-      proc(dt: float): bool {.closure.} = networkConnection.poll(); return true,
+      proc(dt: float): bool {.closure.} = networkConnection.send(peer=nil, data="test data"); networkConnection.poll(); return true,
     ]
   )

@@ -88,6 +88,8 @@ proc init*(
   if self.host == nil:
     raise newException(LibraryError, "An error occured while trying to init host")
 
+  self.peers = @[]
+
   # set up handlers
   self.onConnect = onConnect
   self.onDisconnect = onDisconnect
@@ -110,13 +112,14 @@ proc disconnect*(self: var Connection, peer: ptr enet.Peer, force = false) =
     enet.peer_reset(peer)
     self.peers.remove(peer)
   
-proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
-  discard enet.host_service(connection.host, addr(self), timeout.uint32)
+# proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
+#   discard enet.host_service(connection.host, addr(self), timeout.uint32)
   
 proc poll*(self: var Connection) =
   ## Check whether there is any network event and process if any
   var event: enet.Event
-  event.pollConnection(self)
+  if enet.host_service(self.host, addr(event), 0.uint32) == 0:
+    return
   
   # for each event type call corresponding handlers
   case event.`type`
@@ -134,8 +137,8 @@ proc poll*(self: var Connection) =
 
 proc send*(
   self: Connection,
-  peer: ptr enet.Peer,  # set nil to broadcast
-  channelId: uint8,
+  peer: ptr enet.Peer = nil,  # set nil to broadcast
+  channelId:uint8 = 0,
   data: string,
   reliable = false,
   immediate = false
