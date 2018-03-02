@@ -8,7 +8,7 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  Connection* = object
+  Client* = object
     host: ptr enet.Host
     peers: seq[ptr enet.Peer]
 
@@ -17,7 +17,7 @@ type
     onReceive: proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
   
 # ---- vars ----
-var connectionsCount = 0  # init enet when connectionsCount > 0, deinit when == 0
+var clientsCount = 0  # init enet when clientsCount > 0, deinit when == 0
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
@@ -63,7 +63,7 @@ proc onReceive(peer: enet.Peer, channelId: uint8, packet: enet.Packet) =
   logging.debug("Received packet " & $packet & " from peer " & $peer)
 
 proc init*(
-  self: var Connection,
+  self: var Client,
   port: Port = 0,
   numConnections = 32,
   numChannels = 2,
@@ -74,9 +74,9 @@ proc init*(
   onReceive = onReceive,
 ) =
   # init enet library if needed
-  if connectionsCount == 0:
+  if clientsCount == 0:
     init()
-  connectionsCount += 1
+  clientsCount += 1
 
   # set up address
   var addressPtr: ptr enet.Address = nil
@@ -95,7 +95,7 @@ proc init*(
   self.onDisconnect = onDisconnect
   self.onReceive = onReceive
 
-proc connect*(self: var Connection, address: Address, numChannels = 1) =
+proc connect*(self: var Client, address: Address, numChannels = 1) =
   var enetAddress: enet.Address
   discard enet.address_set_host(enetAddress.addr, address.host.cstring)
   enetAddress.port = address.port
@@ -105,7 +105,7 @@ proc connect*(self: var Connection, address: Address, numChannels = 1) =
 
   # further connection success / failure is handled by onConnect / onDisconnect procs
 
-proc disconnect*(self: var Connection, peer: ptr enet.Peer, force = false) =
+proc disconnect*(self: var Client, peer: ptr enet.Peer, force = false) =
   if not force:
     enet.peer_disconnect(peer, 0)
   else:
@@ -115,7 +115,7 @@ proc disconnect*(self: var Connection, peer: ptr enet.Peer, force = false) =
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
   
-proc poll*(self: var Connection) =
+proc poll*(self: var Client) =
   ## Check whether there is any network event and process if any
   var event: enet.Event
   if enet.host_service(self.host, addr(event), 0.uint32) == 0:
@@ -136,7 +136,7 @@ proc poll*(self: var Connection) =
       discard
 
 proc send*(
-  self: Connection,
+  self: Client,
   peer: ptr enet.Peer = nil,  # set nil to broadcast
   channelId:uint8 = 0,
   data: string,
@@ -159,11 +159,11 @@ proc send*(
 
 
 {.experimental.}
-proc `=destroy`(self: var Connection) =
+proc `=destroy`(self: var Client) =
   enet.host_destroy(self.host)
 
-  connectionsCount -= 1
-  if connectionsCount == 0:
+  clientsCount -= 1
+  if clientsCount == 0:
     deinit()
 
 # proc createPacket(data: string, kind=enet.PACKET_FLAG_UNRELIABLE_FRAGMENT): ptr enet.Packet =
