@@ -1,5 +1,4 @@
-from strutils import format, split
-from c4.utils.helpers import join
+from strutils import format, split, join
 
 # Constants
 const
