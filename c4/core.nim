@@ -5,7 +5,8 @@ from logging import nil
 from ospaths import joinPath
 from os import getAppDir
 
-from utils.helpers import join, index
+from strutils import join
+from utils.helpers import index
 
 from conf import config, Mode
 from server import run
@@ -22,6 +23,7 @@ const
   """.format([
     "logLevels", logging.LevelNames.join("|"),
   ])
+
 
 proc run*() =
   # parse command line options

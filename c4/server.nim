@@ -1,7 +1,9 @@
 from logging import nil
 
-import systems.network
+from utils.helpers import importString
 from utils.loop import runLoop, getFps
+
+importString("wrappers/nimenet/nimenet", "network")
 
 
 type

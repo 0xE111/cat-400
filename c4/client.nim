@@ -1,5 +1,4 @@
 from logging import nil
-import systems.network
 from utils.loop import runLoop
 
 
