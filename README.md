@@ -26,8 +26,6 @@ https://github.com/Vladar4/nimgame | X
 
 C4 is being developed for custom needs. Please note that it's more educational project rather then professional software, however if you like it you may use it and make contributions.
 
-The main benefit of c4 is its documentation - I try to make code and docs changes side by side, so docs should always be up-to-date. This is the thing many projects lack.
-
 ## ★ Your help required!
 
 C4 tries to be clear and well-designed. Your contribution is highly appreciated! Sometimes even an idea or better design/implementation would be very helpful. Check out [current issues](https://github.com/c0ntribut0r/cat-400/issues).
@@ -116,7 +114,7 @@ nim c -r main.nim --loglevel=DEBUG -s
 Quit with `ctrl+C`. Note that we passed `--loglevel` flag to the executable so that we can better know what's going on under the hood.
 
 We haven't defined any specific behavior, so server just runs by default. Now it's time for "hello world" program!
-
+<!-- 
 ### States
 
 States are something you'll find very helpful while building your app. Explaing what `State` is would be a redundand job - just go to excellent Robert Nystrom's website: http://gameprogrammingpatterns.com/state.html.
@@ -205,7 +203,8 @@ Hello world
 
 Nice! We just broke our server startup in favor of "Hello world" output. Now revert the destructive changes and go on.
 
-*Warning:* Avoid calling `switch` inside of `switch`. If your state graph is cyclic (i.e. you may switch to already visited states) you may face stack overflow error.
+*Warning:* Avoid calling `switch` inside of `switch`. If your state graph is cyclic (i.e. you may switch to already visited states) you may face stack overflow error. -->
+
 <!-- 
 ### Client
 
