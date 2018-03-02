@@ -35,7 +35,7 @@ template notImplemented*() =
   doAssert(false, "Not implemented")
 
 
-macro importString*(path: static[string], alias: static[string]): untyped =
+macro importString*(path, alias: static[string]): untyped =
   result = newNimNode(nnkImportStmt).add(
     newNimNode(nnkInfix).add(
       newIdentNode("as")

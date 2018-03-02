@@ -7,8 +7,6 @@ type
   Mode* {.pure.} = enum
     default, server
 
-  # TODO: get rid of `Config` type and just use auto type when initializing `config` var
-
   Config* = tuple[
     # may use currentSourcePath()
     version: string,

@@ -1,5 +1,9 @@
 from logging import nil
 from utils.loop import runLoop
+from utils.helpers import importString
+from modules import networkModule
+
+importString(networkModule, "network")
 
 
 type
