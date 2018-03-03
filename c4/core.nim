@@ -26,6 +26,7 @@ const
 
 
 proc run*() =
+  # TODO: use https://github.com/c-blake/cligen
   # parse command line options
   for kind, key, val in parseopt2.getopt():
     case kind
@@ -49,7 +50,7 @@ proc run*() =
       else: discard
 
   # separate this process into "client" and "server" processes
-  # TODO: `fork()` is available in Unix only; user some other function
+  # TODO: `fork()` is available on Unix only; user some other function
   # https://nim-lang.org/docs/osproc.html
   let
     childPid = if config.mode == Mode.server: 1 else: fork()
@@ -71,6 +72,6 @@ proc run*() =
   # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
   # TODO: addQuitProc?
   if isServerProcess:
-    server.run(config=config.server)
+    server.run(config)
   else:
-    client.run(config=config.client)
+    client.run(config)

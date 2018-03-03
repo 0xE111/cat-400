@@ -47,7 +47,9 @@ proc remove[T](items: var seq[T], value: T) =
 proc init*() =
   ## Init library
   if enet.initialize() != 0.cint:
-    raise newException(LibraryError, "An error occurred during initialization")
+    let err = "An error occurred during initialization"
+    logging.fatal(err)
+    raise newException(LibraryError, err)
 
 proc deinit*() =
   ## Shutdown library

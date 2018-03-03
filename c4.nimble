@@ -2,7 +2,10 @@ from strutils import format, split, join
 
 # Constants
 const
-  versionFiles = @["c4/version.txt", "c4/wrappers/nimenet/version.txt"]
+  versionFiles = @[
+    "c4/version.txt",
+    "c4/wrappers/nimenet/version.txt",
+  ]
   pinnedVersion = staticRead(versionFiles[0])
 
 # Helpers

@@ -1,20 +1,24 @@
 from logging import nil
 from utils.loop import runLoop
 from utils.helpers import importString
-from modules import networkModule
+import conf
 
-importString(networkModule, "network")
+importString(networkSystemPath, "network")
+importString(videoSystemPath, "video")
 
-
-type
-  Config* = tuple[]
 
 proc run*(config: Config) =
   logging.debug("Starting client")
 
   var networkClient = network.Client()
   networkClient.init()
-  networkClient.connect((host: "localhost", port: 11477'u16))
+  networkClient.connect((host: "localhost", port: config.network.port))
+
+  var videoSystem = video.Video()
+  videoSystem.init(
+    title=config.title,
+    window=config.video.window,
+  )
 
   runLoop(
       updatesPerSecond = 30,
