@@ -8,7 +8,7 @@ const
 # Package
 version = pinnedVersion.split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
-description = "Enet network library high-level wrapper"
+description = "Enet network library wrapper"
 license = "MIT"
 
 # Dirs

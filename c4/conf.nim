@@ -24,7 +24,7 @@ type
   ]
 
 const
-  networkSystemPath* {.strdefine.}: string = "wrappers/nimenet/nimenet"
+  networkSystemPath* {.strdefine.}: string = "wrappers/enet/enet/client"
   videoSystemPath* {.strdefine.}: string = "systems/video"
 
 var
