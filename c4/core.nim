@@ -1,6 +1,6 @@
 from strutils import format
 from posix import fork
-from parseopt2 import nil
+from parseopt import nil
 from logging import nil
 from ospaths import joinPath
 from os import getAppDir
@@ -28,9 +28,9 @@ const
 proc run*() =
   # TODO: use https://github.com/c-blake/cligen
   # parse command line options
-  for kind, key, val in parseopt2.getopt():
+  for kind, key, val in parseopt.getopt():
     case kind
-      of parseopt2.cmdLongOption, parseopt2.cmdShortOption:
+      of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
             echo("Nim version " & NimVersion)
