@@ -39,8 +39,8 @@ var
     ),
     video: (
       window: (
-        x: 0,
-        y: 0,
+        x: 400,
+        y: 400,
         width: 400,
         height: 300,
         fullscreen: false,

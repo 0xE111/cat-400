@@ -66,16 +66,35 @@ proc init*(
     if not self.pipeline.LoadResource(forwardPipeline.cstring, forwardPipeline.len + 1):
       raise newException(LibraryError, "Could not load Horde3D resources")
 
+    const model = staticRead("../../sample/assets/video/models/man/man.scene.xml")
+    var modelRes = AddResource(ResTypes.SceneGraph, "models/man".cstring, 0.cint)
+    discard modelRes.LoadResource(model.cstring, model.len + 1) 
+    discard horde3d.RootNode.AddNodes(modelRes)
+
     # setting up camera
     self.camera = horde3d.AddCameraNode(horde3d.RootNode, "camera".cstring, self.pipeline)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, 400.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, 300.cint)
+    self.camera.SetupCameraView(45.cfloat, (400/300).cfloat, (0.5).cfloat, 2048.cfloat)
+
+    self.pipeline.ResizePipelineBuffers(400.cint, 300.cint)
+
 
   except LibraryError:
     horde3d.Release()
     logging.fatal(getCurrentExceptionMsg())
     raise
 
+  logging.debug("Horde3d initialized")
+ 
+proc update*(self: var Video, dt: float): bool =
+  result = true
 
-
+  self.camera.Render()
+  self.window.glSwapWindow()
+  horde3d.FinalizeFrame()  # TODO: is this needed?
 
 {.experimental.}
 proc `=destroy`*(self: var Video) =  # TODO: destructors not called!

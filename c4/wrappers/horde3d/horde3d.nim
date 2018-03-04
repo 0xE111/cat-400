@@ -137,9 +137,9 @@ proc ShowOverlays*(verts: ptr cfloat; vertCount: cint; colR: cfloat; colG: cfloa
 proc ClearOverlays*()
 proc GetResType*(res: Res): cint
 proc GetResName*(res: Res): cstring
-proc GetNextResource*(`type`: ResTypes; start: Res): Res
-proc FindResource*(`type`: ResTypes; name: cstring): Res
-proc AddResource*(`type`: ResTypes; name: cstring; flags: cint): Res
+proc GetNextResource*(`type`: cint|ResTypes; start: Res): Res
+proc FindResource*(`type`: cint|ResTypes; name: cstring): Res
+proc AddResource*(`type`: cint|ResTypes; name: cstring; flags: cint): Res
 proc CloneResource*(sourceRes: Res; name: cstring): Res
 proc RemoveResource*(res: Res): cint
 proc IsResLoaded*(res: Res): bool
@@ -174,9 +174,9 @@ proc SetNodeTransform*(node: Node; tx: cfloat; ty: cfloat; tz: cfloat; rx: cfloa
 proc GetNodeTransMats*(node: Node; relMat: ptr ptr cfloat; absMat: ptr ptr cfloat)
 proc SetNodeTransMat*(node: Node; mat4x4: ptr cfloat)
 proc GetNodeParamI*(node: Node; param: cint): cint
-proc SetNodeParamI*(node: Node; param: cint; value: cint)
-proc GetNodeParamF*(node: Node; param: cint; compIdx: cint): cfloat
-proc SetNodeParamF*(node: Node; param: cint; compIdx: cint; value: cfloat)
+proc SetNodeParamI*(node: Node; param: cint|Camera; value: cint)
+proc GetNodeParamF*(node: Node; param: cint|Camera; compIdx: cint): cfloat
+proc SetNodeParamF*(node: Node; param: cint|Camera; compIdx: cint; value: cfloat)
 proc GetNodeParamStr*(node: Node; param: cint): cstring
 proc SetNodeParamStr*(node: Node; param: cint; value: cstring)
 proc GetNodeFlags*(node: Node): cint
