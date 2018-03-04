@@ -1,4 +1,5 @@
 from strutils import format, split, join
+import strformat
 
 # Constants
 const
@@ -36,8 +37,5 @@ task pinVersion, "Update version file":
       discard staticExec("git add " & versionFile)
 
     discard staticExec("git commit --amend --no-edit")
- 
-    echo("Updated version [$cur] -> [$new]".format([
-      "cur", $pinnedVersion,
-      "new", $gitVersion,
-    ]))
+  
+    echo(&"Updated version {pinnedVersion} -> {gitVersion}")
