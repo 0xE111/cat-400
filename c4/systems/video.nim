@@ -12,22 +12,32 @@ proc init*(
   title: string,
   window: conf.Window,
 ) =
-  if sdl.videoInit(nil) != 0:
-    let err = "Could not init SDL video subsystem: " & $sdl.getError()
+  try:
+    if sdl.videoInit(nil) != 0:
+      raise newException(LibraryError, "Could not init SDL video subsystem: " & $sdl.getError())
 
+    self.window = sdl.createWindow(
+      title.cstring,
+      window.x.cint,
+      window.y.cint,
+      window.width.cint,
+      window.height.cint,
+      sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL,
+    )
+    if self.window == nil:
+      raise newException(LibraryError, "Could not create SDL window: " & $sdl.getError())
+
+    if sdl.glCreateContext(self.window) == nil:
+      raise newException(LibraryError, "Could not create SDL OpenGL context: " & $sdl.getError())
+
+  except LibraryError:
     sdl.videoQuit()
-    logging.fatal(err)
-    raise newException(LibraryError, err)
-
-  self.window = sdl.createWindow(title.cstring, window.x.cint, window.y.cint, window.width.cint, window.height.cint, sdl.WINDOW_SHOWN)
-  if self.window == nil:
-    let err = "Could not create SDL window: " & $sdl.getError()
-
-    sdl.videoQuit()
-    logging.fatal(err)
-    raise newException(LibraryError, err)
-
+    logging.fatal(getCurrentExceptionMsg())
+    raise
+    
   logging.debug("SDL video system initialized")
+
+
 
 {.experimental.}
 proc `=destroy`*(self: var Video) =
