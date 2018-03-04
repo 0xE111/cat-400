@@ -1,6 +1,6 @@
 # Enet
 
-This is a wrapper for Enet library. You may also try a high-level "enet/client".
+This is a wrapper for [Enet library](http://enet.bespin.org/). You may also try a high-level "enet/client".
 
 ## Installation
 

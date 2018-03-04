@@ -4,7 +4,8 @@ from strutils import format, split, join
 const
   versionFiles = @[
     "c4/version.txt",
-    "c4/wrappers/nimenet/version.txt",
+    "c4/wrappers/enet/version.txt",
+    "c4/wrappers/horde3d/version.txt",
   ]
   pinnedVersion = staticRead(versionFiles[0])
 
