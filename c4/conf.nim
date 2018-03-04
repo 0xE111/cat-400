@@ -7,6 +7,7 @@ type
 
   Window* = tuple[
     x, y, width, height: int,
+    fullscreen: bool,
   ]
 
   Config* = tuple[
@@ -38,10 +39,11 @@ var
     ),
     video: (
       window: (
-        x: 480,
-        y: 234,
+        x: 0,
+        y: 0,
         width: 400,
         height: 300,
+        fullscreen: false,
       ),
     ),
   )

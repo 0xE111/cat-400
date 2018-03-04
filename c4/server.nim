@@ -22,3 +22,5 @@ proc run*(config: Config) =
       proc(dt: float): bool {.closure.} = networkClient.poll(); return true,
     ]
   )
+
+  logging.debug("Server shutdown")

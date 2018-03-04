@@ -17,7 +17,7 @@ type
     onReceive: proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
   
 # ---- vars ----
-var clientsCount = 0  # init enet when clientsCount > 0, deinit when == 0
+var numInstances = 0  # init enet when numInstances > 0, deinit when == 0
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
@@ -51,7 +51,7 @@ proc init*() =
     logging.fatal(err)
     raise newException(LibraryError, err)
 
-proc deinit*() =
+proc release*() =
   ## Shutdown library
   enet.deinitialize()
 
@@ -76,9 +76,9 @@ proc init*(
   onReceive = onReceive,
 ) =
   # init enet library if needed
-  if clientsCount == 0:
+  if numInstances == 0:
     init()
-  clientsCount += 1
+  numInstances += 1
 
   # set up address
   var addressPtr: ptr enet.Address = nil
@@ -164,10 +164,6 @@ proc send*(
 proc `=destroy`(self: var Client) =
   enet.host_destroy(self.host)
 
-  clientsCount -= 1
-  if clientsCount == 0:
-    deinit()
-
-# proc createPacket(data: string, kind=enet.PACKET_FLAG_UNRELIABLE_FRAGMENT): ptr enet.Packet =
-# var data = 
-# result = enet.packet_create(data.addr, data.len.csize, kind)
+  numInstances -= 1
+  if numInstances == 0:
+    release()

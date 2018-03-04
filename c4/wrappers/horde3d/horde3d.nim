@@ -117,6 +117,7 @@ type
 
 const RootNode*: Node = 1.cint
 
+# TODO: replace cints with enums
 {.push cdecl, dynlib:lib, importc:"h3d$1".}
 proc GetVersionString*(): cstring
 proc CheckExtension*(extensionName: cstring): bool
@@ -136,9 +137,9 @@ proc ShowOverlays*(verts: ptr cfloat; vertCount: cint; colR: cfloat; colG: cfloa
 proc ClearOverlays*()
 proc GetResType*(res: Res): cint
 proc GetResName*(res: Res): cstring
-proc GetNextResource*(`type`: cint; start: Res): Res
-proc FindResource*(`type`: cint; name: cstring): Res
-proc AddResource*(`type`: cint; name: cstring; flags: cint): Res
+proc GetNextResource*(`type`: ResTypes; start: Res): Res
+proc FindResource*(`type`: ResTypes; name: cstring): Res
+proc AddResource*(`type`: ResTypes; name: cstring; flags: cint): Res
 proc CloneResource*(sourceRes: Res; name: cstring): Res
 proc RemoveResource*(res: Res): cint
 proc IsResLoaded*(res: Res): bool
