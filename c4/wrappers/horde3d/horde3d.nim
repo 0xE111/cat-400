@@ -7,10 +7,12 @@ elif defined(macosx):
   const
     lib* = "libHorde3D.dylib"
     libUtils* = "libHorde3DUtils.dylib"
-else:
+elif defined(unix):
   const
     lib* = "libHorde3D.so"
     libUtils* = "libHorde3DUtils.so"
+else:
+  {.error: "Unsupported platform".}
 
 # ---- Main ----
 type

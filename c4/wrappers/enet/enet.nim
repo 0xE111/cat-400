@@ -7,7 +7,7 @@ elif defined(macosx):
 elif defined(unix):
   const lib* = "libenet.so"
 else:
-  {.error: "Unsupported platform"}
+  {.error: "Unsupported platform".}
 
 when defined(windows):
   import winlean
@@ -117,7 +117,7 @@ const
   PROTOCOL_MAXIMUM_CHANNEL_COUNT* = 255
   PROTOCOL_MAXIMUM_PEER_ID* = 0x00000FFF
   PROTOCOL_MAXIMUM_FRAGMENT_COUNT* = 1024 * 1024
-  BUFFER_MAXIMUM = (1 + 2 * PROTOCOL_MAXIMUM_PACKET_COMMANDS)
+  BUFFER_MAXIMUM* = (1 + 2 * PROTOCOL_MAXIMUM_PACKET_COMMANDS)
   TIME_OVERFLOW* = 86400000
 
 type
