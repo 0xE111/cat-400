@@ -44,7 +44,7 @@ proc init*(
       windowConfig.y.cint,
       windowConfig.width.cint,
       windowConfig.height.cint,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or (if windowConfig.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if windowConfig.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
     if window == nil:
       raise newException(LibraryError, "Could not create SDL window: " & $sdl.getError())

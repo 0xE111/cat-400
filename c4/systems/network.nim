@@ -49,9 +49,9 @@ proc init*(
   numChannels = 2,
   inBandwidth = 0,
   outBandwidth = 0,
-  onConnect = (proc(peer: enet.Peer) = logging.debug("Peer connected: " & $peer)),
-  onDisconnect = (proc(peer: enet.Peer) = logging.debug("Peer disconnected: " & $peer)),
-  onReceive = (proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet) = logging.debug("Received packet " & $packet & " from peer " & $peer)),
+  onConnect = proc(peer: enet.Peer) = logging.debug("Peer connected: " & $peer),
+  onDisconnect = proc(peer: enet.Peer) = logging.debug("Peer disconnected: " & $peer),
+  onReceive = proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet) = logging.debug("Received packet " & $packet & " from peer " & $peer),
 ) =
   if enet.initialize() != 0.cint:
     let err = "An error occurred during initialization"
