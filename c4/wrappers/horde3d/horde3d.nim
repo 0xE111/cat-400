@@ -118,6 +118,7 @@ type
 const RootNode*: Node = 1.cint
 
 # TODO: replace cints with enums
+# TODO: lower first chars of procs
 {.push cdecl, dynlib:lib, importc:"h3d$1".}
 proc GetVersionString*(): cstring
 proc CheckExtension*(extensionName: cstring): bool
@@ -173,10 +174,10 @@ proc GetNodeTransform*(node: Node; tx: ptr cfloat; ty: ptr cfloat; tz: ptr cfloa
 proc SetNodeTransform*(node: Node; tx: cfloat; ty: cfloat; tz: cfloat; rx: cfloat; ry: cfloat; rz: cfloat; sx: cfloat; sy: cfloat; sz: cfloat)
 proc GetNodeTransMats*(node: Node; relMat: ptr ptr cfloat; absMat: ptr ptr cfloat)
 proc SetNodeTransMat*(node: Node; mat4x4: ptr cfloat)
-proc GetNodeParamI*(node: Node; param: cint): cint
+proc GetNodeParamI*(node: Node; param: cint|Camera): cint
 proc SetNodeParamI*(node: Node; param: cint|Camera; value: cint)
-proc GetNodeParamF*(node: Node; param: cint|Camera; compIdx: cint): cfloat
-proc SetNodeParamF*(node: Node; param: cint|Camera; compIdx: cint; value: cfloat)
+proc GetNodeParamF*(node: Node; param: cint|Light; compIdx: cint): cfloat
+proc SetNodeParamF*(node: Node; param: cint|Light; compIdx: cint; value: cfloat)
 proc GetNodeParamStr*(node: Node; param: cint): cstring
 proc SetNodeParamStr*(node: Node; param: cint; value: cstring)
 proc GetNodeFlags*(node: Node): cint
@@ -194,7 +195,7 @@ proc SetupModelAnimStage*(modelNode: Node; stage: cint; animationRes: Res; layer
 proc GetModelAnimParams*(modelNode: Node; stage: cint; time: ptr cfloat; weight: ptr cfloat)
 proc SetModelAnimParams*(modelNode: Node; stage: cint; time: cfloat; weight: cfloat)
 proc SetModelMorpher*(modelNode: Node; target: cstring; weight: cfloat): bool
-proc UpdateModel*(modelNode: Node; flags: cint)
+proc UpdateModel*(modelNode: Node; flags: cint|ModelUpdateFlags)
 proc AddMeshNode*(parent: Node; name: cstring; materialRes: Res; batchStart: cint; batchCount: cint; vertRStart: cint; vertREnd: cint): Node
 proc AddJointNode*(parent: Node; name: cstring; jointIndex: cint): Node
 proc AddLightNode*(parent: Node; name: cstring; materialRes: Res; lightingContext: cstring; shadowContext: cstring): Node

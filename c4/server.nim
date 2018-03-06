@@ -15,12 +15,7 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    # fixedFrequencyHandlers = @[
-    #   proc(dt: float): bool {.closure.} = return true,
-    # ],
-    maxFrequencyHandlers = @[
-      proc(dt: float): bool {.closure.} = networkClient.poll(); return true,
-    ]
+    maxFrequencyCallback = proc(dt: float): bool {.closure.} = networkClient.poll(); return true,
   )
 
   logging.debug("Server shutdown")

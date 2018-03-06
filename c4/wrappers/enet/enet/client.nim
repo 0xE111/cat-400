@@ -120,22 +120,21 @@ proc disconnect*(self: var Client, peer: ptr enet.Peer, force = false) =
 proc poll*(self: var Client) =
   ## Check whether there is any network event and process if any
   var event: enet.Event
-  if enet.host_service(self.host, addr(event), 0.uint32) == 0:
-    return
-  
-  # for each event type call corresponding handlers
-  case event.`type`
-    of EVENT_TYPE_CONNECT:
-      self.peers.add(event.peer)
-      self.onConnect(event.peer[])
-    of EVENT_TYPE_RECEIVE:
-      self.onReceive(event.peer[], event.channelID, event.packet[])
-      enet.packet_destroy(event.packet)
-    of EVENT_TYPE_DISCONNECT:
-      self.onDisconnect(event.peer[])
-      self.peers.remove(event.peer)
-    else:
-      discard
+
+  while enet.host_service(self.host, addr(event), 0.uint32) != 0:
+    # for each event type call corresponding handlers
+    case event.`type`
+      of EVENT_TYPE_CONNECT:
+        self.peers.add(event.peer)
+        self.onConnect(event.peer[])
+      of EVENT_TYPE_RECEIVE:
+        self.onReceive(event.peer[], event.channelID, event.packet[])
+        enet.packet_destroy(event.packet)
+      of EVENT_TYPE_DISCONNECT:
+        self.onDisconnect(event.peer[])
+        self.peers.remove(event.peer)
+      else:
+        discard
 
 proc send*(
   self: Client,

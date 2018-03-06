@@ -1,4 +1,12 @@
 from logging import nil
+from utils.helpers import importString
+
+const
+  networkSystemPath* {.strdefine.}: string = "wrappers/enet/enet/client"
+  videoSystemPath* {.strdefine.}: string = "systems/video"
+  inputSystemPath* {.strdefine.}: string = "systems/input"
+
+importString(inputSystemPath, "input")
 
 
 type
@@ -21,13 +29,12 @@ type
     ],
     video: tuple[
       window: Window,
-    ]
+    ],
+    input: tuple[
+      eventCallback: input.EventCallback,
+    ],
   ]
-
-const
-  networkSystemPath* {.strdefine.}: string = "wrappers/enet/enet/client"
-  videoSystemPath* {.strdefine.}: string = "systems/video"
-
+  
 var
   config*: Config = (
     title: "",
@@ -46,4 +53,7 @@ var
         fullscreen: false,
       ),
     ),
+    input: (
+      eventCallback: proc(event: input.Event) {.closure.} = logging.debug("Input event received"),
+    )
   )

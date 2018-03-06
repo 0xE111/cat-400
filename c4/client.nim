@@ -5,6 +5,7 @@ import conf
 
 importString(networkSystemPath, "network")
 importString(videoSystemPath, "video")
+importString(inputSystemPath, "input")
 
 
 proc run*(config: Config) =
@@ -14,20 +15,17 @@ proc run*(config: Config) =
   networkClient.init()
   networkClient.connect((host: "localhost", port: config.network.port))
 
-  var videoSystem = video.Video()
-  videoSystem.init(
+  video.init(
     title=config.title,
-    window=config.video.window,
+    windowConfig=config.video.window,
   )
 
+  input.init(eventCallback=config.input.eventCallback)
+
   runLoop(
-      updatesPerSecond = 30,
-      fixedFrequencyHandlers = @[
-        proc(dt: float): bool {.closure.} = videoSystem.update(dt),
-      ],
-      maxFrequencyHandlers = @[
-        proc(dt: float): bool {.closure.} = networkClient.poll(); return true,
-      ]
-    )
+    updatesPerSecond = 30,
+    fixedFrequencyCallback = proc(dt: float): bool {.closure.} = video.update(dt),
+    maxFrequencyCallback = proc(dt: float): bool {.closure.} = networkClient.poll(); input.update(); return true,
+  )
 
   logging.debug("Client shutdown")

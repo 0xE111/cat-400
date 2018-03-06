@@ -2,12 +2,12 @@ import times
 
 
 type
-  UpdateProc* = proc(dt: float): bool
+  Callback* = proc(dt: float): bool {.closure.}
 
 proc runLoop*(
   updatesPerSecond = 30,
-  fixedFrequencyHandlers:seq[UpdateProc] = @[],
-  maxFrequencyHandlers:seq[UpdateProc] = @[],
+  fixedFrequencyCallback: Callback = nil,
+  maxFrequencyCallback: Callback = nil,
 ) =
   # handlers will receive dt - delta time between two last calls
   let 
@@ -26,18 +26,16 @@ proc runLoop*(
     numUpdates = 0
     while (times.epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
       now = times.epochTime()
-      for handler in fixedFrequencyHandlers:
-        if not handler(now - lastFixedUpdateTime):
-          return
+      if fixedFrequencyCallback != nil and not fixedFrequencyCallback(now - lastFixedUpdateTime):
+        return
 
       lastFixedUpdateTime = now
       nextFixedUpdateTime += skipSeconds
       numUpdates += 1
     
     now = times.epochTime()
-    for handler in maxFrequencyHandlers:
-      if not handler(now - lastMaxUpdateTime):
-        return
+    if maxFrequencyCallback != nil and not maxFrequencyCallback(now - lastMaxUpdateTime):
+      return
     lastMaxUpdateTime = now
 
 proc getFps*(dt:float): int =
