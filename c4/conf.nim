@@ -2,7 +2,7 @@ from logging import nil
 from utils.helpers import importString
 
 const
-  networkSystemPath* {.strdefine.}: string = "wrappers/enet/enet/client"
+  networkSystemPath* {.strdefine.}: string = "systems/network"
   videoSystemPath* {.strdefine.}: string = "systems/video"
   inputSystemPath* {.strdefine.}: string = "systems/input"
 
@@ -48,8 +48,8 @@ var
       window: (
         x: 400,
         y: 400,
-        width: 400,
-        height: 300,
+        width: 600,
+        height: 450,
         fullscreen: false,
       ),
     ),

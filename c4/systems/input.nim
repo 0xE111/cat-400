@@ -1,7 +1,7 @@
 import sdl2.sdl
 import logging
 
-export sdl.Event  # required for setting callback in config file
+export sdl  # required for setting callback in config file
 
 
 type

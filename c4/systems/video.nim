@@ -102,9 +102,7 @@ proc init*(
 
   logging.debug("Horde3d initialized")
  
-proc update*(dt: float): bool =
-  result = true
-
+proc update*(dt: float) =
   # DEMO!!!
   model.SetNodeTransform(
     0, -1, -5,  # Translation
@@ -120,4 +118,4 @@ proc update*(dt: float): bool =
 proc release*() =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.Release()
-  logging.debug("SDL video system destroyed")
+  logging.debug("Video system unloaded")

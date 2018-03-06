@@ -8,12 +8,13 @@ importString(videoSystemPath, "video")
 importString(inputSystemPath, "input")
 
 
+var running* = true  # set this to false to stop client
+
 proc run*(config: Config) =
   logging.debug("Starting client")
 
-  var networkClient = network.Client()
-  networkClient.init()
-  networkClient.connect((host: "localhost", port: config.network.port))
+  network.init()
+  network.connect((host: "localhost", port: config.network.port))
 
   video.init(
     title=config.title,
@@ -24,8 +25,10 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyCallback = proc(dt: float): bool {.closure.} = video.update(dt),
-    maxFrequencyCallback = proc(dt: float): bool {.closure.} = networkClient.poll(); input.update(); return true,
+    fixedFrequencyCallback = proc(dt: float): bool {.closure.} = video.update(dt); return running,
+    maxFrequencyCallback = proc(dt: float): bool {.closure.} = input.update(); network.poll(); return true,
   )
 
   logging.debug("Client shutdown")
+  input.release()
+  video.release()

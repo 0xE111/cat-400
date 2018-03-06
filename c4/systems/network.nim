@@ -1,5 +1,5 @@
 # NimEnet - high-level wrapper for Enet library
-import "../enet"
+import "../wrappers/enet/enet"
 import logging
 
 # ---- types ----
@@ -8,16 +8,17 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  Client* = object
-    host: ptr enet.Host
-    peers: seq[ptr enet.Peer]
+  ConnectCallback* = proc(peer: enet.Peer) {.closure.}
+  ReceiveCallback* = proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet) {.closure.}
 
-    onConnect: proc(peer: enet.Peer)
-    onDisconnect:  proc(peer: enet.Peer)
-    onReceive: proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet)
+var
+  host: ptr enet.Host
+  peers: seq[ptr enet.Peer]
+
+  connectCallback: ConnectCallback
+  disconnectCallback: ConnectCallback
+  receiveCallback: ReceiveCallback
   
-# ---- vars ----
-var numInstances = 0  # init enet when numInstances > 0, deinit when == 0
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
@@ -42,43 +43,20 @@ proc remove[T](items: var seq[T], value: T) =
 #   discard enet.address_set_host(result.addr, host.cstring)
 #   result.port = port
 
-
-# ---- global ----
-proc init*() =
-  ## Init library
-  if enet.initialize() != 0.cint:
-    let err = "An error occurred during initialization"
-    logging.fatal(err)
-    raise newException(LibraryError, err)
-
-proc release*() =
-  ## Shutdown library
-  enet.deinitialize()
-
-proc onConnect(peer: enet.Peer) =
-  logging.debug("Peer connected: " & $peer)
-
-proc onDisconnect(peer: enet.Peer) =
-  logging.debug("Peer disconnected: " & $peer)
-
-proc onReceive(peer: enet.Peer, channelId: uint8, packet: enet.Packet) =
-  logging.debug("Received packet " & $packet & " from peer " & $peer)
-
 proc init*(
-  self: var Client,
   port: Port = 0,
   numConnections = 32,
   numChannels = 2,
   inBandwidth = 0,
   outBandwidth = 0,
-  onConnect = onConnect,
-  onDisconnect = onDisconnect,
-  onReceive = onReceive,
+  onConnect = (proc(peer: enet.Peer) = logging.debug("Peer connected: " & $peer)),
+  onDisconnect = (proc(peer: enet.Peer) = logging.debug("Peer disconnected: " & $peer)),
+  onReceive = (proc(peer: enet.Peer, channelId: uint8, packet: enet.Packet) = logging.debug("Received packet " & $packet & " from peer " & $peer)),
 ) =
-  # init enet library if needed
-  if numInstances == 0:
-    init()
-  numInstances += 1
+  if enet.initialize() != 0.cint:
+    let err = "An error occurred during initialization"
+    logging.fatal(err)
+    raise newException(LibraryError, err)
 
   # set up address
   var addressPtr: ptr enet.Address = nil
@@ -86,58 +64,57 @@ proc init*(
     var address = enet.Address(host: enet.HOST_ANY, port: port)
     addressPtr = address.addr
 
-  self.host = enet.host_create(addressPtr, numConnections.csize, numChannels.csize, inBandwidth.uint16, outBandwidth.uint16)
-  if self.host == nil:
+  host = enet.host_create(addressPtr, numConnections.csize, numChannels.csize, inBandwidth.uint16, outBandwidth.uint16)
+  if host == nil:
     raise newException(LibraryError, "An error occured while trying to init host")
 
-  self.peers = @[]
+  peers = @[]
 
   # set up handlers
-  self.onConnect = onConnect
-  self.onDisconnect = onDisconnect
-  self.onReceive = onReceive
+  connectCallback = onConnect
+  disconnectCallback = onDisconnect
+  receiveCallback = onReceive
 
-proc connect*(self: var Client, address: Address, numChannels = 1) =
+proc connect*(address: Address, numChannels = 1) =
   var enetAddress: enet.Address
   discard enet.address_set_host(enetAddress.addr, address.host.cstring)
   enetAddress.port = address.port
 
-  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize, 0.uint32) == nil:
+  if enet.host_connect(host, enetAddress.addr, numChannels.csize, 0.uint32) == nil:
     raise newException(LibraryError, "No available peers for initiating an ENet connection")
 
   # further connection success / failure is handled by onConnect / onDisconnect procs
 
-proc disconnect*(self: var Client, peer: ptr enet.Peer, force = false) =
+proc disconnect*(peer: ptr enet.Peer, force = false) =
   if not force:
     enet.peer_disconnect(peer, 0)
   else:
     enet.peer_reset(peer)
-    self.peers.remove(peer)
+    peers.remove(peer)
   
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
   
-proc poll*(self: var Client) =
+proc poll*() =
   ## Check whether there is any network event and process if any
   var event: enet.Event
 
-  while enet.host_service(self.host, addr(event), 0.uint32) != 0:
+  while enet.host_service(host, addr(event), 0.uint32) != 0:
     # for each event type call corresponding handlers
     case event.`type`
       of EVENT_TYPE_CONNECT:
-        self.peers.add(event.peer)
-        self.onConnect(event.peer[])
+        peers.add(event.peer)
+        connectCallback(event.peer[])
       of EVENT_TYPE_RECEIVE:
-        self.onReceive(event.peer[], event.channelID, event.packet[])
+        receiveCallback(event.peer[], event.channelID, event.packet[])
         enet.packet_destroy(event.packet)
       of EVENT_TYPE_DISCONNECT:
-        self.onDisconnect(event.peer[])
-        self.peers.remove(event.peer)
+        disconnectCallback(event.peer[])
+        peers.remove(event.peer)
       else:
         discard
 
 proc send*(
-  self: Client,
   peer: ptr enet.Peer = nil,  # set nil to broadcast
   channelId:uint8 = 0,
   data: string,
@@ -151,18 +128,13 @@ proc send*(
   )
 
   if peer == nil:  # broadcast
-    enet.host_broadcast(self.host, channelId, packet)
+    enet.host_broadcast(host, channelId, packet)
   else:
     discard enet.peer_send(peer, channelId, packet)
 
   if immediate:
-    enet.host_flush(self.host)
+    enet.host_flush(host)
 
-
-{.experimental.}
-proc `=destroy`(self: var Client) =
-  enet.host_destroy(self.host)
-
-  numInstances -= 1
-  if numInstances == 0:
-    release()
+proc release*() =
+  enet.host_destroy(host)
+  enet.deinitialize()
