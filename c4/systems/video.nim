@@ -3,6 +3,8 @@ import "../wrappers/horde3d/horde3d"
 import logging
 from "../conf" import Window
 import strformat
+from os import getAppDir
+from ospaths import `/`
 
 
 var
@@ -14,7 +16,11 @@ var
   angle: int
 
 
-const forwardPipeline = staticRead("../wrappers/horde3d/assets/pipelines/forward.pipeline.xml")
+const
+  forwardPipeline = staticRead("../wrappers/horde3d/assets/pipelines/forward.pipeline.xml")
+
+let
+  assetsDir = getAppDir() / "assets/video"
 
 
 proc init*(
@@ -68,13 +74,15 @@ proc init*(
     # DEMO!!!
     var modelRes = AddResource(ResTypes.SceneGraph, "models/man/man.scene.xml", 0.cint)
     # discard modelRes.LoadResource(model, model.len + 1)
-    discard utLoadResourcesFromDisk("/home/wolfie/workspace/c4/build/assets/video")
+    logging.debug("Searching for assets in " & assetsDir)
+    if not utLoadResourcesFromDisk(assetsDir):
+      raise newException(LibraryError, "Could not load resources")
     model = RootNode.AddNodes(modelRes)
     angle = 0
 
     var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
     light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-    light.SetNodeParamF(Light.RadiusF, 0.cint, 50.cfloat)
+    light.SetNodeParamF(Light.RadiusF, 0.cint, 100.cfloat)
 
     # setting up camera
     camera = horde3d.RootNode.AddCameraNode("camera", pipeline)
