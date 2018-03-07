@@ -1,10 +1,9 @@
 from logging import nil
-
 from utils.loop import runLoop, getFps
-from utils.helpers import importString
+from utils.helpers import importOrFallback
 import conf
 
-importString(networkSystemPath, "network")
+importOrFallback "systems/network"
 
 
 proc run*(config: Config) =

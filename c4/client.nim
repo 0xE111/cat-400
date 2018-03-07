@@ -1,11 +1,11 @@
 from logging import nil
 from utils.loop import runLoop
-from utils.helpers import importString
+from utils.helpers import importOrFallback
 import conf
 
-importString(networkSystemPath, "network")
-importString(videoSystemPath, "video")
-importString(inputSystemPath, "input")
+importOrFallback "systems/network"
+importOrFallback "systems/video"
+importOrFallback "systems/input"
 
 
 proc run*(config: Config) =

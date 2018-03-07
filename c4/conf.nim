@@ -1,12 +1,7 @@
 from logging import nil
-from utils.helpers import importString
+from utils.helpers import importOrFallback
 
-const
-  networkSystemPath* {.strdefine.}: string = "systems/network"
-  videoSystemPath* {.strdefine.}: string = "systems/video"
-  inputSystemPath* {.strdefine.}: string = "systems/input"
-
-importString(inputSystemPath, "input")
+importOrFallback "systems/input"
 
 
 type
