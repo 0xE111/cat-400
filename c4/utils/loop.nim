@@ -1,8 +1,9 @@
-import times
+from times import epochTime
 
 
 type
   Callback* = proc(dt: float): bool {.closure.}
+
 
 proc runLoop*(
   updatesPerSecond = 30,
@@ -16,7 +17,7 @@ proc runLoop*(
 
   var
     numUpdates: int
-    nextFixedUpdateTime = times.epochTime()  # in seconds, floating point
+    nextFixedUpdateTime = epochTime()  # in seconds, floating point
     lastFixedUpdateTime = nextFixedUpdateTime
     lastMaxUpdateTime = nextFixedUpdateTime
     now: float
@@ -24,8 +25,8 @@ proc runLoop*(
   while true:
     # following block is called once every frame; however, if we missed several frames, it will try to catch up by running up to maxUpdateSkip times
     numUpdates = 0
-    while (times.epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
-      now = times.epochTime()
+    while (epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
+      now = epochTime()
       if fixedFrequencyCallback != nil and not fixedFrequencyCallback(now - lastFixedUpdateTime):
         return
 
@@ -33,7 +34,7 @@ proc runLoop*(
       nextFixedUpdateTime += skipSeconds
       numUpdates += 1
     
-    now = times.epochTime()
+    now = epochTime()
     if maxFrequencyCallback != nil and not maxFrequencyCallback(now - lastMaxUpdateTime):
       return
     lastMaxUpdateTime = now

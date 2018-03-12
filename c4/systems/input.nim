@@ -1,5 +1,5 @@
-import sdl2.sdl
-import logging
+from sdl2.sdl import nil
+from logging import debug, fatal
 from "../utils/helpers" import importOrFallback
 
 importOrFallback "systems/messages"
@@ -12,7 +12,7 @@ type
 
 var
   event = sdl.Event()  # temp var for "update" proc
-  callback: EventCallback = proc(event: Event): ref Message = discard
+  callback: EventCallback = proc(event: sdl.Event): ref Message = discard
 
 
 proc init*() =

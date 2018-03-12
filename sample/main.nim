@@ -1,6 +1,5 @@
-import c4.core
+from c4.core import run
 from c4.conf import config
-import os
 
 
 config.title = "Sample game"

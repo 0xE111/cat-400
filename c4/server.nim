@@ -1,7 +1,7 @@
-from logging import nil
+from logging import debug
 from utils.loop import runLoop, getFps
 from utils.helpers import importOrFallback
-import conf
+from conf import Config
 
 importOrFallback "systems/network"
 

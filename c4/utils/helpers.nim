@@ -1,5 +1,5 @@
-from strutils import format
 import macros
+from strutils import format
 from ospaths import `/`, parentDir
 from os import fileExists
 
@@ -12,10 +12,6 @@ proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =
   raise newException(ValueError, "Cannot find value $value".format([
     "value", value,
   ]))
-
-
-# proc getAppPath*(): string =
-#   result = currentSourcePath()
 
 
 # TODO: add logger helper - include file name (and possibly line) in log message

@@ -1,8 +1,8 @@
 import sdl2.sdl
 import "../wrappers/horde3d/horde3d"
-import logging
+from logging import debug, fatal
 from "../conf" import Window
-import strformat
+from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
 

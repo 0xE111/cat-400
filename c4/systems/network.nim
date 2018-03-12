@@ -1,6 +1,7 @@
 # NimEnet - high-level wrapper for Enet library
+from logging import debug, fatal
 import "../wrappers/enet/enet"
-import logging
+
 
 # ---- types ----
 type

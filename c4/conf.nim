@@ -1,4 +1,4 @@
-from logging import nil
+from logging import Level
 from utils.helpers import importOrFallback
 
 importOrFallback "systems/input"
