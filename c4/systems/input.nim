@@ -1,25 +1,26 @@
 import sdl2.sdl
 import logging
+from "../utils/helpers" import importOrFallback
+
+importOrFallback "systems/messages"
 
 export sdl  # required for setting callback in config file
 
 
 type
-  EventCallback* = proc(event: sdl.Event) {.closure.}
+  EventCallback* = proc(event: sdl.Event): ref Message {.closure.}
 
 var
-  event: sdl.Event
-  callback: EventCallback
+  event = sdl.Event()  # temp var for "update" proc
+  callback: EventCallback = proc(event: Event): ref Message = discard
 
 
-proc init*(eventCallback: EventCallback) =
+proc init*() =
   logging.debug("Initializing SDL input system")
   
   try:
     if sdl.initSubSystem(sdl.INIT_EVENTS) != 0:
       raise newException(LibraryError, "Could not init SDL input subsystem" & $sdl.getError())
-  
-    callback = eventCallback
 
   except LibraryError:
     sdl.quitSubSystem(sdl.INIT_EVENTS)
@@ -28,7 +29,7 @@ proc init*(eventCallback: EventCallback) =
 
 proc update*() =
   while sdl.pollEvent(event.addr) != 0:
-    event.callback()
+    discard callback(event)
 
 proc release*() =
   sdl.quitSubSystem(sdl.INIT_EVENTS)

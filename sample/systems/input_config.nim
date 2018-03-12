@@ -6,14 +6,13 @@ import c4.client
 import c4.systems.input
 import c4.systems.network
 
-import commands
+import messages
 
 
-proc handleInput*(event: Event) =
+proc handleInput*(event: Event): ref Message =
   case event.kind
     of sdl.QUIT:
-      var command = Command(kind: cmdQuit)
-      commandQueue.add(command)
-      network.send(data=command.pack(), reliable=true)
+      result = new Message
+      result.kind = msgQuit
     else:
       discard

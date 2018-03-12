@@ -1,6 +1,7 @@
 from strutils import format
 import macros
-from ospaths import `/`
+from ospaths import `/`, parentDir
+from os import fileExists
 
 
 proc index*[K, V](iterable: array[K, V], value: V): K {.raises: [ValueError].} =  # TODO: make iterable of type "iterable" or something
@@ -23,6 +24,7 @@ template notImplemented*() =
   doAssert(false, "Not implemented")
 
 
+# ---- imports ----
 macro importString*(module, alias: static[string]): untyped =
   result = newNimNode(nnkImportStmt).add(
     newNimNode(nnkInfix).add(newIdentNode("as")).add(newIdentNode(module)).add(newIdentNode(alias))
@@ -33,9 +35,14 @@ macro importString*(module: static[string]): untyped =
     newIdentNode(module)
   )
 
-const projectDir {.strdefine.}: string = nil
+const
+  frameworkDir = currentSourcePath().parentDir().parentDir()
+  projectDir {.strdefine.}: string = nil
+
 template importOrFallback*(module: static[string]): untyped =
-  when compiles:  # try to import custom module from project root
-    importString(projectDir / module)
+  const customModule = projectDir / module
+  when fileExists(customModule & ".nim"):  # try to import custom module from project root
+    echo "Hint: Using custom module " & customModule
+    importString(customModule)
   else:  # import default implementation
-    importString(module)
+    importString(frameworkDir / module)

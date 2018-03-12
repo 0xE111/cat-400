@@ -19,7 +19,7 @@ proc run*(config: Config) =
     windowConfig=config.video.window,
   )
 
-  input.init(eventCallback=config.input.eventCallback)
+  input.init()
 
   runLoop(
     updatesPerSecond = 30,

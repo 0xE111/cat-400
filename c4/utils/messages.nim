@@ -1,3 +1,0 @@
-type 
-    Command* = object
-      discard

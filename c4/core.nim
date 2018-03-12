@@ -36,6 +36,7 @@ proc run*() =
             echo("Nim version " & NimVersion)
             echo("Framework version " & frameworkVersion)
             echo("Project version " & config.version)
+            echo("Compiled @ " & CompileDate & " " & CompileTime)
             return
           of "loglevel":
             config.logLevel = logging.LevelNames.index(val)  # overwrite default log level

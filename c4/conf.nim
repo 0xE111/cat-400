@@ -25,9 +25,6 @@ type
     video: tuple[
       window: Window,
     ],
-    input: tuple[
-      eventCallback: input.EventCallback,
-    ],
   ]
   
 var
@@ -48,7 +45,4 @@ var
         fullscreen: false,
       ),
     ),
-    input: (
-      eventCallback: proc(event: input.Event) {.closure.} = logging.debug("Input event received"),
-    )
   )

@@ -88,9 +88,13 @@ proc connect*(address: Address, numChannels = 1) =
 proc disconnect*(peer: ptr enet.Peer, force = false) =
   if not force:
     enet.peer_disconnect(peer, 0)
-  else:
-    enet.peer_reset(peer)
-    peers.remove(peer)
+    # TODO
+    # wait(3)
+    # check that we are disconnected - peer not in peers
+    # if yes - return
+
+  enet.peer_reset(peer)
+  peers.remove(peer)
   
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
