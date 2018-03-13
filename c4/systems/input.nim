@@ -3,8 +3,8 @@ from logging import debug, fatal
 from "../utils/helpers" import importOrFallback
 
 importOrFallback "systems/messages"
-
-export sdl  # required for setting callback in config file
+importOrFallback "systems/input"
+importOrFallback "systems/input/handler"
 
 
 type
@@ -12,7 +12,6 @@ type
 
 var
   event = sdl.Event()  # temp var for "update" proc
-  callback: EventCallback = proc(event: sdl.Event): ref Message = discard
 
 
 proc init*() =
@@ -29,7 +28,7 @@ proc init*() =
 
 proc update*() =
   while sdl.pollEvent(event.addr) != 0:
-    discard callback(event)
+    discard handler.handle(event)
 
 proc release*() =
   sdl.quitSubSystem(sdl.INIT_EVENTS)

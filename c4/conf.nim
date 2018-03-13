@@ -14,7 +14,6 @@ type
   ]
 
   Config* = tuple[
-    # may use currentSourcePath()
     title: string,
     version: string,
     logLevel: logging.Level,
