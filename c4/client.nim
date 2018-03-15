@@ -1,11 +1,11 @@
 from logging import debug
 from utils.loop import runLoop
-from utils.helpers import importOrFallback
+from utils.loading import load
 from conf import Config
 
-importOrFallback "systems/network"
-importOrFallback "systems/video"
-importOrFallback "systems/input"
+load "systems/network"
+load "systems/video"
+load "systems/input"
 
 
 proc run*(config: Config) =

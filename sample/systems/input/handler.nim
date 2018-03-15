@@ -1,11 +1,11 @@
 import sdl2.sdl
 
-from c4.utils.helpers import importOrFallback
+from c4.utils.loading import load
 from logging import debug
 from strformat import `&`
 
-importOrFallback "systems/input"
-importOrFallback "systems/messages"
+load "systems/input"
+load "core/messages"
 
 
 proc handle*(event: Event): ref Message =

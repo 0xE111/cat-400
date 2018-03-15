@@ -1,7 +1,7 @@
 from logging import Level
-from utils.helpers import importOrFallback
+from utils.loading import load
 
-importOrFallback "systems/input"
+load "systems/input"
 
 
 type

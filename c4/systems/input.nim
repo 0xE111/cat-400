@@ -1,10 +1,10 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
-from "../utils/helpers" import importOrFallback
+from "../utils/loading" import load
 
-importOrFallback "systems/messages"
-importOrFallback "systems/input"
-importOrFallback "systems/input/handler"
+load "core/messages"
+load "systems/input"
+load "systems/input/handler"
 
 
 type
