@@ -12,13 +12,13 @@ var
 proc newEntity*(): Entity =
   result = low(Entity)
   while result in entities:
-    result += 1
+    result += 1  # TODO: pretty dumb
 
   entities.incl(result)  # add entity to global entities registry
 
 proc delete*(entity: Entity) =
-  entities.excl(entity)  # 2do: will it raise an exception if id not in entities?
-  # 2do: delete all components related to this entity
+  entities.excl(entity)  # will not alert if entity does not exist
+  # TODO: delete all components related to this entity
 
 # ---- Components ----
 proc getComponents*(t: typedesc): var Table[Entity, t] =

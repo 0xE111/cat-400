@@ -4,6 +4,7 @@ from utils.loading import load
 from conf import Config
 
 load "systems/network"
+load "core/messages"
 
 
 proc run*(config: Config) =
@@ -14,6 +15,7 @@ proc run*(config: Config) =
   runLoop(
     updatesPerSecond = 30,
     maxFrequencyCallback = proc(dt: float): bool {.closure.} = network.poll(); return true,
+    endCycleCallback = proc(dt: float): bool {.closure.} = messages.queue.flush(); return true,
   )
 
   logging.debug("Server shutdown")

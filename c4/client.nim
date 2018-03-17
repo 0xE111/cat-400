@@ -3,6 +3,7 @@ from utils.loop import runLoop
 from utils.loading import load
 from conf import Config
 
+load "core/messages"
 load "systems/network"
 load "systems/video"
 load "systems/input"
@@ -23,8 +24,16 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyCallback = proc(dt: float): bool {.closure.} = video.update(dt); return true,
-    maxFrequencyCallback = proc(dt: float): bool {.closure.} = input.update(); network.poll(); return true,
+    fixedFrequencyCallback = proc(dt: float): bool {.closure.} =
+      video.update(dt)
+      return true,
+    maxFrequencyCallback = proc(dt: float): bool {.closure.} =
+      input.update()
+      network.poll()
+      return true,
+    endCycleCallback = proc(dt: float): bool {.closure.} =
+      messages.queue.flush()
+      return true,
   )
 
   logging.debug("Client shutdown")

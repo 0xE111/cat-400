@@ -11,7 +11,9 @@ type
   EventCallback* = proc(event: sdl.Event): ref Message {.closure.}
 
 var
-  event = sdl.Event()  # temp var for "update" proc
+  # temp vars
+  event = sdl.Event()
+  message: ref Message
 
 
 proc init*() =
@@ -28,7 +30,9 @@ proc init*() =
 
 proc update*() =
   while sdl.pollEvent(event.addr) != 0:
-    discard handler.handle(event)
+    message = handler.handle(event)
+    if message != nil:
+      messages.queue.add(message)
 
 proc release*() =
   sdl.quitSubSystem(sdl.INIT_EVENTS)

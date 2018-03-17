@@ -4,7 +4,6 @@ from c4.utils.loading import load
 from logging import debug
 from strformat import `&`
 
-load "systems/input"
 load "core/messages"
 
 
