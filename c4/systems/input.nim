@@ -1,24 +1,23 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
+from strformat import `&`
 from "../utils/loading" import load
 
 load "core/messages"
-load "systems/input"
-load "systems/input/handler"
 
 
 type
-  EventCallback* = proc(event: sdl.Event): ref Message {.closure.}
+  InputSystem* = object {.inheritable.}
+
 
 var
-  # temp vars
-  event = sdl.Event()
-  message: ref Message
+  tmpEvent = sdl.Event()
+  tmpMessage: ref Message
 
 
-proc init*() =
-  logging.debug("Initializing SDL input system")
-  
+method init*(input: ref InputSystem) {.base.} =
+  logging.debug("Initializing input system")
+
   try:
     if sdl.initSubSystem(sdl.INIT_EVENTS) != 0:
       raise newException(LibraryError, "Could not init SDL input subsystem" & $sdl.getError())
@@ -28,11 +27,23 @@ proc init*() =
     logging.fatal(getCurrentExceptionMsg())
     raise
 
-proc update*() =
-  while sdl.pollEvent(event.addr) != 0:
-    message = handler.handle(event)
-    if message != nil:
-      messages.queue.add(message)
+method handle*(input: ref InputSystem, event: sdl.Event): ref Message {.base.} =
+  case event.kind
+    of sdl.QUIT:
+      result = new Message
+      result.kind = msgQuit
+    else:
+      discard
 
-proc release*() =
+  if result != nil:
+    logging.debug(&"Handled event {event} -> new message {result[]}")
+
+method update*(input: ref InputSystem, dt: float) {.base.} =
+  while sdl.pollEvent(tmpEvent.addr) != 0:
+    tmpMessage = input.handle(tmpEvent)
+    if tmpMessage != nil:
+      messages.queue.add(tmpMessage)
+
+method `=destroy`*(input: ref InputSystem) {.base.} =
   sdl.quitSubSystem(sdl.INIT_EVENTS)
+  logging.debug("Input system destroyed")

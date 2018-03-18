@@ -1,7 +1,7 @@
 from logging import Level
 from utils.loading import load
 
-load "systems/input"
+from systems.input import InputSystem
 
 
 type
@@ -18,6 +18,9 @@ type
     version: string,
     logLevel: logging.Level,
     mode: Mode,
+    systems: tuple[
+      input: ref InputSystem,
+    ],
     network: tuple[
       port: uint16,
     ],
@@ -32,6 +35,9 @@ var
     version: "0.0",
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
+    systems: (
+      input: new(ref InputSystem),
+    ),
     network: (
       port: 11477'u16,
     ),

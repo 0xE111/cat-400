@@ -6,7 +6,8 @@ from conf import Config
 load "core/messages"
 load "systems/network"
 load "systems/video"
-load "systems/input"
+
+import systems.input
 
 
 proc run*(config: Config) =
@@ -20,6 +21,7 @@ proc run*(config: Config) =
     windowConfig=config.video.window,
   )
 
+  var input = config.systems.input
   input.init()
 
   runLoop(
@@ -29,11 +31,10 @@ proc run*(config: Config) =
       messages.queue.flush()
       return true,
     maxFrequencyCallback = proc(dt: float): bool =
-      input.update()
+      input.update(dt)
       network.poll()
       return true,
   )
 
   logging.debug("Client shutdown")
-  input.release()
   video.release()
