@@ -14,8 +14,12 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    maxFrequencyCallback = proc(dt: float): bool {.closure.} = network.poll(); return true,
-    endCycleCallback = proc(dt: float): bool {.closure.} = messages.queue.flush(); return true,
+    maxFrequencyCallback = proc(dt: float): bool =
+      network.poll()
+      return true,
+    fixedFrequencyCallback = proc(dt: float): bool =
+      messages.queue.flush()
+      return true,
   )
 
   logging.debug("Server shutdown")

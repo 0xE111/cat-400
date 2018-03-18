@@ -24,15 +24,13 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyCallback = proc(dt: float): bool {.closure.} =
+    fixedFrequencyCallback = proc(dt: float): bool =
       video.update(dt)
+      messages.queue.flush()
       return true,
-    maxFrequencyCallback = proc(dt: float): bool {.closure.} =
+    maxFrequencyCallback = proc(dt: float): bool =
       input.update()
       network.poll()
-      return true,
-    endCycleCallback = proc(dt: float): bool {.closure.} =
-      messages.queue.flush()
       return true,
   )
 

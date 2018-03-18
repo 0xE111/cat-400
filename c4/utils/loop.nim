@@ -9,7 +9,6 @@ proc runLoop*(
   updatesPerSecond = 30,
   fixedFrequencyCallback: Callback = nil,
   maxFrequencyCallback: Callback = nil,
-  endCycleCallback: Callback = nil,
 ) =
   # handlers will receive dt - delta time between two last calls
   let 
@@ -21,7 +20,6 @@ proc runLoop*(
     nextFixedUpdateTime = epochTime()  # in seconds, floating point
     lastFixedUpdateTime = nextFixedUpdateTime
     lastMaxUpdateTime = nextFixedUpdateTime
-    lastCycleUpdateTime = nextFixedUpdateTime
     now: float
 
   while true:
@@ -40,11 +38,6 @@ proc runLoop*(
     if maxFrequencyCallback != nil and not maxFrequencyCallback(now - lastMaxUpdateTime):
       return
     lastMaxUpdateTime = now
-    
-    now = epochTime()
-    if endCycleCallback != nil and not endCycleCallback(now - lastCycleUpdateTime):
-      return
-    lastCycleUpdateTime = now
 
 proc getFps*(dt:float): int =
   ## Calculates *very* approximate FPS value based on dt received by loop handlers. Example:
