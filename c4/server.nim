@@ -2,20 +2,21 @@ from logging import debug
 from utils.loop import runLoop, getFps
 from utils.loading import load
 from conf import Config
+from systems.network import init, update
 
-load "systems/network"
 load "core/messages"
 
 
 proc run*(config: Config) =
   logging.debug("Starting server")
  
-  network.init(port=config.network.port)
+  var network = config.systems.network.instance
+  network.init(port=config.systems.network.port)
 
   runLoop(
     updatesPerSecond = 30,
     maxFrequencyCallback = proc(dt: float): bool =
-      network.poll()
+      network.update(dt)
       return true,
     fixedFrequencyCallback = proc(dt: float): bool =
       messages.queue.flush()

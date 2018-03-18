@@ -15,7 +15,7 @@ var
   tmpMessage: ref Message
 
 
-method init*(input: ref InputSystem) {.base.} =
+method init*(self: ref InputSystem) {.base.} =
   logging.debug("Initializing input system")
 
   try:
@@ -27,7 +27,7 @@ method init*(input: ref InputSystem) {.base.} =
     logging.fatal(getCurrentExceptionMsg())
     raise
 
-method handle*(input: ref InputSystem, event: sdl.Event): ref Message {.base.} =
+method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
       result = new Message
@@ -38,12 +38,13 @@ method handle*(input: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   if result != nil:
     logging.debug(&"Handled event {event} -> new message {result[]}")
 
-method update*(input: ref InputSystem, dt: float) {.base.} =
+method update*(self: ref InputSystem, dt: float) {.base.} =
   while sdl.pollEvent(tmpEvent.addr) != 0:
-    tmpMessage = input.handle(tmpEvent)
+    tmpMessage = self.handle(tmpEvent)
     if tmpMessage != nil:
       messages.queue.add(tmpMessage)
 
-method `=destroy`*(input: ref InputSystem) {.base.} =
-  sdl.quitSubSystem(sdl.INIT_EVENTS)
+{.experimental.}
+method `=destroy`*(self: ref InputSystem) {.base.} =
+  sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems
   logging.debug("Input system destroyed")

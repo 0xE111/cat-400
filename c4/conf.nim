@@ -2,6 +2,7 @@ from logging import Level
 from utils.loading import load
 
 from systems.input import InputSystem
+from systems.network import NetworkSystem
 
 
 type
@@ -19,10 +20,13 @@ type
     logLevel: logging.Level,
     mode: Mode,
     systems: tuple[
-      input: ref InputSystem,
-    ],
-    network: tuple[
-      port: uint16,
+      input: tuple[
+        instance: ref InputSystem,
+      ],
+      network: tuple[
+        instance: ref NetworkSystem,
+        port: uint16,
+      ]
     ],
     video: tuple[
       window: Window,
@@ -36,10 +40,13 @@ var
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
     systems: (
-      input: new(ref InputSystem),
-    ),
-    network: (
-      port: 11477'u16,
+      input: (
+        instance: new(ref InputSystem),
+      ),
+      network: (
+        instance: new(ref NetworkSystem),
+        port: 11477'u16,
+      )
     ),
     video: (
       window: (

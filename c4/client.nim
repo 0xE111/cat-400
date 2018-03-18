@@ -4,24 +4,25 @@ from utils.loading import load
 from conf import Config
 
 load "core/messages"
-load "systems/network"
 load "systems/video"
 
+import systems.network
 import systems.input
 
 
 proc run*(config: Config) =
   logging.debug("Starting client")
 
+  var network = config.systems.network.instance
   network.init()
-  network.connect((host: "localhost", port: config.network.port))
+  network.connect((host: "localhost", port: config.systems.network.port))
 
   video.init(
     title=config.title,
     windowConfig=config.video.window,
   )
 
-  var input = config.systems.input
+  var input = config.systems.input.instance
   input.init()
 
   runLoop(
@@ -32,7 +33,7 @@ proc run*(config: Config) =
       return true,
     maxFrequencyCallback = proc(dt: float): bool =
       input.update(dt)
-      network.poll()
+      network.update(dt)
       return true,
   )
 
