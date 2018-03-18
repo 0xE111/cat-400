@@ -1,16 +1,25 @@
 import sdl2.sdl
 import "../wrappers/horde3d/horde3d"
+
 from logging import debug, fatal
-from "../conf" import Window
 from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
 
 
+type
+  Window* = tuple[
+    x, y, width, height: int,
+    fullscreen: bool,
+  ]
+
+  VideoSystem* = object {.inheritable.}
+    window: sdl.Window
+    pipeline: horde3d.Res
+    camera: horde3d.Node
+
+
 var
-  window: sdl.Window
-  pipeline: horde3d.Res
-  camera: horde3d.Node
   # DEMO!!!
   model: horde3d.Node  
   angle: int
@@ -23,10 +32,11 @@ let
   assetsDir = getAppDir() / "assets/video"
 
 
-proc init*(
+method init*(
+  self: ref VideoSystem,
   title: string,
-  windowConfig: conf.Window,
-) =
+  window: Window,
+) {.base.} =
   # ---- SDL ----
   logging.debug("Initializing SDL video system")
 
@@ -38,18 +48,18 @@ proc init*(
     # if sdl.getCurrentDisplayMode(0, displayMode.addr) != 0:
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
   
-    window = sdl.createWindow(
+    self.window = sdl.createWindow(
       title,
-      windowConfig.x.cint,
-      windowConfig.y.cint,
-      windowConfig.width.cint,
-      windowConfig.height.cint,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if windowConfig.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      window.x.cint,
+      window.y.cint,
+      window.width.cint,
+      window.height.cint,
+      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
-    if window == nil:
+    if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window: " & $sdl.getError())
 
-    if sdl.glCreateContext(window) == nil:
+    if sdl.glCreateContext(self.window) == nil:
       raise newException(LibraryError, "Could not create SDL OpenGL context: " & $sdl.getError())
 
   except LibraryError:
@@ -67,8 +77,8 @@ proc init*(
       raise newException(LibraryError, "Could not init Horde3D: " & $horde3d.GetError())
   
     # load default resources
-    pipeline = horde3d.AddResource(horde3d.ResTypes.Pipeline, "pipelines/forward.pipeline.xml", 0.cint)
-    if not pipeline.LoadResource(forwardPipeline, forwardPipeline.len + 1):
+    self.pipeline = horde3d.AddResource(horde3d.ResTypes.Pipeline, "pipelines/forward.pipeline.xml", 0.cint)
+    if not self.pipeline.LoadResource(forwardPipeline, forwardPipeline.len + 1):
       raise newException(LibraryError, "Could not load Horde3D resources")
 
     # DEMO!!!
@@ -85,15 +95,14 @@ proc init*(
     light.SetNodeParamF(Light.RadiusF, 0.cint, 100.cfloat)
 
     # setting up camera
-    camera = horde3d.RootNode.AddCameraNode("camera", pipeline)
-    camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
-    camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
-    camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, 400.cint)
-    camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, 300.cint)
-    camera.SetupCameraView(45.cfloat, (400/300).cfloat, (0.5).cfloat, 2048.cfloat)
+    self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, 400.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, 300.cint)
+    self.camera.SetupCameraView(45.cfloat, (400/300).cfloat, (0.5).cfloat, 2048.cfloat)
 
-    pipeline.ResizePipelineBuffers(400.cint, 300.cint)
-
+    self.pipeline.ResizePipelineBuffers(400.cint, 300.cint)
 
   except LibraryError:
     horde3d.Release()
@@ -102,7 +111,7 @@ proc init*(
 
   logging.debug("Horde3d initialized")
  
-proc update*(dt: float) =
+method update*(self: ref VideoSystem, dt: float) {.base.} =
   # DEMO!!!
   model.SetNodeTransform(
     0, -1, -5,  # Translation
@@ -111,11 +120,12 @@ proc update*(dt: float) =
   angle += 1
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
-  camera.Render()
-  window.glSwapWindow()
+  self.camera.Render()
+  self.window.glSwapWindow()
   horde3d.FinalizeFrame()  # TODO: is this needed?
 
-proc release*() =
+{.experimental.}
+method `=destroy`*(self: ref VideoSystem) {.base.} =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.Release()
   logging.debug("Video system unloaded")

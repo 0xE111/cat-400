@@ -3,16 +3,12 @@ from utils.loading import load
 
 from systems.input import InputSystem
 from systems.network import NetworkSystem
+from systems.video import VideoSystem, Window
 
 
 type
   Mode* {.pure.} = enum
     default, server
-
-  Window* = tuple[
-    x, y, width, height: int,
-    fullscreen: bool,
-  ]
 
   Config* = tuple[
     title: string,
@@ -26,10 +22,11 @@ type
       network: tuple[
         instance: ref NetworkSystem,
         port: uint16,
-      ]
-    ],
-    video: tuple[
-      window: Window,
+      ],
+      video: tuple[
+        instance: ref VideoSystem,
+        window: Window,
+      ],
     ],
   ]
   
@@ -46,15 +43,16 @@ var
       network: (
         instance: new(ref NetworkSystem),
         port: 11477'u16,
-      )
-    ),
-    video: (
-      window: (
-        x: 400,
-        y: 400,
-        width: 600,
-        height: 450,
-        fullscreen: false,
       ),
+      video: (
+        instance: new(ref VideoSystem),
+        window: (
+          x: 400,
+          y: 400,
+          width: 600,
+          height: 450,
+          fullscreen: false,
+        ),
+      )
     ),
   )

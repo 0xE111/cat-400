@@ -4,10 +4,10 @@ from utils.loading import load
 from conf import Config
 
 load "core/messages"
-load "systems/video"
 
 import systems.network
 import systems.input
+import systems.video
 
 
 proc run*(config: Config) =
@@ -17,9 +17,10 @@ proc run*(config: Config) =
   network.init()
   network.connect((host: "localhost", port: config.systems.network.port))
 
+  var video = config.systems.video.instance
   video.init(
     title=config.title,
-    windowConfig=config.video.window,
+    window=config.systems.video.window,
   )
 
   var input = config.systems.input.instance
@@ -38,4 +39,3 @@ proc run*(config: Config) =
   )
 
   logging.debug("Client shutdown")
-  video.release()
