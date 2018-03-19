@@ -3,15 +3,16 @@ type
     msgQuit
 
   Message* = object {.inheritable.}
-    case kind*: MessageKind  # TODO: should I leave this accessible
-      of msgQuit:
-        discard
+  QuitMessage* = object of Message
 
   MessageQueue* = seq[ref Message]
 
 
-var queue*: MessageQueue = @[]
+var queue: MessageQueue = @[]
 
 
-proc flush*(queue: var MessageQueue) =
+proc enqueue*(self: ref Message) =
+  queue.add(self)
+
+proc flush*() =
   queue.setLen(0)

@@ -1,7 +1,7 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-from "../core/messages" import Message, msgQuit
+from "../core/messages" import Message, QuitMessage, enqueue
 
 
 type
@@ -28,8 +28,7 @@ method init*(self: ref InputSystem) {.base.} =
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
-      new(result)
-      result.kind = msgQuit
+      result = new(ref QuitMessage)
     else:
       discard
 
@@ -40,7 +39,7 @@ method update*(self: ref InputSystem, dt: float) {.base.} =
   while sdl.pollEvent(tmpEvent.addr) != 0:
     tmpMessage = self.handle(tmpEvent)
     if tmpMessage != nil:
-      messages.queue.add(tmpMessage)
+      tmpMessage.enqueue()
 
 {.experimental.}
 method `=destroy`*(self: ref InputSystem) {.base.} =

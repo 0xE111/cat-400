@@ -1,10 +1,8 @@
 from logging import debug
 from utils.loop import runLoop
-from utils.loading import load
 from conf import Config
 
-load "core/messages"
-
+from core.messages import flush
 import systems.network
 import systems.input
 import systems.video
@@ -28,13 +26,13 @@ proc run*(config: Config) =
 
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyCallback = proc(dt: float): bool =
-      video.update(dt)
-      messages.queue.flush()
-      return true,
     maxFrequencyCallback = proc(dt: float): bool =
       input.update(dt)
       network.update(dt)
+      return true,
+    fixedFrequencyCallback = proc(dt: float): bool =
+      video.update(dt)
+      messages.flush()
       return true,
   )
 

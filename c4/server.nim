@@ -1,10 +1,8 @@
 from logging import debug
 from utils.loop import runLoop, getFps
-from utils.loading import load
 from conf import Config
 from systems.network import init, update
-
-load "core/messages"
+from core.messages import flush
 
 
 proc run*(config: Config) =
@@ -19,7 +17,7 @@ proc run*(config: Config) =
       network.update(dt)
       return true,
     fixedFrequencyCallback = proc(dt: float): bool =
-      messages.queue.flush()
+      messages.flush()
       return true,
   )
 

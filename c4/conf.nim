@@ -4,7 +4,6 @@ from utils.loading import load
 from systems.input import InputSystem
 from systems.network import NetworkSystem
 from systems.video import VideoSystem, Window
-from core.messages import Message
 
 
 type
@@ -16,7 +15,6 @@ type
     version: string,
     logLevel: logging.Level,
     mode: Mode,
-    message: ref Message,  # TODO: pass it everywhere?
     systems: tuple[
       input: tuple[
         instance: ref InputSystem,
@@ -38,7 +36,6 @@ var
     version: "0.0",
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
-    message: new(ref Message),
     systems: (
       input: (
         instance: new(ref InputSystem),
