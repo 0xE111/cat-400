@@ -6,13 +6,26 @@ type
   QuitMessage* = object of Message
 
   MessageQueue* = seq[ref Message]
+  MessageHandler = proc(message: ref Message) {.closure.}
 
 
-var queue: MessageQueue = @[]
+var messageHandlers: seq[MessageHandler] = @[]
+
+method `$`*(message: ref QuitMessage): string = "Quit"  # TODO: doesnt work
+
+proc subscribe*(handler: MessageHandler) =
+  messageHandlers.add(handler)
+
+proc send*(self: ref Message) =
+  for handler in messageHandlers:
+    handler(self)
 
 
-proc enqueue*(self: ref Message) =
-  queue.add(self)
+# var queue: MessageQueue = @[]
 
-proc flush*() =
-  queue.setLen(0)
+
+# proc enqueue*(self: ref Message) =
+#   queue.add(self)
+
+# proc flush*() =
+#   queue.setLen(0)

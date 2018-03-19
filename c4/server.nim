@@ -2,7 +2,6 @@ from logging import debug
 from utils.loop import runLoop, getFps
 from conf import Config
 from systems.network import init, update
-from core.messages import flush
 
 
 proc run*(config: Config) =
@@ -15,9 +14,6 @@ proc run*(config: Config) =
     updatesPerSecond = 30,
     maxFrequencyCallback = proc(dt: float): bool =
       network.update(dt)
-      return true,
-    fixedFrequencyCallback = proc(dt: float): bool =
-      messages.flush()
       return true,
   )
 

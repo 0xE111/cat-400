@@ -2,7 +2,6 @@ from logging import debug
 from utils.loop import runLoop
 from conf import Config
 
-from core.messages import flush
 import systems.network
 import systems.input
 import systems.video
@@ -32,7 +31,6 @@ proc run*(config: Config) =
       return true,
     fixedFrequencyCallback = proc(dt: float): bool =
       video.update(dt)
-      messages.flush()
       return true,
   )
 

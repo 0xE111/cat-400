@@ -1,6 +1,7 @@
 from logging import debug, fatal
 from strformat import `&`
 import "../wrappers/enet/enet"
+from "../core/messages" import Message, subscribe, `$`
 
 
 # ---- types ----
@@ -34,6 +35,9 @@ proc remove[T](items: var seq[T], value: T) =
 
 
 # ---- methods ----
+method onMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
+  logging.debug(&"Network got new message: {message[]}")
+
 method init*(
   self: ref NetworkSystem,
   port: Port = 0,
@@ -58,6 +62,8 @@ method init*(
     raise newException(LibraryError, "An error occured while trying to init host")
 
   self.peers = @[]
+
+  messages.subscribe(proc (message: ref Message) = self.onMessage(message))
 
 method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer connected: {peer}")
