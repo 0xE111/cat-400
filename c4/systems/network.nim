@@ -62,10 +62,10 @@ method init*(
 method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer connected: {peer}")
 
-method handleDisconnect(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
+method handleDisconnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer disconnected: {peer}")
  
-method handlePacket(self: ref NetworkSystem, peer: enet.Peer, channelId: uint8, packet: enet.Packet) {.base.} =
+method handlePacket*(self: ref NetworkSystem, peer: enet.Peer, channelId: uint8, packet: enet.Packet) {.base.} =
   logging.debug(&"Received packet {packet} from peer {peer}")
   
 

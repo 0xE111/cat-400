@@ -2,7 +2,7 @@ type
   MessageKind* = enum
     msgQuit
 
-  Message* = object
+  Message* = object {.inheritable.}
     case kind*: MessageKind  # TODO: should I leave this accessible
       of msgQuit:
         discard
