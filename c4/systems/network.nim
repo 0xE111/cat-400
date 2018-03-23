@@ -1,7 +1,8 @@
 from logging import debug, fatal
 from strformat import `&`
 import "../wrappers/enet/enet"
-from "../core/messages" import Message, subscribe, `$`
+from "../core/messages" import Message, QuitMessage, subscribe, `$`
+import "../wrappers/msgpack/msgpack"
 
 
 # ---- types ----
@@ -14,6 +15,10 @@ type
     host: ptr enet.Host
     peers: seq[ptr enet.Peer]
 
+
+# ---- register messages ----
+register(Message)
+register(Message, QuitMessage)
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
@@ -35,7 +40,7 @@ proc remove[T](items: var seq[T], value: T) =
 
 
 # ---- methods ----
-method onMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
+method storeMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
   logging.debug(&"Network got new message: {message}")
 
 method init*(
@@ -63,7 +68,7 @@ method init*(
 
   self.peers = @[]
 
-  messages.subscribe(proc (message: ref Message) = self.onMessage(message))
+  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
 
 method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer connected: {peer}")

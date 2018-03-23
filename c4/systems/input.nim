@@ -16,7 +16,7 @@ var
 proc `$`(event: sdl.Event): string = $event.kind
 
 
-method onMessage*(self: ref InputSystem, message: ref Message) {.base.} =
+method storeMessage*(self: ref InputSystem, message: ref Message) {.base.} =
   logging.debug(&"Input got new message: {message}")
 
 method init*(self: ref InputSystem) {.base.} =
@@ -31,7 +31,7 @@ method init*(self: ref InputSystem) {.base.} =
     logging.fatal(getCurrentExceptionMsg())
     raise
   
-  messages.subscribe(proc (message: ref Message) = self.onMessage(message))
+  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
 
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind

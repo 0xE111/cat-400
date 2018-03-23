@@ -6,11 +6,11 @@ export msgpack4nim
 
 
 type
-  PackProc[T] = proc(s: Stream, value: ref T) {.closure.}
-  UnpackProc[T] = proc(s: Stream, value: var ref T) {.closure.}
-  PackTable[T] = Table[int8, tuple[pack: PackProc[T], unpack: UnpackProc[T]]]
+  PackProc*[T] = proc(s: Stream, value: ref T) {.closure.}
+  UnpackProc*[T] = proc(s: Stream, value: var ref T) {.closure.}
+  PackTable*[T] = Table[int8, tuple[pack: PackProc[T], unpack: UnpackProc[T]]]
 
-proc getPackTable(T: typedesc): ref PackTable[T] =
+proc getPackTable*(T: typedesc): ref PackTable[T] =
   var table {.global.} = newTable[int8, tuple[pack: PackProc[T], unpack: UnpackProc[T]]]()
   return table
 

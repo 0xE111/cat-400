@@ -33,7 +33,7 @@ let
   assetsDir = getAppDir() / "assets/video"
 
 
-method onMessage*(self: ref VideoSystem, message: ref Message) {.base.} =
+method storeMessage*(self: ref VideoSystem, message: ref Message) {.base.} =
   logging.debug(&"Video got new message: {message}")
 
 method init*(
@@ -115,7 +115,7 @@ method init*(
 
   logging.debug("Horde3d initialized")
 
-  messages.subscribe(proc (message: ref Message) = self.onMessage(message))
+  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
 
 method update*(self: ref VideoSystem, dt: float) {.base.} =
   # DEMO!!!
