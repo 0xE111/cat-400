@@ -30,6 +30,8 @@ Now when you call `pack` on `ref BaseClass`:
 `Unpack` will do the same - when you `unpack(ref BaseClass)`, it will still preserve correct runtime type and data.
 
 ```nim
+import msgpack
+
 type
   Base = object {.inheritable.}
   ChildA = object of Base
