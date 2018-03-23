@@ -3,12 +3,8 @@ import strformat
 
 # Constants
 const
-  versionFiles = @[
-    "c4/version.txt",
-    "c4/wrappers/enet/version.txt",
-    "c4/wrappers/horde3d/version.txt",
-  ]
-  pinnedVersion = staticRead(versionFiles[0])
+  versionFile = "c4/version.txt"
+  pinnedVersion = staticRead(versionFile)
 
 # Helpers
 proc getGitVersion*(): string {.compileTime.} =
@@ -32,10 +28,7 @@ task pinVersion, "Update version file":
   const gitVersion = getGitVersion()
 
   if gitVersion != pinnedVersion:
-    for versionFile in versionFiles:
-      writeFile(versionFile, gitVersion)
-      discard staticExec("git add " & versionFile)
-
+    writeFile(versionFile, gitVersion)
+    discard staticExec("git add " & versionFile)
     discard staticExec("git commit --amend --no-edit")
-  
     echo(&"Updated version {pinnedVersion} -> {gitVersion}")

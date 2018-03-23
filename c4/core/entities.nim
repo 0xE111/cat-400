@@ -1,4 +1,4 @@
-from tables import Table, initTable
+from tables import Table, newTable
 
 
 type
@@ -21,9 +21,9 @@ proc delete*(entity: Entity) =
   # TODO: delete all components related to this entity
 
 # ---- Components ----
-proc getComponents*(t: typedesc): var Table[Entity, t] =
+proc getComponents*(t: typedesc): ref Table[Entity, t] =
   ## Returns components for all entities (Table: key=Entity, value=component)
-  var table {.global.} = initTable[Entity, t]()
+  var table {.global.} = newTable[Entity, t]()
   return table
 
 # high-level entity wrappers

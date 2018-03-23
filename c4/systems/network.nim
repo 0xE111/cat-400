@@ -36,7 +36,7 @@ proc remove[T](items: var seq[T], value: T) =
 
 # ---- methods ----
 method onMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
-  logging.debug(&"Network got new message: {message[]}")
+  logging.debug(&"Network got new message: {message}")
 
 method init*(
   self: ref NetworkSystem,

@@ -1,11 +1,9 @@
 # Package
 version = "0.1"
 author = "c0ntribut0r"
-description = "Horde3D graphics library wrapper"
+description = "msgpack4nim + inheritance support"
 license = "MIT"
-
-# Dirs
-skipDirs = @["headers"]
 
 # Dependencies
 requires "nim >= 0.17.3"
+requires "msgpack4nim >= 0.2.1"

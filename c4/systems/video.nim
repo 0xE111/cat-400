@@ -5,7 +5,7 @@ from logging import debug, fatal
 from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
-from "../core/messages" import Message, subscribe
+from "../core/messages" import Message, subscribe, `$`
 
 
 type
@@ -34,7 +34,7 @@ let
 
 
 method onMessage*(self: ref VideoSystem, message: ref Message) {.base.} =
-  logging.debug(&"Video got new message: {message[]}")
+  logging.debug(&"Video got new message: {message}")
 
 method init*(
   self: ref VideoSystem,
@@ -86,7 +86,7 @@ method init*(
       raise newException(LibraryError, "Could not load Horde3D resources")
 
     # DEMO!!!
-    var modelRes = AddResource(ResTypes.SceneGraph, "models/sphere/sphere.scene.xml", 0.cint)
+    var modelRes = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml", 0.cint)
     # discard modelRes.LoadResource(model, model.len + 1)
     logging.debug("Searching for assets in " & assetsDir)
     if not utLoadResourcesFromDisk(assetsDir):
@@ -120,7 +120,7 @@ method init*(
 method update*(self: ref VideoSystem, dt: float) {.base.} =
   # DEMO!!!
   model.SetNodeTransform(
-    0, -1, -5,  # Translation
+    0, 0, -5,  # Translation
     0, angle.cfloat, 0,   # Rotation
     1, 1, 1 )  # Scale
   angle += 1

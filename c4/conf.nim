@@ -49,8 +49,8 @@ var
         window: (
           x: 400,
           y: 400,
-          width: 600,
-          height: 450,
+          width: 400,
+          height: 300,
           fullscreen: false,
         ),
       )

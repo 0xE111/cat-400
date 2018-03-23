@@ -11,7 +11,8 @@ type
 
 var messageHandlers: seq[MessageHandler] = @[]
 
-method `$`*(message: ref QuitMessage): string = "Quit"  # TODO: doesnt work
+method `$`*(message: ref Message): string {.base.} = "Message"
+method `$`*(message: ref QuitMessage): string = "Quit"
 
 proc subscribe*(handler: MessageHandler) =
   messageHandlers.add(handler)
@@ -19,13 +20,3 @@ proc subscribe*(handler: MessageHandler) =
 proc send*(self: ref Message) =
   for handler in messageHandlers:
     handler(self)
-
-
-# var queue: MessageQueue = @[]
-
-
-# proc enqueue*(self: ref Message) =
-#   queue.add(self)
-
-# proc flush*() =
-#   queue.setLen(0)

@@ -1,12 +1,5 @@
-from strutils import split
-
-# Constants
-const
-  versionFile = "version.txt"
-  pinnedVersion = staticRead(versionFile)
-
 # Package
-version = pinnedVersion.split('-')[0]  # don't include number of updates
+version = "0.1"
 author = "c0ntribut0r"
 description = "Enet network library wrapper"
 license = "MIT"

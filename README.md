@@ -30,6 +30,10 @@ C4 is being developed for custom needs. Please note that it's more educational p
 
 C4 tries to be clear and well-designed. Your contribution is highly appreciated! Sometimes even an idea or better design/implementation would be very helpful. Check out [current issues](https://github.com/c0ntribut0r/cat-400/issues).
 
+## TODOs
+
+* GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
+
 ## Tutorial
 
 Learn by coding your first game with c4! Less words - let's try to build something.

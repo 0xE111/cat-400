@@ -1,7 +1,7 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-from "../core/messages" import Message, QuitMessage, subscribe, send
+from "../core/messages" import Message, QuitMessage, subscribe, send, `$`
 
 
 type
@@ -17,7 +17,7 @@ proc `$`(event: sdl.Event): string = $event.kind
 
 
 method onMessage*(self: ref InputSystem, message: ref Message) {.base.} =
-  logging.debug(&"Input got new message: {message[]}")
+  logging.debug(&"Input got new message: {message}")
 
 method init*(self: ref InputSystem) {.base.} =
   logging.debug("Initializing input system")
@@ -41,7 +41,7 @@ method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
       discard
 
   if result != nil:
-    logging.debug(&"Handled event {event} -> new message {result[]}")
+    logging.debug(&"Handled event {event} -> new message {result}")
 
 method update*(self: ref InputSystem, dt: float) {.base.} =
   while sdl.pollEvent(tmpEvent.addr) != 0:
