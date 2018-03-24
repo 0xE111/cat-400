@@ -65,6 +65,9 @@ method send*(
 
   if immediate:
     enet.host_flush(self.host)
+
+method process*(self: ref NetworkSystem, message: ref Message) =
+  self.send(message)
  
 method init*(
   self: ref NetworkSystem,

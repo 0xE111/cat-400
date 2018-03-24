@@ -33,9 +33,9 @@ proc run*() =
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
-            echo("Nim version " & NimVersion)
-            echo("Framework version " & frameworkVersion)
-            echo("Project version " & config.version)
+            echo(config.version)
+            echo("C4 " & frameworkVersion)
+            echo("Nim " & NimVersion)
             echo("Compiled @ " & CompileDate & " " & CompileTime)
             return
           of "loglevel":
