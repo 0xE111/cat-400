@@ -1,8 +1,9 @@
 from logging import debug, fatal
 from strformat import `&`
 import "../wrappers/enet/enet"
-from "../core/messages" import Message, QuitMessage, subscribe, `$`
+from "../core/messages" import Message, QuitMessage, TestMessage, subscribe, `$`
 import "../wrappers/msgpack/msgpack"
+from streams import newStringStream, writeData, setPosition
 
 
 # ---- types ----
@@ -19,6 +20,7 @@ type
 # ---- register messages ----
 register(Message)
 register(Message, QuitMessage)
+register(Message, TestMessage)
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
@@ -40,6 +42,30 @@ proc remove[T](items: var seq[T], value: T) =
 
 
 # ---- methods ----
+method send*(
+  self: ref NetworkSystem,
+  message: ref Message,
+  peer: ptr enet.Peer = nil,  # set nil to broadcast
+  channelId:uint8 = 0,
+  reliable = false,
+  immediate = false
+) {.base.} =
+  var
+    data = pack(message)
+    packet = enet.packet_create(
+      data.cstring,
+      (data.cstring.len + 1).csize,
+      if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
+    )
+
+  if peer == nil:  # broadcast
+    enet.host_broadcast(self.host, channelId, packet)
+  else:
+    discard enet.peer_send(peer, channelId, packet)
+
+  if immediate:
+    enet.host_flush(self.host)
+
 method storeMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
   logging.debug(&"Network got new message: {message}")
 
@@ -76,15 +102,8 @@ method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
 method handleDisconnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer disconnected: {peer}")
  
-method handlePacket*(self: ref NetworkSystem, peer: enet.Peer, channelId: uint8, packet: enet.Packet) {.base.} =
-  logging.debug(&"Received packet {packet} from peer {peer}")
-  
-
-# ---- converters ----
-# proc getAddress(host: string, port: uint16): enet.Address =
-#   discard enet.address_set_host(result.addr, host.cstring)
-#   result.port = port
-
+method handleMessage*(self: ref NetworkSystem, message: ref Message, peer: enet.Peer, channelId: uint8) {.base.} =
+  logging.debug(&"Received message {message} from peer {peer}")
 
 method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.base.} =
   var enetAddress: enet.Address
@@ -112,7 +131,10 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false) 
   
 method update*(self: ref NetworkSystem, dt: float) {.base.} =
   ## Check whether there is any network event and process if any
-  var event: enet.Event
+  var
+    event: enet.Event
+    message: ref Message
+    stream = newStringStream()
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     # for each event type call corresponding handlers
@@ -121,35 +143,18 @@ method update*(self: ref NetworkSystem, dt: float) {.base.} =
         self.peers.add(event.peer)
         self.handleConnect(event.peer[])
       of EVENT_TYPE_RECEIVE:
-        self.handlePacket(event.peer[], event.channelID, event.packet[])
+        # TODO: the following code block is really ugly
+        stream.setPosition(0)
+        stream.writeData(event.packet[].data, event.packet[].dataLength)
+        stream.setPosition(0)
+        stream.unpack(message)
+        self.handleMessage(message, event.peer[], event.channelID)
         enet.packet_destroy(event.packet)
       of EVENT_TYPE_DISCONNECT:
         self.handleDisconnect(event.peer[])
         self.peers.remove(event.peer)
       else:
         discard
-
-method send*(
-  self: ref NetworkSystem,
-  peer: ptr enet.Peer = nil,  # set nil to broadcast
-  channelId:uint8 = 0,
-  data: string,
-  reliable = false,
-  immediate = false
-) {.base.} =
-  var packet = enet.packet_create(
-    data.cstring,
-    (data.cstring.len + 1).csize,
-    if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
-  )
-
-  if peer == nil:  # broadcast
-    enet.host_broadcast(self.host, channelId, packet)
-  else:
-    discard enet.peer_send(peer, channelId, packet)
-
-  if immediate:
-    enet.host_flush(self.host)
 
 {.experimental.}
 method `=destroy`*(self: ref NetworkSystem) {.base.} =

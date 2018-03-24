@@ -1,7 +1,7 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-from "../core/messages" import Message, QuitMessage, subscribe, send, `$`
+from "../core/messages" import Message, QuitMessage, TestMessage, subscribe, send, `$`
 
 
 type
@@ -36,7 +36,7 @@ method init*(self: ref InputSystem) {.base.} =
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
-      result = new(ref QuitMessage)
+      result = new(ref TestMessage)
     else:
       discard
 

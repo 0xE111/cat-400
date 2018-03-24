@@ -24,7 +24,7 @@ nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/wrappers/msgpac
 
 Use `register(BaseClass)` and then `register(BaseClass, ChildClass)`.
 Now when you call `pack` on `ref BaseClass`:
-- Internal rontime type's id will be packed. BaseClass instance will have id == -1, ChildClass instance will have id == 0 etc.
+- Internal runtime type's id will be packed. BaseClass instance will have id == -1, ChildClass instance will have id == 0 etc.
 - The class will be packed with respect to its runtime type (remember, you call `pack(ref BaseClass)` but this extension enforces packing of correct runtime type, as if you called `pack((ref ChildClass)(ref BaseClass))`).
 
 `Unpack` will do the same - when you `unpack(ref BaseClass)`, it will still preserve correct runtime type and data.

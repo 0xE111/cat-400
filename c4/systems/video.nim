@@ -24,6 +24,8 @@ var
   # DEMO!!!
   model: horde3d.Node  
   angle: int
+  fontRes: horde3d.Res
+  panelRes: horde3d.Res
 
 
 const
@@ -86,6 +88,9 @@ method init*(
       raise newException(LibraryError, "Could not load Horde3D resources")
 
     # DEMO!!!
+    fontRes = AddResource(ResTypes.Material, "overlays/font.material.xml", 0.cint)
+    panelRes = AddResource(ResTypes.Material, "overlays/panel.material.xml", 0.cint)
+
     var modelRes = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml", 0.cint)
     # discard modelRes.LoadResource(model, model.len + 1)
     logging.debug("Searching for assets in " & assetsDir)
@@ -102,11 +107,11 @@ method init*(
     self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
     self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
     self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, 400.cint)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, 300.cint)
-    self.camera.SetupCameraView(45.cfloat, (400/300).cfloat, (0.5).cfloat, 2048.cfloat)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, window.width.cint)
+    self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, window.height.cint)
+    self.camera.SetupCameraView(45.cfloat, (window.width/window.height).cfloat, (0.5).cfloat, 2048.cfloat)
 
-    self.pipeline.ResizePipelineBuffers(400.cint, 300.cint)
+    self.pipeline.ResizePipelineBuffers(window.width.cint, window.height.cint)
 
   except LibraryError:
     horde3d.Release()
@@ -118,6 +123,7 @@ method init*(
   messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
 
 method update*(self: ref VideoSystem, dt: float) {.base.} =
+  horde3d.utShowFrameStats(fontRes, panelRes, 1)
   # DEMO!!!
   model.SetNodeTransform(
     0, 0, -5,  # Translation
@@ -129,6 +135,7 @@ method update*(self: ref VideoSystem, dt: float) {.base.} =
   self.camera.Render()
   self.window.glSwapWindow()
   horde3d.FinalizeFrame()  # TODO: is this needed?
+  horde3d.ClearOverlays()
 
 {.experimental.}
 method `=destroy`*(self: ref VideoSystem) {.base.} =

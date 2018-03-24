@@ -4,6 +4,7 @@ from utils.loading import load
 from systems.input import InputSystem
 from systems.network import NetworkSystem
 from systems.video import VideoSystem, Window
+from systems.physics import PhysicsSystem
 
 
 type
@@ -16,6 +17,9 @@ type
     logLevel: logging.Level,
     mode: Mode,
     systems: tuple[
+      physics: tuple[
+        instance: ref PhysicsSystem,
+      ],
       input: tuple[
         instance: ref InputSystem,
       ],
@@ -37,6 +41,9 @@ var
     logLevel: logging.Level.lvlWarn,
     mode: Mode.default,
     systems: (
+      physics: (
+        instance: new(ref PhysicsSystem),
+      ),
       input: (
         instance: new(ref InputSystem),
       ),
@@ -49,8 +56,8 @@ var
         window: (
           x: 400,
           y: 400,
-          width: 400,
-          height: 300,
+          width: 600,
+          height: 400,
           fullscreen: false,
         ),
       )
