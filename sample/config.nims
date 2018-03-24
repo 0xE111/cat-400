@@ -1,1 +1,0 @@
-switch("define", "projectDir=" & thisDir())

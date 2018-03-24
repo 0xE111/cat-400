@@ -1,16 +1,11 @@
+from c4.core.messages import Message
+import c4.wrappers.msgpack.msgpack
+
+
 type
-  MessageKind* = enum
-    msgQuit
+  CustomMessage* = object of Message
+    data: int8
 
-  Message* = object
-    case kind*: MessageKind
-      of msgQuit:
-        discard
+register(Message, CustomMessage)
 
-  MessageQueue* = seq[ref Message]
-        
-
-var queue*: MessageQueue = @[]
-
-proc flush*(queue: var MessageQueue) =
-  queue.setLen(0)
+method `$`(self: ref CustomMessage): string = "Custom"
