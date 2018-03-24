@@ -6,6 +6,7 @@ from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
 from "../core/messages" import Message, subscribe, `$`
+from "../systems" import System, init, update
 
 
 type
@@ -14,7 +15,7 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* = object {.inheritable.}
+  VideoSystem* = object of System
     window: sdl.Window
     pipeline: horde3d.Res
     camera: horde3d.Node
@@ -34,9 +35,6 @@ const
 let
   assetsDir = getAppDir() / "assets/video"
 
-
-method storeMessage*(self: ref VideoSystem, message: ref Message) {.base.} =
-  logging.debug(&"Video got new message: {message}")
 
 method init*(
   self: ref VideoSystem,
@@ -120,9 +118,11 @@ method init*(
 
   logging.debug("Horde3d initialized")
 
-  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
+  procCall ((ref System)self).init()
 
-method update*(self: ref VideoSystem, dt: float) {.base.} =
+method update*(self: ref VideoSystem, dt: float) =
+  procCall ((ref System)self).update(dt)
+
   horde3d.utShowFrameStats(fontRes, panelRes, 1)
   # DEMO!!!
   model.SetNodeTransform(

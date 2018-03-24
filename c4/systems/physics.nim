@@ -1,20 +1,18 @@
 from "../core/messages" import Message, subscribe, `$`
 from logging import debug
 from strformat import `&`
+from "../systems" import System, init, update
 
 
 type
-  PhysicsSystem* = object {.inheritable.}
+  PhysicsSystem* = object of System
 
 
-method storeMessage*(self: ref PhysicsSystem, message: ref Message) {.base.} =
-  logging.debug(&"Physics got new message: {message}")
+method init*(self: ref PhysicsSystem) =
+  procCall ((ref System)self).init()
 
-method init*(self: ref PhysicsSystem) {.base.} =
-  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
-
-method update*(self: ref PhysicsSystem, dt: float) {.base.} =
-  discard
+method update*(self: ref PhysicsSystem, dt: float) =
+  procCall ((ref System)self).update(dt)
 
 {.experimental.}
 method `=destroy`*(self: ref PhysicsSystem) {.base.} =

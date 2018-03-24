@@ -1,6 +1,7 @@
 from logging import debug, fatal
 from strformat import `&`
 import "../wrappers/enet/enet"
+from "../systems" import System, init, update
 from "../core/messages" import Message, QuitMessage, subscribe, `$`
 import "../wrappers/msgpack/msgpack"
 from streams import newStringStream, writeData, setPosition
@@ -12,7 +13,7 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  NetworkSystem* = object {.inheritable.}
+  NetworkSystem* = object of System
     host: ptr enet.Host
     peers: seq[ptr enet.Peer]
 
@@ -64,10 +65,7 @@ method send*(
 
   if immediate:
     enet.host_flush(self.host)
-
-method storeMessage*(self: ref NetworkSystem, message: ref Message) {.base.} =
-  logging.debug(&"Network got new message: {message}")
-
+ 
 method init*(
   self: ref NetworkSystem,
   port: Port = 0,
@@ -93,7 +91,7 @@ method init*(
 
   self.peers = @[]
 
-  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
+  procCall ((ref System)self).init()
 
 method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
   logging.debug(&"Peer connected: {peer}")
@@ -128,7 +126,7 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false) 
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
   
-method update*(self: ref NetworkSystem, dt: float) {.base.} =
+method update*(self: ref NetworkSystem, dt: float) =
   ## Check whether there is any network event and process if any
   var
     event: enet.Event
@@ -154,6 +152,8 @@ method update*(self: ref NetworkSystem, dt: float) {.base.} =
         self.peers.remove(event.peer)
       else:
         discard
+  
+  procCall ((ref System)self).update(dt)
 
 {.experimental.}
 method `=destroy`*(self: ref NetworkSystem) {.base.} =

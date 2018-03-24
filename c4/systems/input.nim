@@ -53,7 +53,7 @@ method update*(self: ref InputSystem, dt: float) =
     if message != nil:
       message.broadcast()
 
-  procCall ((ref System)self).update(dt)  # super() call
+  procCall ((ref System)self).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
 
 {.experimental.}
 method `=destroy`*(self: ref InputSystem) {.base.} =
