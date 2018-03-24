@@ -1,7 +1,7 @@
 from logging import debug, fatal
 from strformat import `&`
 import "../wrappers/enet/enet"
-from "../core/messages" import Message, QuitMessage, TestMessage, subscribe, `$`
+from "../core/messages" import Message, QuitMessage, subscribe, `$`
 import "../wrappers/msgpack/msgpack"
 from streams import newStringStream, writeData, setPosition
 
@@ -20,7 +20,6 @@ type
 # ---- register messages ----
 register(Message)
 register(Message, QuitMessage)
-register(Message, TestMessage)
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =

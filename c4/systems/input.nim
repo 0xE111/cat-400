@@ -1,25 +1,28 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-from "../core/messages" import Message, QuitMessage, TestMessage, subscribe, send, `$`
+from "../systems" import System, init, update
+import "../core/messages"
 
 
 type
-  InputSystem* = object {.inheritable.}
+  InputSystem* = object of System
 
 
 var
-  tmpEvent = sdl.Event()
-  tmpMessage: ref Message
+  event = sdl.Event()
+  message: ref Message
 
 
 proc `$`(event: sdl.Event): string = $event.kind
 
 
-method storeMessage*(self: ref InputSystem, message: ref Message) {.base.} =
-  logging.debug(&"Input got new message: {message}")
+# ---- message handling ----
+method process*(self: ref InputSystem, message: ref QuitMessage) =
+  logging.debug("Input processing Quit message")
 
-method init*(self: ref InputSystem) {.base.} =
+# ---- workflow methods ----
+method init*(self: ref InputSystem) =
   logging.debug("Initializing input system")
 
   try:
@@ -31,23 +34,26 @@ method init*(self: ref InputSystem) {.base.} =
     logging.fatal(getCurrentExceptionMsg())
     raise
   
-  messages.subscribe(proc (message: ref Message) = self.storeMessage(message))
+  procCall ((ref System)self).init()  # super() call
 
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
-      result = new(ref TestMessage)
+      result = new(ref QuitMessage)
     else:
       discard
 
   if result != nil:
     logging.debug(&"Handled event {event} -> new message {result}")
 
-method update*(self: ref InputSystem, dt: float) {.base.} =
-  while sdl.pollEvent(tmpEvent.addr) != 0:
-    tmpMessage = self.handle(tmpEvent)
-    if tmpMessage != nil:
-      tmpMessage.send()
+method update*(self: ref InputSystem, dt: float) =
+  # process all network events
+  while sdl.pollEvent(event.addr) != 0:
+    message = self.handle(event)
+    if message != nil:
+      message.broadcast()
+
+  procCall ((ref System)self).update(dt)  # super() call
 
 {.experimental.}
 method `=destroy`*(self: ref InputSystem) {.base.} =

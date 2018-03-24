@@ -10,12 +10,12 @@ type
   CustomInputSystem* = object of InputSystem
 
 
-method handle*(self: ref CustomInputSystem, event: sdl.Event): ref Message =
-  case event.kind
-    of sdl.QUIT:
-      result = new(ref CustomMessage)
-    else:
-      discard
+# method handle*(self: ref CustomInputSystem, event: sdl.Event): ref Message =
+#   case event.kind
+#     of sdl.QUIT:
+#       result = new(ref CustomMessage)
+#     else:
+#       discard
 
-  if result != nil:
-    logging.debug(&"Handled event -> new message {result}")
+#   if result != nil:
+#     logging.debug(&"Handled event -> new message {result}")
