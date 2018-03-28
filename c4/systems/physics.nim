@@ -6,7 +6,7 @@ from "../systems" import System, init, update
 
 type
   PhysicsSystem* = object of System
-  Physics* = object
+  Physics* = object {.inheritable.}
     x*, y*, z*: float
 
 

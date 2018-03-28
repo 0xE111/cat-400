@@ -20,7 +20,7 @@ proc newEntity*(): Entity =
   entities.incl(result)  # add entity to global entities registry
 
 proc delete*(entity: Entity) =
-  ## Deletes the Entity.
+  ## Deletes the Entity
   entities.excl(entity)  # will not alert if entity does not exist
   # TODO: delete all components related to this entity
 

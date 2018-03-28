@@ -1,5 +1,9 @@
-from c4.core import run
-from c4.conf import config
+import c4/[
+  conf,
+  core,
+]
+
+from systems.physics import CustomPhysics
 from systems.input import CustomInputSystem
 
 
@@ -9,4 +13,4 @@ config.systems.input.instance = new(ref CustomInputSystem)
 
 
 when isMainModule:
-  run()
+  core.run()

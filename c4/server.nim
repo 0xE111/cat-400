@@ -3,7 +3,21 @@ from utils.loop import runLoop
 from conf import Config
 from systems.network import init, update
 from systems.physics import init, update, Physics
-from core.scene import Scene, loadTestData
+import core.entities
+import core.messages
+
+
+proc load() =
+  let player = newEntity()  # create new entity
+  (ref AddEntityMessage)(entity: player).broadcast()  # send message
+
+  player[ref Physics] = (ref Physics)(x: 0, y: 0, z: 0)  # init physics for player
+  player[ref Physics].x = 1  # update player physics
+
+  let cube = newEntity()
+  (ref AddEntityMessage)(entity: cube).broadcast()
+
+  cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
 
 
 proc run*(config: Config) =
@@ -15,9 +29,7 @@ proc run*(config: Config) =
   var physics = config.systems.physics.instance
   physics.init()
 
-
-  var scene = Scene()
-  scene.loadTestData()
+  load()
 
   runLoop(
     updatesPerSecond = 30,

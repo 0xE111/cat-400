@@ -18,10 +18,6 @@ type
     peers: seq[ptr enet.Peer]
 
 
-# ---- register messages ----
-register(Message)
-register(Message, QuitMessage)
-
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
   $address.host & ":" & $address.port
