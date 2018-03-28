@@ -4,8 +4,7 @@ import c4.wrappers.msgpack.msgpack
 
 type
   CustomMessage* = object of Message
-    data: int8
+    data*: int8
 
+method `$`*(self: ref CustomMessage): string = "Custom"
 register(Message, CustomMessage)
-
-method `$`(self: ref CustomMessage): string = "Custom"

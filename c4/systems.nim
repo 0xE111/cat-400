@@ -21,7 +21,6 @@ proc add*(self: var MessageQueue, value: ref Message) =
 # ---- System procs ----
 method store*(self: ref System, message: ref Message) {.base.} =
   self.messageQueue.add(message)
-  logging.debug(&"Stored new message: {message}")
 
 method process*(self: ref System, message: ref Message) {.base.} =
   discard

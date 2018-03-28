@@ -1,8 +1,9 @@
 from logging import debug, fatal
 from strformat import `&`
-import "../wrappers/enet/enet"
 from "../systems" import System, init, update
-from "../core/messages" import Message, QuitMessage, subscribe, `$`
+import "../core/messages"  # important! import everything from this module
+import "../core/messages/builtins"
+import "../wrappers/enet/enet"
 import "../wrappers/msgpack/msgpack"
 from streams import newStringStream, writeData, setPosition
 

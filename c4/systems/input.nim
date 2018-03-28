@@ -2,7 +2,7 @@ from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
 from "../systems" import System, init, update
-import "../core/messages"
+import "../core/messages", "../core/messages/builtins"
 
 
 type
@@ -44,7 +44,7 @@ method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
       discard
 
   if result != nil:
-    logging.debug(&"Handled event {event} -> new message {result}")
+    logging.debug(&"Event produced new message: {result}")
 
 method update*(self: ref InputSystem, dt: float) =
   # process all network events

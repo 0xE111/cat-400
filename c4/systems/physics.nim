@@ -1,6 +1,4 @@
-from "../core/messages" import Message, subscribe, `$`
 from logging import debug
-from strformat import `&`
 from "../systems" import System, init, update
 
 

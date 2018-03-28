@@ -1,4 +1,4 @@
-import tables  # TODO: import only required symbols
+import tables
 from streams import Stream
 
 import msgpack4nim
