@@ -6,6 +6,8 @@ from "../systems" import System, init, update
 
 type
   PhysicsSystem* = object of System
+  Physics* = object
+    x*, y*, z*: float
 
 
 method init*(self: ref PhysicsSystem) =

@@ -1,8 +1,9 @@
 from logging import debug
-from utils.loop import runLoop, getFps
+from utils.loop import runLoop
 from conf import Config
 from systems.network import init, update
-from systems.physics import init, update
+from systems.physics import init, update, Physics
+from core.scene import Scene, loadTestData
 
 
 proc run*(config: Config) =
@@ -13,6 +14,10 @@ proc run*(config: Config) =
 
   var physics = config.systems.physics.instance
   physics.init()
+
+
+  var scene = Scene()
+  scene.loadTestData()
 
   runLoop(
     updatesPerSecond = 30,

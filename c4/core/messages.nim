@@ -1,3 +1,6 @@
+from entities import Entity
+
+
 type
   MessageKind* = enum
     msgQuit

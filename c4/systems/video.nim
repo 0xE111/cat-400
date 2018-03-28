@@ -99,7 +99,7 @@ method init*(
 
     var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
     light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-    light.SetNodeParamF(Light.RadiusF, 0.cint, 100.cfloat)
+    light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
 
     # setting up camera
     self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
