@@ -4,7 +4,7 @@ from logging import debug
 
 import c4.core.messages
 from c4.systems.input import InputSystem, handle
-from "../core/messages" as custom_messages import CustomMessage
+import "../core/messages" as custom_messages
 
 
 type
@@ -14,7 +14,7 @@ type
 method handle*(self: ref CustomInputSystem, event: sdl.Event): ref Message =
   case event.kind
     of sdl.MOUSEBUTTONDOWN:
-      result = (ref CustomMessage)(data: 5)
+      result = (ref LoadSceneMessage)()
     else:
       # fallback to default implementation
       result = procCall(((ref InputSystem)self).handle(event))

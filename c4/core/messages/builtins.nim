@@ -14,7 +14,7 @@ type
   AddEntityMessage* = object of EntityMessage
   DelEntityMessage* = object of EntityMessage
 
-  PhysicsMessage* = object of Message
+  PhysicsMessage* = object of EntityMessage
     physics*: ref Physics
 
 

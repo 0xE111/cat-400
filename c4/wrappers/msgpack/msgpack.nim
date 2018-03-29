@@ -52,10 +52,10 @@ template register*(T: typedesc, C: typedesc): untyped =
       proc(s: Stream, value: ref T) {.closure.} =
         s.pack((ref C)(value)),
       proc(s: Stream, value: var ref T) {.closure.} =
+        # TODO: this is damn ugly
         var t: ref C
         s.unpack(t)
         value = t,
-        # s.unpack((ref C)(value)),  # TODO: use this
     )
   )
 

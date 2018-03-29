@@ -37,7 +37,21 @@ proc remove[T](items: var seq[T], value: T) =
   if index != -1:
     items.del(index)
 
+proc toString(packet: enet.Packet): string =
+  result = newString(packet.dataLength)
+  copyMem(result.cstring, packet.data, packet.dataLength)
+  # result.cstring[packet.dataLength] = '\0'
 
+
+# from strutils import join
+
+# proc asOrd(s: cstring): string =
+#   result = "["
+#   for c in s:
+#     result = result & $c.ord & " "
+#   result = result & "]"
+
+  
 # ---- methods ----
 method send*(
   self: ref NetworkSystem,
@@ -48,12 +62,14 @@ method send*(
   immediate = false
 ) {.base.} =
   var
-    data = pack(message)
+    data: string = pack(message)
     packet = enet.packet_create(
       data.cstring,
-      (data.cstring.len + 1).csize,
+      data.len.csize,  # do not read trailing \0
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
+
+  logging.debug(&"Network sending message: {message} (packed as {data.stringify} of len {data.len})")
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -94,13 +110,13 @@ method init*(
   procCall ((ref System)self).init()
 
 method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
-  logging.debug(&"Peer connected: {peer}")
+  discard
 
 method handleDisconnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
-  logging.debug(&"Peer disconnected: {peer}")
+  discard
  
 method handleMessage*(self: ref NetworkSystem, message: ref Message, peer: enet.Peer, channelId: uint8) {.base.} =
-  logging.debug(&"Received message {message} from peer {peer}")
+  discard
 
 method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.base.} =
   var enetAddress: enet.Address
@@ -125,29 +141,28 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false) 
   
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
-  
+
 method update*(self: ref NetworkSystem, dt: float) =
   ## Check whether there is any network event and process if any
   var
     event: enet.Event
     message: ref Message
-    stream = newStringStream()
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     # for each event type call corresponding handlers
     case event.`type`
       of EVENT_TYPE_CONNECT:
         self.peers.add(event.peer)
+        logging.debug(&"Peer connected: {event.peer[]}")
         self.handleConnect(event.peer[])
       of EVENT_TYPE_RECEIVE:
         # TODO: the following code block is really ugly
-        stream.setPosition(0)
-        stream.writeData(event.packet[].data, event.packet[].dataLength)
-        stream.setPosition(0)
-        stream.unpack(message)
+        event.packet[].toString().unpack(message)
+        logging.debug(&"Unpacked message {message} from peer {event.peer[]}")
         self.handleMessage(message, event.peer[], event.channelID)
         enet.packet_destroy(event.packet)
       of EVENT_TYPE_DISCONNECT:
+        logging.debug(&"Peer disconnected: {event.peer[]}")
         self.handleDisconnect(event.peer[])
         self.peers.remove(event.peer)
       else:

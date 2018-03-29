@@ -7,20 +7,22 @@ import core.entities
 import core.messages, core.messages.builtins
 
 
-proc load() =
+proc load*() =
   let player = newEntity()  # create new entity
   (ref AddEntityMessage)(entity: player).broadcast()  # send message
 
-  player[ref Physics] = (ref Physics)(x: 0, y: 0, z: 0)  # init physics for player
-  (ref PhysicsMessage)(physics: player[ref Physics]).broadcast()
+  player[ref Physics] = (ref Physics)(x: 1, y: 2, z: 3)  # init physics for player
+  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).broadcast()
   player[ref Physics].x = 1  # update player physics
-  (ref PhysicsMessage)(physics: player[ref Physics]).broadcast()
+  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).broadcast()
 
   let cube = newEntity()
   (ref AddEntityMessage)(entity: cube).broadcast()
 
   cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
-  (ref PhysicsMessage)(physics: player[ref Physics]).broadcast()
+  (ref PhysicsMessage)(entity: cube, physics: player[ref Physics]).broadcast()
+
+  logging.debug("Server scene loaded")
 
 
 proc run*(config: Config) =
@@ -31,8 +33,6 @@ proc run*(config: Config) =
 
   var physics = config.systems.physics.instance
   physics.init()
-
-  load()
 
   runLoop(
     updatesPerSecond = 30,
