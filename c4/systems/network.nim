@@ -41,16 +41,6 @@ proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
   copyMem(result.cstring, packet.data, packet.dataLength)
   # result.cstring[packet.dataLength] = '\0'
-
-
-# from strutils import join
-
-# proc asOrd(s: cstring): string =
-#   result = "["
-#   for c in s:
-#     result = result & $c.ord & " "
-#   result = result & "]"
-
   
 # ---- methods ----
 method send*(
