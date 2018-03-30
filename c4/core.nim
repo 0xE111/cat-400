@@ -53,29 +53,19 @@ proc run*() =
             return
       else: discard
 
-  # separate this process into "client" and "server" processes
-  # TODO: `fork()` is available on Unix only; user some other function
-  # https://nim-lang.org/docs/osproc.html
-  let
-    childPid = if mode == Mode.server: 1 else: fork()
-    isServerProcess = childPid != 0
- 
-  if childPid < 0:
-    raise newException(SystemError, "Error forking a process")
+  if mode == Mode.both:
+    return   # TODO https://nim-lang.org/docs/osproc.html
+    # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
+    # TODO: addQuitProc?
 
-  # the following code will be executed by both processes
-
-  # set up logging
   let
-    logFile = joinPath(getAppDir(), (if isServerProcess: "server.log" else: "client.log"))
-    logFmtStr = "[$datetime] " & (if isServerProcess: "SERVER" else: "CLIENT") & " $levelname: "
+    logFile = joinPath(getAppDir(), (if mode == Mode.server: "server.log" else: "client.log"))
+    logFmtStr = "[$datetime] " & (if mode == Mode.server: "SERVER" else: "CLIENT") & " $levelname: "
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=config.logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & frameworkVersion)
 
-  # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
-  # TODO: addQuitProc?
-  if isServerProcess:
+  if mode == Mode.server:
     server.run(config)
   else:
     client.run(config)

@@ -8,7 +8,7 @@ from systems.physics import PhysicsSystem
 
 
 type
-  Mode* {.pure.} = enum
+  Mode* = enum
     client, server, both
 
   Config* = tuple[
