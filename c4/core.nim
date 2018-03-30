@@ -1,12 +1,13 @@
-from strutils import format
 from posix import fork
 from parseopt import nil
 from logging import nil
 from ospaths import joinPath
 from os import getAppDir
 
-from strutils import join
+from strutils import join, toLowerAscii, toUpperAscii, parseEnum
+from strformat import `&`
 from utils.helpers import index
+from sequtils import mapIt
 
 from conf import config, Mode
 from server import run
@@ -15,20 +16,22 @@ from client import run
 
 const 
   frameworkVersion = staticRead("version.txt")
-  help = """
+
+  logLevels = logging.LevelNames.mapIt(it.toLowerAscii).join("|")
+  modes = Mode.mapIt($it).join("|")
+  help = &"""
     -v, --version - print version
-    --loglevel=[$logLevels] - specify log level
+    -l, --loglevel=[{logLevels}] - specify log level
     -h, --help - print help
-    -s, --server - launch server only (without client)
-  """.format([
-    "logLevels", logging.LevelNames.join("|"),
-  ])
+    -m, --mode=[{modes}] - launch server/client/both 
+  """
 
 
 proc run*() =
-  # TODO: use https://github.com/c-blake/cligen
-  # parse command line options
-  for kind, key, val in parseopt.getopt():
+  var mode = Mode.both
+
+  # TODO: use https://github.com/c-blake/cligen?
+  for kind, key, value in parseopt.getopt():
     case kind
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
@@ -38,15 +41,15 @@ proc run*() =
             echo("Nim " & NimVersion)
             echo("Compiled @ " & CompileDate & " " & CompileTime)
             return
-          of "loglevel":
-            config.logLevel = logging.LevelNames.index(val)  # overwrite default log level
+          of "loglevel", "l":
+            config.logLevel = logging.LevelNames.index(value.toUpperAscii)
           of "help", "h":
             echo help
             return
-          of "server", "s":
-            config.mode = Mode.server
+          of "mode", "m":
+            mode = parseEnum[Mode](value)
           else:
-            echo("Unknown option: " & key & "=" & val)
+            echo("Unknown option: " & key & "=" & value)
             return
       else: discard
 
@@ -54,7 +57,7 @@ proc run*() =
   # TODO: `fork()` is available on Unix only; user some other function
   # https://nim-lang.org/docs/osproc.html
   let
-    childPid = if config.mode == Mode.server: 1 else: fork()
+    childPid = if mode == Mode.server: 1 else: fork()
     isServerProcess = childPid != 0
  
   if childPid < 0:

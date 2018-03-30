@@ -9,13 +9,12 @@ from systems.physics import PhysicsSystem
 
 type
   Mode* {.pure.} = enum
-    default, server
+    client, server, both
 
   Config* = tuple[
     title: string,
     version: string,
     logLevel: logging.Level,
-    mode: Mode,
     systems: tuple[
       physics: tuple[
         instance: ref PhysicsSystem,
@@ -39,7 +38,6 @@ var
     title: "",
     version: "0.0",
     logLevel: logging.Level.lvlWarn,
-    mode: Mode.default,
     systems: (
       physics: (
         instance: new(ref PhysicsSystem),
