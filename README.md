@@ -2,26 +2,6 @@
 
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
-## List of other nim game engines/frameworks
-
-Link | Comments
----- | -------
-https://github.com/yglukhov/rod | No docs
-https://github.com/zacharycarter/zengine | 
-https://github.com/Vladar4/nimgame2 | 
-https://github.com/ftsf/nico | 
-https://github.com/rnentjes/nim-ludens |
-https://github.com/dustinlacewell/dadren |
-https://github.com/Polkm/nimatoad |
-https://github.com/sheosi/tart |
-https://github.com/copygirl/gaem | X
-https://github.com/dadren/dadren | X
-https://github.com/fragworks/frag | X
-https://github.com/hcorion/Jonah-Engine | X
-https://github.com/jsudlow/cush | X
-https://github.com/def-/nim-platformer | X
-https://github.com/Vladar4/nimgame | X
-
 ## Brief overview
 
 C4 is being developed for custom needs. Please note that it's more educational project rather then professional software, however if you like it you may use it and make contributions.
@@ -103,10 +83,10 @@ C4 uses client-server architecture. This means that unlike other nim game engine
 
 Important fact is that server is always launched. Even if you play a single player mode, your client is still connecting to a local server on the same machine. If you connect to remote host, you may use your local server for client-side prediction (which is an advanced topic).
 
-C4 allows you to launch your app in a "headless mode" - just a server without a client. This is useful if you want to launch your custom server on VPS or so and you don't need the client at all. We will also use this mode during first steps so that we don't have to care about the client. Use `-s` flag to launch server only. You will see something like this (output may vary depending on c4 version):
+C4 allows you to launch your app in a "headless mode" - just a server without a client. This is useful if you want to launch your custom server on VPS or so and you don't need the client at all. We will also use this mode during first steps so that we don't have to care about the client. Use `--mode=server` flag to launch server only. You will see something like this (output may vary depending on c4 version):
 
 ```shell
-nim c -r main.nim --loglevel=DEBUG -s
+nim c -r main.nim --loglevel=DEBUG --mode=server
 ...
 [2018-01-10T21:48:07] SERVER DEBUG: Version 0.1.1-19
 [2018-01-10T21:48:07] SERVER DEBUG: Starting server
