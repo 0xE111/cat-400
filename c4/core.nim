@@ -2,7 +2,7 @@ from posix import fork
 from parseopt import nil
 from logging import nil
 from ospaths import joinPath
-from osproc import startProcess, running, close, ProcessOption
+from osproc import startProcess, running, terminate, ProcessOption
 from os import getAppDir, getAppFilename, commandLineParams, sleep
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
@@ -75,8 +75,8 @@ proc run*() =
     while serverProcess.running and clientProcess.running:
       sleep(1000 * 2)
     
-    clientProcess.close()
-    serverProcess.close()
+    clientProcess.terminate()
+    serverProcess.terminate()
     return
 
   let
