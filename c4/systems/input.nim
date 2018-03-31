@@ -14,7 +14,7 @@ var
   message: ref Message
 
 
-proc `$`(event: sdl.Event): string = $event.kind
+proc `$`*(event: sdl.Event): string = $event.kind
 
 
 # ---- message handling ----

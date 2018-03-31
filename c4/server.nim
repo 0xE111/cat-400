@@ -5,24 +5,14 @@ from systems.network import init, update
 from systems.physics import init, update, Physics
 import core.entities
 import core.messages, core.messages.builtins
+from core.states import State, onLeave, onEnter
 
 
-proc load*() =
-  let player = newEntity()  # create new entity
-  (ref AddEntityMessage)(entity: player).broadcast()  # send message
+type
+  InitialState* = object of State
+  LoadingState* = object of State
 
-  player[ref Physics] = (ref Physics)(x: 1, y: 2, z: 3)  # init physics for player
-  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).broadcast()
-  player[ref Physics].x = 1  # update player physics
-  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).broadcast()
-
-  let cube = newEntity()
-  (ref AddEntityMessage)(entity: cube).broadcast()
-
-  cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
-  (ref PhysicsMessage)(entity: cube, physics: player[ref Physics]).broadcast()
-
-  logging.debug("Server scene loaded")
+var state*: ref State = new(InitialState)
 
 
 proc run*(config: Config) =

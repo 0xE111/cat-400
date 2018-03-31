@@ -1,10 +1,11 @@
-import c4/[
-  conf,
-  core,
-]
+import c4.conf
+import c4.core
 
-from systems.physics import CustomPhysics
-from systems.input import CustomInputSystem
+import systems.physics
+import systems.input
+
+import core.messages
+import core.states
 
 
 config.title = "Sample game"
