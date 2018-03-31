@@ -2,16 +2,22 @@ from posix import fork
 from parseopt import nil
 from logging import nil
 from ospaths import joinPath
-from os import getAppDir
+from osproc import startProcess, running, close, ProcessOption
+from os import getAppDir, getAppFilename, commandLineParams, sleep
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
 from utils.helpers import index
 from sequtils import mapIt
 
-from conf import config, Mode
+from conf import config
 from server import run
 from client import run
+
+
+type
+  Mode {.pure.} = enum
+    client, server, multi
 
 
 const 
@@ -28,7 +34,7 @@ const
 
 
 proc run*() =
-  var mode = Mode.both
+  var mode = Mode.multi
 
   # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
@@ -36,10 +42,10 @@ proc run*() =
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
-            echo(config.version)
-            echo("C4 " & frameworkVersion)
-            echo("Nim " & NimVersion)
-            echo("Compiled @ " & CompileDate & " " & CompileTime)
+            echo config.version
+            echo "C4 " & frameworkVersion
+            echo "Nim " & NimVersion
+            echo "Compiled @ " & CompileDate & " " & CompileTime
             return
           of "loglevel", "l":
             config.logLevel = logging.LevelNames.index(value.toUpperAscii)
@@ -49,14 +55,29 @@ proc run*() =
           of "mode", "m":
             mode = parseEnum[Mode](value)
           else:
-            echo("Unknown option: " & key & "=" & value)
+            echo "Unknown option: " & key & "=" & value
             return
       else: discard
 
-  if mode == Mode.both:
-    return   # TODO https://nim-lang.org/docs/osproc.html
-    # TODO: no way to check whether any of processes was killed (but they should be killed simultaneously)
-    # TODO: addQuitProc?
+  if mode == Mode.multi:
+    let
+      serverProcess = startProcess(
+        command=getAppFilename(),
+        args=commandLineParams() & "--mode=server",
+        options={poParentStreams},
+      )
+      clientProcess = startProcess(
+        command=getAppFilename(),
+        args=commandLineParams() & "--mode=client",
+        options={poParentStreams},
+      )
+
+    while serverProcess.running and clientProcess.running:
+      sleep(1000 * 2)
+    
+    clientProcess.close()
+    serverProcess.close()
+    return
 
   let
     logFile = joinPath(getAppDir(), (if mode == Mode.server: "server.log" else: "client.log"))

@@ -8,9 +8,6 @@ from systems.physics import PhysicsSystem
 
 
 type
-  Mode* = enum
-    client, server, both
-
   Config* = tuple[
     title: string,
     version: string,
