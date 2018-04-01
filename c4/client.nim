@@ -1,13 +1,13 @@
 from logging import debug
 from utils.loop import runLoop
-from conf import Config
+import config
 
 import systems.network
 import systems.input
 import systems.video
 
 
-proc run*(config: Config) =
+proc run*() =
   logging.debug("Starting client")
 
   var network = config.systems.network.instance

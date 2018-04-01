@@ -1,6 +1,6 @@
 from logging import debug
 from utils.loop import runLoop
-from conf import config
+import config
 from systems.network as network_module import NetworkSystem, init, update
 from systems.physics as physics_module import PhysicsSystem, init, update, Physics
 

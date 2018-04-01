@@ -10,7 +10,7 @@ from strformat import `&`
 from utils.helpers import index
 from sequtils import mapIt
 
-from conf import config
+import config
 from server import run
 import core.states
 from client import run
@@ -98,4 +98,4 @@ proc run*() =
   if mode == Mode.server:
     server.run(initialState=new(server.InitialState))
   else:
-    client.run(config)
+    client.run()

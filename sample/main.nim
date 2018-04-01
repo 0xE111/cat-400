@@ -1,4 +1,4 @@
-import c4.conf
+import c4.config
 import c4.core
 
 import systems.physics

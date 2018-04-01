@@ -35,12 +35,12 @@ method init*(self: ref InputSystem) =
     logging.fatal(getCurrentExceptionMsg())
     raise
   
-  procCall ((ref System)self).init()  # super() call
+  procCall ((ref System)self).init()
 
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
-      result = new(QuitMessage)
+      result = new(QuitMessage)  # TODO: move to defaults?
     else:
       discard
 
