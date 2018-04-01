@@ -3,6 +3,7 @@ from logging import debug
 import c4.core.messages
 import c4.core.messages.builtins
 import c4.core.entities
+import c4.core.states
 
 import c4.systems.network
 import c4.systems.physics
@@ -25,4 +26,6 @@ method onEnter(self: ref LoadingState) =
   cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
   (ref PhysicsMessage)(entity: cube, physics: player[ref Physics]).broadcast()
 
-  logging.debug("Server scene loaded")
+  logging.debug "Server scene loaded"
+
+  server.state.switch(new(RunningState))

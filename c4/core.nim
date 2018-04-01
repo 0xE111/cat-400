@@ -12,6 +12,7 @@ from sequtils import mapIt
 
 from conf import config
 from server import run
+import core.states
 from client import run
 
 
@@ -87,6 +88,7 @@ proc run*() =
   logging.debug("Version " & frameworkVersion)
 
   if mode == Mode.server:
-    server.run(config)
+    server.state.switch(new(server.InitialState))
+    server.run()
   else:
     client.run(config)

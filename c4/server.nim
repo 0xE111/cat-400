@@ -1,35 +1,56 @@
 from logging import debug
 from utils.loop import runLoop
-from conf import Config
-from systems.network import init, update
-from systems.physics import init, update, Physics
+from conf import config
+from systems.network as network_module import NetworkSystem, init, update
+from systems.physics as physics_module import PhysicsSystem, init, update, Physics
 import core.entities
 import core.messages, core.messages.builtins
-from core.states import State, onLeave, onEnter
+from core.states import State, onLeave, onEnter, switch
 
 
 type
-  InitialState* = object of State
-  LoadingState* = object of State
+  ServerState* = object of State
 
-var state*: ref State = new(InitialState)
+  InitialState* = object of ServerState
+  LoadingState* = object of ServerState
+  RunningState* = object of ServerState
+
+var
+  state* = new(ServerState)
+  network: ref NetworkSystem
+  physics: ref PhysicsSystem
 
 
-proc run*(config: Config) =
-  logging.debug("Starting server")
- 
-  var network = config.systems.network.instance
+method update*(self: ref ServerState, dt: float) {.base, inline.} = discard
+  
+
+# initial state
+method onEnter*(self: ref InitialState) =
+  logging.debug "Initializing server"
+  network = config.systems.network.instance
   network.init(port=config.systems.network.port)
 
-  var physics = config.systems.physics.instance
+  physics = config.systems.physics.instance
   physics.init()
 
+method update*(self: ref InitialState, dt: float) =
+  network.update(dt)
+
+# loading state
+method update*(self: ref LoadingState, dt: float) =
+  network.update(dt)
+
+# running state
+method update*(self: ref RunningState, dt: float) =
+  network.update(dt)
+  physics.update(dt)
+
+
+proc run*() =
+  logging.debug "Starting server"
   runLoop(
     updatesPerSecond = 30,
     maxFrequencyCallback = proc(dt: float): bool =
-      physics.update(dt)
-      network.update(dt)
+      state.update(dt)
       return true,
   )
-
-  logging.debug("Server shutdown")
