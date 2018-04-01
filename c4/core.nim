@@ -2,7 +2,7 @@ from posix import fork
 from parseopt import nil
 from logging import nil
 from ospaths import joinPath
-from osproc import startProcess, running, terminate, ProcessOption
+from osproc import startProcess, running, kill, ProcessOption
 from os import getAppDir, getAppFilename, commandLineParams, sleep
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
@@ -14,6 +14,8 @@ from conf import config
 from server import run
 import core.states
 from client import run
+
+import defaults.handlers
 
 
 type
@@ -60,6 +62,13 @@ proc run*() =
             return
       else: discard
 
+  let
+    logFile = joinPath(getAppDir(), &"{mode}.log")
+    logFmtStr = &"[$datetime] {mode} $levelname: "
+  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=config.logLevel, fmtStr=logFmtStr))
+  logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
+  logging.debug("Version " & frameworkVersion)
+
   if mode == Mode.multi:
     let
       serverProcess = startProcess(
@@ -76,19 +85,17 @@ proc run*() =
     while serverProcess.running and clientProcess.running:
       sleep(1000 * 2)
     
-    clientProcess.terminate()
-    serverProcess.terminate()
+    logging.debug "Client or server not running -> shutting down"
+    if clientProcess.running:
+      logging.debug "Terminating client process"
+      clientProcess.kill()
+    if serverProcess.running:
+      logging.debug "Terminating server process"
+      serverProcess.kill()
+
     return
 
-  let
-    logFile = joinPath(getAppDir(), (if mode == Mode.server: "server.log" else: "client.log"))
-    logFmtStr = "[$datetime] " & (if mode == Mode.server: "SERVER" else: "CLIENT") & " $levelname: "
-  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=config.logLevel, fmtStr=logFmtStr))
-  logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
-  logging.debug("Version " & frameworkVersion)
-
   if mode == Mode.server:
-    server.state.switch(new(server.InitialState))
-    server.run()
+    server.run(initialState=new(server.InitialState))
   else:
     client.run(config)

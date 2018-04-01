@@ -59,7 +59,7 @@ method send*(
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
 
-  logging.debug(&"Network: sending {message} (packed as \"{data.stringify}\", len={data.len})")
+  logging.debug(&"-> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})")
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -148,7 +148,7 @@ method update*(self: ref NetworkSystem, dt: float) =
       of EVENT_TYPE_RECEIVE:
         # TODO: the following code block is really ugly
         event.packet[].toString().unpack(message)
-        logging.debug(&"Received {message} from peer {event.peer[]}")
+        logging.debug(&"<- Received {message} from peer {event.peer[]}")
         self.handleMessage(message, event.peer[], event.channelID)
         enet.packet_destroy(event.packet)
       of EVENT_TYPE_DISCONNECT:
