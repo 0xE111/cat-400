@@ -5,7 +5,8 @@ from systems.network as network_module import NetworkSystem, init, update
 from systems.physics as physics_module import PhysicsSystem, init, update, Physics
 
 import core.entities
-import core.messages, core.messages.builtins
+import core.messages
+import defaults.messages as default_messages
 import core.states
 
 

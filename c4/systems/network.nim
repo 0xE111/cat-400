@@ -2,7 +2,7 @@ from logging import debug, fatal
 from strformat import `&`
 from "../systems" import System, init, update
 import "../core/messages"  # important! import everything from this module
-import "../core/messages/builtins"
+import "../defaults/messages" as default_messages
 import "../wrappers/enet/enet"
 import "../wrappers/msgpack/msgpack"
 from streams import newStringStream, writeData, setPosition

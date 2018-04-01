@@ -1,9 +1,9 @@
-import "../../wrappers/msgpack/msgpack"
+import "../wrappers/msgpack/msgpack"
 import typetraits
 
-from "../messages" import Message
-from "../entities" import Entity
-from "../../systems/physics" import Physics
+from "../core/messages" import Message
+from "../core/entities" import Entity
+from "../systems/physics" import Physics
 
 
 type

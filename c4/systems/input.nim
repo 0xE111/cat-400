@@ -2,7 +2,8 @@ from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
 from "../systems" import System, init, update
-import "../core/messages", "../core/messages/builtins"
+import "../core/messages"
+import "../defaults/messages" as default_messages
 
 
 type
@@ -39,7 +40,7 @@ method init*(self: ref InputSystem) =
 method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
   case event.kind
     of sdl.QUIT:
-      result = new(ref QuitMessage)
+      result = new(QuitMessage)
     else:
       discard
 

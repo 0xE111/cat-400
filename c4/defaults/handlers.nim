@@ -1,5 +1,4 @@
 import "../core/messages"
-import "../core/messages/builtins"
 import "../core/states"
 
 import "../wrappers/enet/enet"
@@ -8,6 +7,8 @@ import "../wrappers/msgpack/msgpack"
 import "../systems/network"
 
 import "../server"
+
+import messages as default_messages
 
 
 method handleMessage*(self: ref NetworkSystem, message: ref QuitMessage, peer: enet.Peer, channelId: uint8) =
