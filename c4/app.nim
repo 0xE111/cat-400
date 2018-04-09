@@ -37,6 +37,7 @@ method onEnter*(self: ref InitialClientState) =
   logging.debug "Initializing client"
 
   config.systems.network.instance.init()
+  config.systems.network.instance.connect(("localhost", config.systems.network.port))
   config.systems.input.instance.init()
   config.systems.video.instance.init(
     title=config.title,

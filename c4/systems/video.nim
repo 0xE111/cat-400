@@ -24,7 +24,6 @@ type
 var
   # DEMO!!!
   model: horde3d.Node  
-  angle: int
   fontRes: horde3d.Res
   panelRes: horde3d.Res
 
@@ -95,7 +94,6 @@ method init*(
     if not utLoadResourcesFromDisk(assetsDir):
       raise newException(LibraryError, "Could not load resources")
     model = RootNode.AddNodes(modelRes)
-    angle = 0
 
     var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
     light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
@@ -124,12 +122,11 @@ method update*(self: ref VideoSystem, dt: float) =
   procCall ((ref System)self).update(dt)
 
   horde3d.utShowFrameStats(fontRes, panelRes, 1)
-  # DEMO!!!
-  model.SetNodeTransform(
-    0, 0, -5,  # Translation
-    0, angle.cfloat, 0,   # Rotation
-    1, 1, 1 )  # Scale
-  angle += 1
+  # # DEMO!!!
+  # model.SetNodeTransform(
+  #   0, 0, -5,  # Translation
+  #   0, 0, 0,   # Rotation
+  #   1, 1, 1 )  # Scale
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.Render()
