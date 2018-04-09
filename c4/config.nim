@@ -1,6 +1,8 @@
 from logging import Level
 from utils.loading import load
 
+from core.states import State
+
 from systems.input import InputSystem
 from systems.network import NetworkSystem
 from systems.video import VideoSystem, Window
@@ -11,6 +13,9 @@ var
   title* = ""
   version* = "0.0"
   logLevel* = logging.Level.lvlWarn
+
+  state*: ref State  # TODO: move to app?
+
   systems* = (
     physics: (
       instance: new(ref PhysicsSystem),

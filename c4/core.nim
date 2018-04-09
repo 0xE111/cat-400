@@ -11,11 +11,11 @@ from utils.helpers import index
 from sequtils import mapIt
 
 import config
-from server import run
 import core.states
-from client import run
+import app
 
-import defaults.handlers
+import defaults.handlers as default_handlers
+import defaults.states as default_states
 
 
 type
@@ -95,7 +95,5 @@ proc run*() =
 
     return
 
-  if mode == Mode.server:
-    server.run(initialState=new(server.InitialState))
-  else:
-    client.run()
+  let initialState = if mode == Mode.server: new(InitialServerState) else: new(InitialClientState)
+  app.run(initialState)

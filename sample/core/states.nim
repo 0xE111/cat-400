@@ -8,10 +8,11 @@ import c4.core.states
 import c4.systems.network
 import c4.systems.physics
 
-import c4.server
+import c4.defaults.states as default_states
+import c4.config
 
 
-method onEnter(self: ref LoadingState) =
+method onEnter(self: ref LoadingServerState) =
   let player = newEntity()  # create new entity
   (ref AddEntityMessage)(entity: player).broadcast()  # send message
 
@@ -28,4 +29,4 @@ method onEnter(self: ref LoadingState) =
 
   logging.debug "Server scene loaded"
 
-  server.state.switch(new(RunningState))
+  config.state.switch(new(RunningServerState))

@@ -6,10 +6,10 @@ import "../wrappers/msgpack/msgpack"
 
 import "../systems/network"
 
-import "../server"
-
 import messages as default_messages
+import states as default_states
+import "../config"
 
 
 method handleMessage*(self: ref NetworkSystem, message: ref QuitMessage, peer: enet.Peer, channelId: uint8) =
-  server.state.switch(new(FinishingState))
+  config.state.switch(new(FinalState))
