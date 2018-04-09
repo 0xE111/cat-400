@@ -11,14 +11,6 @@ import systems.input as input_system
 import defaults.states as default_states
 
 
-# aliases
-let
-  network = config.systems.network.instance
-  physics = config.systems.physics.instance
-  video = config.systems.video.instance
-  input = config.systems.input.instance
-
-
 method update(self: ref State, dt: float): bool {.base, inline.} = true
 method update*(self: ref FinalState, dt: float): bool {.inline.} = false
 
@@ -26,25 +18,27 @@ method update*(self: ref FinalState, dt: float): bool {.inline.} = false
 method onEnter*(self: ref InitialServerState) =
   logging.debug "Initializing server"
   
-  network.init(port=config.systems.network.port)
-  physics.init()
+  config.systems.network.instance.init(port=config.systems.network.port)
+  config.systems.physics.instance.init()
+
+  config.state.switch(new(RunningServerState))
 
 method update*(self: ref ServerState, dt: float): bool =
-  network.update(dt)
+  config.systems.network.instance.update(dt)
   true
 
 method update*(self: ref RunningServerState, dt: float): bool =
-  network.update(dt)
-  physics.update(dt)
+  config.systems.network.instance.update(dt)
+  config.systems.physics.instance.update(dt)
   true
 
 # ---- client ----
 method onEnter*(self: ref InitialClientState) =
   logging.debug "Initializing client"
 
-  network.init()
-  input.init()
-  video.init(
+  config.systems.network.instance.init()
+  config.systems.input.instance.init()
+  config.systems.video.instance.init(
     title=config.title,
     window=config.systems.video.window,
   )
@@ -53,9 +47,9 @@ method onEnter*(self: ref InitialClientState) =
 
 
 method update*(self: ref RunningClientState, dt: float): bool =
-  network.update(dt)
-  input.update(dt)
-  video.update(dt)
+  config.systems.network.instance.update(dt)
+  config.systems.input.instance.update(dt)
+  config.systems.video.instance.update(dt)
   true
 
 

@@ -12,7 +12,7 @@ import core.states
 
 config.title = "Sample game"
 config.version = "0.1"
-config.systems.input.instance = new(ref CustomInputSystem)
+config.systems.input.instance = new(CustomInputSystem)
 
 
 when isMainModule:
