@@ -2,11 +2,7 @@ from logging import Level
 from utils.loading import load
 
 from core.states import State
-
-from systems.input import InputSystem
-from systems.network import NetworkSystem
-from systems.video import VideoSystem, Window
-from systems.physics import PhysicsSystem
+from systems as systems_module import System
 
 
 var
@@ -17,18 +13,18 @@ var
   state*: ref State  # TODO: move to app?
 
   systems* = (
-    physics: (
-      instance: new(ref PhysicsSystem),
-    ),
-    input: (
-      instance: new(ref InputSystem),
-    ),
+    network: (ref System)(nil),
+    input: (ref System)(nil),
+    video: (ref System)(nil),
+    physics: (ref System)(nil),
+  )
+
+  settings* = (
     network: (
-      instance: new(ref NetworkSystem),
       port: 11477'u16,
+      serverMode: true,
     ),
     video: (
-      instance: new(ref VideoSystem),
       window: (
         x: 400,
         y: 400,
@@ -36,5 +32,5 @@ var
         height: 400,
         fullscreen: false,
       ),
-    )
+    ),
   )

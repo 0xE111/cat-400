@@ -1,4 +1,4 @@
-from deques import Deque, initDeque, addLast, items, len
+import deques
 from core.messages import Message, `$`
 from logging import debug
 from strformat import `&`
@@ -11,28 +11,29 @@ type
     messageQueue: MessageQueue
 
 
-# ---- MessageQueue procs ----
-proc clear*(self: var MessageQueue) =
-  self = initDeque[ref Message]()
-
-proc add*(self: var MessageQueue, value: ref Message) =
-  self.addLast(value)
-
 # ---- System procs ----
 method store*(self: ref System, message: ref Message) {.base.} =
-  self.messageQueue.add(message)
+  self.messageQueue.addLast(message)
 
 method process*(self: ref System, message: ref Message) {.base.} =
   discard
 
 method init*(self: ref System) {.base.} =
-  # init message queue and set up message storing
-  self.messageQueue.clear()
-  messages.subscribe(proc (message: ref Message) = self.store(message))
+  self.messageQueue = initDeque[ref Message]()
 
 method update*(self: ref System, dt: float) {.base.} =
   # process all messages
   if self.messageQueue.len > 0:
-    for message in self.messageQueue.items():
-      self.process(message)
-    self.messageQueue.clear()
+    var message: ref Message
+    while self.messageQueue.len > 0:
+      message = self.messageQueue.popFirst()
+      self.process(message)  # may create new messages during work
+
+# ---- Message procs ----
+proc send*(self: ref Message, system: ref System) =
+  if not system.isNil:
+    system.store(self)
+
+proc send*(self: ref Message, systems: seq[ref System]) =
+  for system in systems:
+    self.send(system)

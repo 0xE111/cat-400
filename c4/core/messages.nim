@@ -3,20 +3,14 @@ import "../wrappers/msgpack/msgpack"
 
 
 type
+  Peer* = object {.inheritable.}
   Message* = object {.inheritable.}
-  MessageHandler = proc(message: ref Message) {.closure.}
+    peer*: ref Peer  # message sender
 
 
-var messageHandlers: seq[MessageHandler] = @[]
-
-
-register(Message)
+register(Message)  # TODO: move to network?
 
 method `$`*(message: ref Message): string {.base.} = "Message"
 
-proc subscribe*(handler: MessageHandler) =
-  messageHandlers.add(handler)
-
-proc broadcast*(self: ref Message) =
-  for handler in messageHandlers:
-    handler(self)
+proc isExternal*(self: ref Message): bool =
+  not self.peer.isNil

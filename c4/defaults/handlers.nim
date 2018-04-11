@@ -11,5 +11,5 @@ import states as default_states
 import "../config"
 
 
-method handleMessage*(self: ref NetworkSystem, message: ref QuitMessage, peer: enet.Peer, channelId: uint8) =
+method process*(self: ref NetworkSystem, message: ref QuitMessage) =
   config.state.switch(new(FinalState))

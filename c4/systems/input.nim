@@ -1,8 +1,9 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-from "../systems" import System, init, update
+import "../systems"
 import "../core/messages"
+import "../config"
 import "../defaults/messages" as default_messages
 
 
@@ -37,22 +38,20 @@ method init*(self: ref InputSystem) =
   
   procCall ((ref System)self).init()
 
-method handle*(self: ref InputSystem, event: sdl.Event): ref Message {.base.} =
+method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   case event.kind
-    of sdl.QUIT:
-      result = new(QuitMessage)  # TODO: move to defaults?
+    of sdl.QUIT:  # TODO: move to defaults?
+      new(QuitMessage).send(@[
+        config.systems.video,
+        config.systems.network,
+      ])
     else:
       discard
-
-  if result != nil:
-    logging.debug(&"Event produced new message: {result}")
 
 method update*(self: ref InputSystem, dt: float) =
   # process all network events
   while sdl.pollEvent(event.addr) != 0:
-    message = self.handle(event)
-    if message != nil:
-      message.broadcast()
+    self.handle(event)
 
   procCall ((ref System)self).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
 

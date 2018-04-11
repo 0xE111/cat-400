@@ -1,7 +1,9 @@
-from logging import debug, fatal
+import logging
+import tables
 from strformat import `&`
-from "../systems" import System, init, update
-import "../core/messages"  # important! import everything from this module
+import "../systems"
+import "../config"
+import "../core/messages"
 import "../defaults/messages" as default_messages
 import "../wrappers/enet/enet"
 import "../wrappers/msgpack/msgpack"
@@ -16,7 +18,7 @@ type
 
   NetworkSystem* = object of System
     host: ptr enet.Host
-    peers: seq[ptr enet.Peer]
+    peers: Table[ptr enet.Peer, ref messages.Peer]
 
 
 # ---- helpers ----
@@ -31,11 +33,6 @@ proc `$`*(peer: enet.Peer): string =
 
 proc `$`*(packet: ptr Packet): string =
   "Packet of size " & $packet.dataLength
-    
-proc remove[T](items: var seq[T], value: T) =
-  let index = items.find(value)
-  if index != -1:
-    items.del(index)
 
 proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
@@ -46,7 +43,7 @@ proc toString(packet: enet.Packet): string =
 method send*(
   self: ref NetworkSystem,
   message: ref Message,
-  peer: ptr enet.Peer = nil,  # set nil to broadcast
+  peer: ptr enet.Peer = nil,  # set nil to broadcast  # TODO: replace with ref messages.Peer
   channelId:uint8 = 0,
   reliable = false,
   immediate = false
@@ -59,7 +56,7 @@ method send*(
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
 
-  logging.debug(&"-> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})")
+  logging.debug &"-> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -70,16 +67,18 @@ method send*(
     enet.host_flush(self.host)
 
 method process*(self: ref NetworkSystem, message: ref Message) =
-  self.send(message)
+  if message.isExternal:
+    discard  # ignore every received message
+  else:
+    self.send(message)  # send any message from local machine 
  
-method init*(
-  self: ref NetworkSystem,
-  port: Port = 0,
-  numConnections = 32,
-  numChannels = 2,
-  inBandwidth = 0,
-  outBandwidth = 0
-) {.base.} =
+method init*(self: ref NetworkSystem) =
+  var
+    numConnections = 32
+    numChannels = 2
+    inBandwidth = 0
+    outBandwidth = 0
+
   if enet.initialize() != 0.cint:
     let err = "An error occurred during initialization"
     logging.fatal(err)
@@ -87,26 +86,17 @@ method init*(
 
   # set up address
   var addressPtr: ptr enet.Address = nil
-  if port != 0:
-    var address = enet.Address(host: enet.HOST_ANY, port: port)
+  if config.settings.network.serverMode:  # TODO: ugly
+    var address = enet.Address(host: enet.HOST_ANY, port: config.settings.network.port)
     addressPtr = address.addr
 
   self.host = enet.host_create(addressPtr, numConnections.csize, numChannels.csize, inBandwidth.uint16, outBandwidth.uint16)
   if self.host == nil:
-    raise newException(LibraryError, "An error occured while trying to init host")
+    raise newException(LibraryError, "An error occured while trying to init host. Maybe that port is already in use?")
 
-  self.peers = @[]
+  self.peers = initTable[ptr enet.Peer, ref messages.Peer]()
 
   procCall ((ref System)self).init()
-
-method handleConnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
-  discard
-
-method handleDisconnect*(self: ref NetworkSystem, peer: enet.Peer) {.base.} =
-  discard
- 
-method handleMessage*(self: ref NetworkSystem, message: ref Message, peer: enet.Peer, channelId: uint8) {.base.} =
-  discard
 
 method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.base.} =
   var enetAddress: enet.Address
@@ -126,35 +116,38 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false) 
     # check that we are disconnected - peer not in peers
     # if yes - return
 
+  self.peers.del(peer)
   enet.peer_reset(peer)
-  self.peers.remove(peer)
   
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
 
 method update*(self: ref NetworkSystem, dt: float) =
   ## Check whether there is any network event and process if any
-  var
-    event: enet.Event
-    message: ref Message
+  var event: enet.Event
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     # for each event type call corresponding handlers
     case event.`type`
       of EVENT_TYPE_CONNECT:
-        self.peers.add(event.peer)
-        logging.debug(&"Peer connected: {event.peer[]}")
-        self.handleConnect(event.peer[])
+        self.peers[event.peer] = new(messages.Peer)
+        logging.debug &"Connection established: {event.peer[]}"
       of EVENT_TYPE_RECEIVE:
-        # TODO: the following code block is really ugly
+        var message: ref Message
         event.packet[].toString().unpack(message)
-        logging.debug(&"<- Received {message} from peer {event.peer[]}")
-        self.handleMessage(message, event.peer[], event.channelID)
+        
+        # include sender info into the message
+        if self.peers.hasKey(event.peer):
+          message.peer = self.peers[event.peer]
+          logging.debug &"<- Received {message} from peer {message.peer[]}"
+          self.store(message)  # TODO: event.channelID data is missing in message
+        else:
+          logging.warn &"<- Received message {message} from unregistered peer {event.peer[]}, discarding"
+
         enet.packet_destroy(event.packet)
       of EVENT_TYPE_DISCONNECT:
-        logging.debug(&"Peer disconnected: {event.peer[]}")
-        self.handleDisconnect(event.peer[])
-        self.peers.remove(event.peer)
+        logging.debug &"Connection closed: {event.peer[]}"
+        self.peers.del(event.peer)
       else:
         discard
   

@@ -3,7 +3,9 @@ from strformat import `&`
 from logging import debug
 
 import c4.core.messages
-from c4.systems.input import InputSystem, handle
+import c4.systems
+import c4.config
+import c4.systems.input
 import "../core/messages" as custom_messages
 
 
@@ -11,13 +13,16 @@ type
   CustomInputSystem* = object of InputSystem
 
 
-method handle*(self: ref CustomInputSystem, event: sdl.Event): ref Message =
+method handle(self: ref CustomInputSystem, event: sdl.Event) =
   case event.kind
-    of sdl.MOUSEBUTTONDOWN:
-      result = (ref LoadSceneMessage)()
+    of sdl.KEYDOWN:
+      case event.key.keysym.sym
+        of sdl.K_c:
+          new(ConnectMessage).send(config.systems.network)
+        of sdl.K_l:
+          new(LoadSceneMessage).send(config.systems.network)
+        else:
+          discard
     else:
       # fallback to default implementation
-      result = procCall(((ref InputSystem)self).handle(event))
-
-  if result != nil:
-    logging.debug(&"Event produced new message: {result}")
+      procCall(((ref InputSystem)self).handle(event))

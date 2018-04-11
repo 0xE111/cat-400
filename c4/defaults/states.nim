@@ -1,4 +1,4 @@
-from "../core/states" import State
+import "../core/states"
 
 
 type

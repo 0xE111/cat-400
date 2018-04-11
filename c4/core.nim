@@ -17,6 +17,11 @@ import app
 import defaults.handlers as default_handlers
 import defaults.states as default_states
 
+from systems.input import InputSystem
+from systems.network import NetworkSystem
+from systems.video import VideoSystem, Window
+from systems.physics import PhysicsSystem
+
 
 type
   Mode {.pure.} = enum
@@ -83,7 +88,7 @@ proc run*() =
       )
 
     while serverProcess.running and clientProcess.running:
-      sleep(1000 * 2)
+      sleep(1000)
     
     logging.debug "Client or server not running -> shutting down"
     if clientProcess.running:

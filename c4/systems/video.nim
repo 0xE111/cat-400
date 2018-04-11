@@ -5,8 +5,9 @@ from logging import debug, fatal
 from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
-from "../core/messages" import Message, subscribe, `$`
+from "../core/messages" import Message, `$`
 from "../systems" import System, init, update
+import "../config"
 
 
 type
@@ -20,12 +21,8 @@ type
     pipeline: horde3d.Res
     camera: horde3d.Node
 
-
-var
-  # DEMO!!!
-  model: horde3d.Node  
-  fontRes: horde3d.Res
-  panelRes: horde3d.Res
+  Video* {.inheritable.} = object
+    node: horde3d.Node
 
 
 const
@@ -33,15 +30,16 @@ const
 
 let
   assetsDir = getAppDir() / "assets/video"
+  
+var
+  fontRes, panelRes, cubeRes: horde3d.Res
 
 
-method init*(
-  self: ref VideoSystem,
-  title: string,
-  window: Window,
-) {.base.} =
+method init*(self: ref VideoSystem) =
   # ---- SDL ----
-  logging.debug("Initializing SDL video system")
+  logging.debug "Initializing SDL video system"
+
+  let window = config.settings.video.window  # just an alias
 
   try:
     if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
@@ -52,7 +50,7 @@ method init*(
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
   
     self.window = sdl.createWindow(
-      title,
+      &"{config.title} v{config.version}",
       window.x.cint,
       window.y.cint,
       window.width.cint,
@@ -84,20 +82,13 @@ method init*(
     if not self.pipeline.LoadResource(forwardPipeline, forwardPipeline.len + 1):
       raise newException(LibraryError, "Could not load Horde3D resources")
 
-    # DEMO!!!
     fontRes = AddResource(ResTypes.Material, "overlays/font.material.xml", 0.cint)
     panelRes = AddResource(ResTypes.Material, "overlays/panel.material.xml", 0.cint)
-
-    var modelRes = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml", 0.cint)
-    # discard modelRes.LoadResource(model, model.len + 1)
+    cubeRes = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml", 0.cint)
+    
     logging.debug("Searching for assets in " & assetsDir)
     if not utLoadResourcesFromDisk(assetsDir):
       raise newException(LibraryError, "Could not load resources")
-    model = RootNode.AddNodes(modelRes)
-
-    var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
-    light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-    light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
 
     # setting up camera
     self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
@@ -128,6 +119,10 @@ method update*(self: ref VideoSystem, dt: float) =
   #   0, 0, 0,   # Rotation
   #   1, 1, 1 )  # Scale
 
+  var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
+  light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
+  light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
+
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.Render()
   self.window.glSwapWindow()
@@ -139,3 +134,22 @@ method `=destroy`*(self: ref VideoSystem) {.base.} =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.Release()
   logging.debug("Video system unloaded")
+
+
+proc init*(self: var Video) =
+  self.node = RootNode.AddNodes(cubeRes)
+
+proc transform*(
+  self: var Video,
+  translation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),
+  rotation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),
+  scale: tuple[x, y, z: float] = (1.0, 1.0, 1.0)
+) =
+  self.node.SetNodeTransform(
+    translation.x, translation.y, translation.z,
+    rotation.x, rotation.y, rotation.z,
+    scale.x, scale.y, scale.z,
+  )
+
+proc `=destroy`*(self: var Video) =
+  self.node.RemoveNode()

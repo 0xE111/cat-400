@@ -14,7 +14,7 @@ method onLeave*(self: ref State) {.base, inline.} = discard
 
 
 template switch*(self, newState: ref State) =
-  logging.debug "Switching " & self[].type.name & " to " & newState[].type.name
+  logging.debug "Switching to " & newState[].type.name
   
   self.onLeave()
   self = newState

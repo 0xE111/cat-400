@@ -3,16 +3,16 @@ import c4.core
 
 import systems.physics
 import systems.input
+import systems.video
+import systems.network
 
-# here we import our custom definitions and methods
 import core.messages
-import core.handlers
-import core.states
+import core.states.server
 
 
 config.title = "Sample game"
 config.version = "0.1"
-config.systems.input.instance = new(CustomInputSystem)
+config.systems.input = new(CustomInputSystem)
 
 
 when isMainModule:
