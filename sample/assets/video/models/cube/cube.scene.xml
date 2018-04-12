@@ -1,0 +1,3 @@
+<Model name="cube" geometry="models/cube/cube.geo">
+	<Mesh name="Cube" material="models/cube/Material.material.xml" batchStart="0" batchCount="36" vertRStart="0" vertREnd="23" />
+</Model>
