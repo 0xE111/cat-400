@@ -1,11 +1,18 @@
 from strutils import split
 import distros
+import ospaths
 
 
 # Constants
 const
   versionFile = "c4/version.txt"
   pinnedVersion = staticRead(versionFile)
+  buildDir = thisDir().parentDir.parentDir / "build"
+
+
+# Compilter switches
+switch("nimcache", buildDir / "nimcache")
+switch("out", buildDir / "sample")
 
 
 # Package
@@ -22,4 +29,22 @@ requires "c4 >= " & version
 if detectOs(Linux):
   foreignDep "sdl"
   foreignDep "enet"
+
+proc copyDir(src, dst: string) =
+  mkDir(dst)
+
+  for file in src.listFiles:
+    file.cpFile(dst / file.extractFilename)
   
+  for dir in src.listDirs:
+    dir.copyDir(dst / dir)
+
+
+task collectAssets, "Put all assets into build folder":
+  let
+    assetsSrc = "assets"
+    assetsDst = buildDir
+  
+  if dirExists(assetsSrc):
+    echo "Collecting assets into " & assetsDst
+    copyDir(assetsSrc, assetsDst)
