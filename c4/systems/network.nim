@@ -66,11 +66,13 @@ method send*(
   if immediate:
     enet.host_flush(self.host)
 
-method process*(self: ref NetworkSystem, message: ref Message) =
+method store*(self: ref NetworkSystem, message: ref Message) =
+  # network system stores messages differently by default
   if message.isExternal:
-    discard  # ignore every received message
+    # save all external messages
+    procCall ((ref System)self).store(message)
   else:
-    self.send(message)  # send any message from local machine 
+    self.send(message)  # do not store and send all incoming messages  # TODO: recipient handling - to which peer is this message?
  
 method init*(self: ref NetworkSystem) =
   var

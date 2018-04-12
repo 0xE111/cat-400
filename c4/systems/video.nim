@@ -137,6 +137,7 @@ method `=destroy`*(self: ref VideoSystem) {.base.} =
 
 
 proc init*(self: var Video) =
+  logging.debug "Adding node to scene"
   self.node = RootNode.AddNodes(cubeRes)
 
 proc transform*(

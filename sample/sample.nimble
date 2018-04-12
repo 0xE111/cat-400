@@ -1,4 +1,5 @@
 from strutils import split
+import distros
 
 
 # Constants
@@ -17,3 +18,8 @@ license = "MIT"
 # Dependencies
 requires "nim >= 0.17.3"
 requires "c4 >= " & version
+
+if detectOs(Linux):
+  foreignDep "sdl"
+  foreignDep "enet"
+  
