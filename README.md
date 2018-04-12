@@ -14,9 +14,26 @@ C4 tries to be clear and well-designed. Your contribution is highly appreciated!
 
 * GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
 
-## Tutorial
+## Demo
 
-Learn by coding your first game with c4! Less words - let's try to build something.
+C4 is shipped with sample app.
+First, be sure to install:
+  * [enet](http://enet.bespin.org/)
+  * [sdl](https://www.libsdl.org/)
+  * [horde3d](http://horde3d.org/)
+
+These are dependencies of c4's default systems. However, you may replace any system with your custom one (for example, your video system may use bgfx instead of horde3d).
+
+Then, clone the repo and compile the sample.
+
+```shell
+cd /tmp
+nimble install https://github.com/c0ntribut0r/cat-400@#head
+git clone https://github.com/c0ntribut0r/cat-400
+cd cat-400/sample
+nimble collectAssets
+nim c -r sample.nim -l=debug
+```
 
 ### Install & display version
 
@@ -59,9 +76,7 @@ Our `main.nim` looks empty, but the main job is done under the hood when calling
 ./main -h
 ```
 
-Now let's start customizing.
-
-### Framework configuration
+### Customization
 
 Configuring c4 is nothing more than changing a tuple. The framework uses some reasonable defaults for your project's config (like version: "0.0") but sometimes we'll need to change them. Oh, let's start with `version`:
 
@@ -86,7 +101,7 @@ Important fact is that server is always launched. Even if you play a single play
 C4 allows you to launch your app in a "headless mode" - just a server without a client. This is useful if you want to launch your custom server on VPS or so and you don't need the client at all. We will also use this mode during first steps so that we don't have to care about the client. Use `--mode=server` flag to launch server only. You will see something like this (output may vary depending on c4 version):
 
 ```shell
-nim c -r main.nim --loglevel=DEBUG --mode=server
+nim c -r main.nim --loglevel=debug --mode=server
 ...
 [2018-01-10T21:48:07] SERVER DEBUG: Version 0.1.1-19
 [2018-01-10T21:48:07] SERVER DEBUG: Starting server
@@ -97,7 +112,8 @@ nim c -r main.nim --loglevel=DEBUG --mode=server
 
 Quit with `ctrl+C`. Note that we passed `--loglevel` flag to the executable so that we can better know what's going on under the hood.
 
-We haven't defined any specific behavior, so server just runs by default. Now it's time for "hello world" program!
+We haven't defined any specific behavior, so server just runs by default.
+
 <!-- 
 ### States
 
