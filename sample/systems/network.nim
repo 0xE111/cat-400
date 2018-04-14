@@ -29,4 +29,5 @@ method process(self: ref NetworkSystem, message: ref ConnectMessage) =
 method process(self: ref NetworkSystem, message: ref AddEntityMessage) =
   message.send(config.systems.video)
 
-# method process(self: ref NetworkSystem, message: )
+method process(self: ref NetworkSystem, message: ref PhysicsMessage) =
+  message.send(config.systems.video)

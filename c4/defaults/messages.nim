@@ -17,7 +17,7 @@ type
   PhysicsMessage* = object of EntityMessage
     physics*: ref Physics
 
-  RotateMessage* = object of EntityMessage
+  RotationMessage* = object of EntityMessage
     yaw*: float32
     pitch*: float32
 
@@ -30,4 +30,4 @@ reg(QuitMessage)
 reg(AddEntityMessage)
 reg(DelEntityMessage)
 reg(PhysicsMessage)
-reg(RotateMessage)
+reg(RotationMessage)

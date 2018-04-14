@@ -16,13 +16,6 @@ import states as default_states
 import "../config"
 
 
-method process*(self: ref VideoSystem, message: ref RotateMessage) =
-  self.camera.SetNodeTransform(
-    0.cfloat, 0.cfloat, 0.cfloat,
-    message.yaw.cfloat, message.pitch.cfloat, 0.cfloat,
-    1.cfloat, 1.cfloat, 1.cfloat,
-  )
-
 method store*(self: ref NetworkSystem, message: ref QuitMessage) =
   # by default network system sends all local incoming messages
   # however, we want to store and process ConnectMessage

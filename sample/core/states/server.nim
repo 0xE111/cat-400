@@ -19,14 +19,14 @@ method onEnter(self: ref LoadingServerState) =
 
   player[ref Physics] = (ref Physics)(x: 1, y: 2, z: 3)  # init physics for player
   (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).send(config.systems.network)
-  player[ref Physics].x = 1  # update player physics
+  player[ref Physics].x = 3  # update player physics
   (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).send(config.systems.network)
 
   let cube = newEntity()
   (ref AddEntityMessage)(entity: cube).send(config.systems.network)
 
   cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
-  (ref PhysicsMessage)(entity: cube, physics: player[ref Physics]).send(config.systems.network)
+  (ref PhysicsMessage)(entity: cube, physics: cube[ref Physics]).send(config.systems.network)
 
   logging.debug "Server scene loaded"
 

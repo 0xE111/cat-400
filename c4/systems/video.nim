@@ -90,6 +90,12 @@ method init*(self: ref VideoSystem) =
     if not utLoadResourcesFromDisk(assetsDir):
       raise newException(LibraryError, "Could not load resources")
 
+    # DEMO
+    logging.debug "Adding light to the scene"
+    var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
+    light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
+    light.SetNodeParamF(Light.RadiusF, 0.cint, 50.cfloat)
+
     # setting up camera
     self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
     self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
@@ -108,12 +114,6 @@ method init*(self: ref VideoSystem) =
   logging.debug "Horde3d initialized"
 
   procCall ((ref System)self).init()
-
-  # DEMO
-  logging.debug "Adding light to the scene"
-  var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
-  light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-  light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
 
 method update*(self: ref VideoSystem, dt: float) =
   procCall ((ref System)self).update(dt)

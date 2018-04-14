@@ -48,7 +48,7 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
     of sdl.MOUSEMOTION:
       var x, y: cint
       discard sdl.getRelativeMouseState(x.addr, y.addr)
-      (ref RotateMessage)(
+      (ref RotationMessage)(
         yaw: x.float32,
         pitch: y.float32,
       ).send(config.systems.video)
