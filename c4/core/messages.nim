@@ -1,3 +1,5 @@
+## Message is a base unit for communication between systems.
+
 from entities import Entity
 import "../wrappers/msgpack/msgpack"
 

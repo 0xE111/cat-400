@@ -8,6 +8,7 @@ from "../systems/physics" import Physics
 
 type
   QuitMessage* = object of Message
+  ## This message is a signal to disconnect and terminate process
 
 
 register(Message, QuitMessage)

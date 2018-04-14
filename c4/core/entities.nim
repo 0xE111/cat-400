@@ -5,6 +5,7 @@ from tables import Table, newTable, hasKey, del, `[]`, `[]=`, add
 
 type
   Entity* = int16  # uint doesn't check boundaries
+  ## Entity is just an int which may have components of any type.
 
 var
   entities: set[Entity] = {}  # set[int32] won't compile
@@ -12,7 +13,7 @@ var
 
 # ---- Entity ----
 proc newEntity*(): Entity =
-  ## Returns new Entity or raises error if limit exceeded.
+  ## Return new Entity or raises error if limit exceeded
   result = low(Entity)
   while result in entities:
     result += 1  # TODO: pretty dumb
@@ -20,7 +21,7 @@ proc newEntity*(): Entity =
   entities.incl(result)  # add entity to global entities registry
 
 proc delete*(entity: Entity) =
-  ## Deletes the Entity
+  ## Delete the Entity
   entities.excl(entity)  # will not alert if entity does not exist
   # TODO: delete all components related to this entity
 

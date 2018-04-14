@@ -1,4 +1,3 @@
-from posix import fork
 from parseopt import nil
 from logging import nil
 from ospaths import joinPath
@@ -17,10 +16,10 @@ import app
 import defaults.handlers as default_handlers
 import defaults.states as default_states
 
-from systems.input import InputSystem
-from systems.network import NetworkSystem
-from systems.video import VideoSystem, Window
-from systems.physics import PhysicsSystem
+import systems.input
+import systems.network
+import systems.video
+import systems.physics
 
 
 const 

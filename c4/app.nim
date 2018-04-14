@@ -13,13 +13,15 @@ import systems.input as input_system
 import defaults.states as default_states
 
 
-method update(self: ref State, dt: float): bool {.base, inline.} = true
-method update*(self: ref FinalState, dt: float): bool {.inline.} = false
+method update(self: ref State, dt: float): bool {.base, inline.} = true  # every state does not finish loop but does nothin
+method update(self: ref FinalState, dt: float): bool {.inline.} = false  # but FinalState breaks the loop by returning false
+
 
 # ---- server ----
 method onEnter*(self: ref InitialServerState) =
   logging.debug "Initializing server"
   
+  # set up network and physics system for server
   if config.systems.network.isNil:
     config.systems.network = new(NetworkSystem)
   config.systems.network.init()
@@ -32,10 +34,12 @@ method onEnter*(self: ref InitialServerState) =
   config.state.switch(new(RunningServerState))
 
 method update*(self: ref ServerState, dt: float): bool =
+  # by defalut, all server states update only network
   config.systems.network.update(dt)
   true
 
 method update*(self: ref RunningServerState, dt: float): bool =
+  # running server state updates network and physics
   config.systems.network.update(dt)
   config.systems.physics.update(dt)
   true
@@ -58,6 +62,9 @@ method onEnter*(self: ref InitialClientState) =
 
   config.state.switch(new(RunningClientState))
 
+method update(self: ClientState, dt: float): bool =
+  config.systems.network.update(dt)
+  true
 
 method update*(self: ref RunningClientState, dt: float): bool =
   config.systems.network.update(dt)
