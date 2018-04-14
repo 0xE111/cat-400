@@ -44,7 +44,6 @@ method update*(self: ref RunningServerState, dt: float): bool =
 method onEnter*(self: ref InitialClientState) =
   logging.debug "Initializing client"
 
-  config.settings.network.serverMode = false  # init network as a client
   if config.systems.network.isNil:
     config.systems.network = new(NetworkSystem)
   config.systems.network.init()

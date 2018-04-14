@@ -3,22 +3,23 @@ import tables
 from strformat import `&`
 import "../systems"
 import "../config"
+import "../core/entities"
 import "../core/messages"
 import "../defaults/messages" as default_messages
 import "../wrappers/enet/enet"
 import "../wrappers/msgpack/msgpack"
-from streams import newStringStream, writeData, setPosition
+import streams
 
 
-# ---- types ----
 type
   Host* = string
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
   NetworkSystem* = object of System
-    host: ptr enet.Host
-    peers: Table[ptr enet.Peer, ref messages.Peer]
+    host: ptr enet.Host  # remember own host
+    peers: Table[ptr enet.Peer, ref messages.Peer]  # table for converting internal enet.Peer into generic Peer
+    entities: Table[Entity, Entity]  # table for converting remote Entity to local one
 
 
 # ---- helpers ----
@@ -37,7 +38,6 @@ proc `$`*(packet: ptr Packet): string =
 proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
   copyMem(result.cstring, packet.data, packet.dataLength)
-  # result.cstring[packet.dataLength] = '\0'
   
 # ---- methods ----
 method send*(
@@ -67,14 +67,18 @@ method send*(
     enet.host_flush(self.host)
 
 method store*(self: ref NetworkSystem, message: ref Message) =
-  # network system stores messages differently by default
+  ## Network system stores messages differently by default.
+  ## While other systems store all incoming messages for futher processing, network system _sends_ all local messages without storing and processing them.
+  ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
+  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it (see defaults/handlers.nim).
   if message.isExternal:
-    # save all external messages
-    procCall ((ref System)self).store(message)
+    procCall ((ref System)self).store(message)  # save all external messages for further processing
   else:
-    self.send(message)  # do not store and send all incoming messages  # TODO: recipient handling - to which peer is this message?
+    self.send(message)  # do not store and send all incoming messages
+    # TODO: recipient handling - to which peer is this message?
  
 method init*(self: ref NetworkSystem) =
+  # TODO: make these params configurable
   var
     numConnections = 32
     numChannels = 2
@@ -86,9 +90,9 @@ method init*(self: ref NetworkSystem) =
     logging.fatal(err)
     raise newException(LibraryError, err)
 
-  # set up address
+  # set up address - nil for client, HOST_ANY+port for server
   var addressPtr: ptr enet.Address = nil
-  if config.settings.network.serverMode:  # TODO: ugly
+  if config.mode == server:
     var address = enet.Address(host: enet.HOST_ANY, port: config.settings.network.port)
     addressPtr = address.addr
 

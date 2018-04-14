@@ -5,11 +5,17 @@ from core.states import State
 from systems as systems_module import System
 
 
+type
+  Mode* = enum
+    client, server, multi
+
+
 var
   title* = ""
   version* = "0.0"
   logLevel* = logging.Level.lvlWarn
 
+  mode* = Mode.multi
   state*: ref State  # TODO: move to app?
 
   systems* = (
@@ -22,7 +28,6 @@ var
   settings* = (
     network: (
       port: 11477'u16,
-      serverMode: true,
     ),
     video: (
       window: (

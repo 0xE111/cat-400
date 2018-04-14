@@ -12,6 +12,8 @@ import c4.systems.physics
 import c4.defaults.states as default_states
 import c4.config
 
+import "../messages" as custom_messages
+
 
 method onEnter(self: ref LoadingServerState) =
   let player = newEntity()  # create new entity

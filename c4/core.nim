@@ -23,11 +23,6 @@ from systems.video import VideoSystem, Window
 from systems.physics import PhysicsSystem
 
 
-type
-  Mode {.pure.} = enum
-    client, server, multi
-
-
 const 
   frameworkVersion = staticRead("version.txt")
 
@@ -42,8 +37,6 @@ const
 
 
 proc run*() =
-  var mode = Mode.multi
-
   # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
     case kind
@@ -61,7 +54,7 @@ proc run*() =
             echo help
             return
           of "mode", "m":
-            mode = parseEnum[Mode](value)
+            config.mode = parseEnum[Mode](value)
           else:
             echo "Unknown option: " & key & "=" & value
             return
@@ -74,7 +67,7 @@ proc run*() =
   logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & frameworkVersion)
 
-  if mode == Mode.multi:
+  if config.mode == Mode.multi:
     let
       serverProcess = startProcess(
         command=getAppFilename(),
@@ -100,5 +93,5 @@ proc run*() =
 
     return
 
-  let initialState = if mode == Mode.server: new(InitialServerState) else: new(InitialClientState)
+  let initialState = if config.mode == Mode.server: new(InitialServerState) else: new(InitialClientState)
   app.run(initialState)
