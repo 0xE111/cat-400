@@ -17,6 +17,10 @@ type
   PhysicsMessage* = object of EntityMessage
     physics*: ref Physics
 
+  RotateMessage* = object of EntityMessage
+    yaw*: float32
+    pitch*: float32
+
 
 template reg(t: typedesc): untyped =
   method `$`*(self: ref t): string = t.name
@@ -26,3 +30,4 @@ reg(QuitMessage)
 reg(AddEntityMessage)
 reg(DelEntityMessage)
 reg(PhysicsMessage)
+reg(RotateMessage)

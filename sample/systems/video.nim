@@ -11,7 +11,6 @@ var entityMap = initTable[Entity, Entity]()  # converter: remote Entity -> local
 
 
 method process(self: ref VideoSystem, message: ref AddEntityMessage) =
-  echo "<<< AddEntity >>>"
   var entity = newEntity()
   entityMap[message.entity] = entity
 
@@ -19,7 +18,6 @@ method process(self: ref VideoSystem, message: ref AddEntityMessage) =
   entity[ref Video][].init()
 
 method process(self: ref VideoSystem, message: ref PhysicsMessage) =
-  echo "<<< Physics >>>"
   var entity = entityMap[message.entity]
   entity[ref Video][].transform(
     translation=(message.physics.x, message.physics.y, message.physics.z)

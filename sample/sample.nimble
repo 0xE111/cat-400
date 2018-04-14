@@ -9,12 +9,6 @@ const
   pinnedVersion = staticRead(versionFile)
   buildDir = thisDir().parentDir.parentDir / "build"
 
-
-# Compilter switches
-switch("nimcache", buildDir / "nimcache")
-switch("out", buildDir / "sample")
-
-
 # Package
 version = pinnedVersion.split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
@@ -34,16 +28,17 @@ proc copyDir(src, dst: string) =
   mkDir(dst)
 
   for file in src.listFiles:
+    echo "Adding asset: " & dst / file.extractFilename
     file.cpFile(dst / file.extractFilename)
   
   for dir in src.listDirs:
-    dir.copyDir(dst / dir)
+    dir.copyDir(dst / dir.splitPath[1])
 
 
 task collectAssets, "Put all assets into build folder":
   let
     assetsSrc = "assets"
-    assetsDst = buildDir
+    assetsDst = buildDir / "assets"
   
   if dirExists(assetsSrc):
     echo "Collecting assets into " & assetsDst

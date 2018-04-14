@@ -56,7 +56,7 @@ method send*(
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
 
-  logging.debug &"-> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
+  logging.debug &"--> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -109,20 +109,40 @@ method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.ba
     raise newException(LibraryError, "No available peers for initiating an ENet connection")
 
   # further connection success / failure is handled by handleConnect / handleDisconnect
-
-method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false) {.base.} =
+  
+method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 2000) {.base.} =
   if not force:
     enet.peer_disconnect(peer, 0)
+
+    var event: Event
+    while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
+      case event.`type`
+        of EVENT_TYPE_RECEIVE:
+          event.packet.packet_destroy()
+        of EVENT_TYPE_DISCONNECT:
+          logging.debug &"-x- Disconnected from {peer[]}"
+          self.peers.del(peer)
+          peer.peer_reset()
+          return
+        else:
+          discard
+
     # TODO
     # wait(3)
     # check that we are disconnected - peer not in peers
     # if yes - return
-
+  if not force:
+    logging.warn "Soft disconnection from {peer[]} failed"
+  logging.debug &"-x- Force disconnected from {peer[]}"
   self.peers.del(peer)
-  enet.peer_reset(peer)
+  peer.peer_reset()
   
 # proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
 #   discard enet.host_service(connection.host, addr(self), timeout.uint32)
+
+method disconnect*(self: ref NetworkSystem, force = false) {.base.} =
+  for peer in self.peers.keys:
+    self.disconnect(peer, force)
 
 method update*(self: ref NetworkSystem, dt: float) =
   ## Check whether there is any network event and process if any
@@ -133,7 +153,7 @@ method update*(self: ref NetworkSystem, dt: float) =
     case event.`type`
       of EVENT_TYPE_CONNECT:
         self.peers[event.peer] = new(messages.Peer)
-        logging.debug &"Connection established: {event.peer[]}"
+        logging.debug &"--- Connection established: {event.peer[]}"
       of EVENT_TYPE_RECEIVE:
         var message: ref Message
         event.packet[].toString().unpack(message)
@@ -141,15 +161,16 @@ method update*(self: ref NetworkSystem, dt: float) =
         # include sender info into the message
         if self.peers.hasKey(event.peer):
           message.peer = self.peers[event.peer]
-          logging.debug &"<- Received {message} from peer {message.peer[]}"
+          logging.debug &"<-- Received {message} from peer {message.peer[]}"
           self.store(message)  # TODO: event.channelID data is missing in message
         else:
-          logging.warn &"<- Received message {message} from unregistered peer {event.peer[]}, discarding"
+          logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
 
         enet.packet_destroy(event.packet)
-      of EVENT_TYPE_DISCONNECT:
-        logging.debug &"Connection closed: {event.peer[]}"
+      of EVENT_TYPE_DISCONNECT:  # TODO, CRITICAL!!!: this event won't be fired if peer disconnected by timeout!
+        logging.debug &"-x- Connection closed: {event.peer[]}"
         self.peers.del(event.peer)
+        event.peer.peer_reset()
       else:
         discard
   

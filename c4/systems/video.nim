@@ -19,7 +19,7 @@ type
   VideoSystem* = object of System
     window: sdl.Window
     pipeline: horde3d.Res
-    camera: horde3d.Node
+    camera*: horde3d.Node
 
   Video* {.inheritable.} = object
     node: horde3d.Node
@@ -105,9 +105,15 @@ method init*(self: ref VideoSystem) =
     logging.fatal(getCurrentExceptionMsg())
     raise
 
-  logging.debug("Horde3d initialized")
+  logging.debug "Horde3d initialized"
 
   procCall ((ref System)self).init()
+
+  # DEMO
+  logging.debug "Adding light to the scene"
+  var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
+  light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
+  light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
 
 method update*(self: ref VideoSystem, dt: float) =
   procCall ((ref System)self).update(dt)
@@ -118,10 +124,6 @@ method update*(self: ref VideoSystem, dt: float) =
   #   0, 0, -5,  # Translation
   #   0, 0, 0,   # Rotation
   #   1, 1, 1 )  # Scale
-
-  var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
-  light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-  light.SetNodeParamF(Light.RadiusF, 0.cint, 10.cfloat)
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.Render()
