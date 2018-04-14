@@ -2,6 +2,8 @@
 
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
+![Teaser](https://media.giphy.com/media/NQi9oRoyIvC0OPdO1d/giphy.gif)
+
 ## Brief overview
 
 C4 is being developed for custom needs. Please note that it's more educational project rather then professional software, however if you like it you may use it and make contributions.
