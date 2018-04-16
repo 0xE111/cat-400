@@ -118,7 +118,7 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, 
   if not force:
     enet.peer_disconnect(peer, 0)
 
-    var event: Event
+    var event {.global.}: Event
     while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
       case event.`type`
         of EVENT_TYPE_RECEIVE:
@@ -131,10 +131,6 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, 
         else:
           discard
 
-    # TODO
-    # wait(3)
-    # check that we are disconnected - peer not in peers
-    # if yes - return
   if not force:
     logging.warn "Soft disconnection from {peer[]} failed"
   logging.debug &"-x- Force disconnected from {peer[]}"
@@ -171,7 +167,7 @@ method update*(self: ref NetworkSystem, dt: float) =
           logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
 
         enet.packet_destroy(event.packet)
-      of EVENT_TYPE_DISCONNECT:  # TODO, CRITICAL!!!: this event won't be fired if peer disconnected by timeout!
+      of EVENT_TYPE_DISCONNECT:
         logging.debug &"-x- Connection closed: {event.peer[]}"
         self.peers.del(event.peer)
         event.peer.peer_reset()

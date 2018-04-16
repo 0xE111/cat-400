@@ -6,7 +6,6 @@ from os import getAppDir, getAppFilename, commandLineParams, sleep
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
-from utils.helpers import index
 from sequtils import mapIt
 
 import config
@@ -25,7 +24,7 @@ import systems.physics
 const 
   frameworkVersion = staticRead("version.txt")
 
-  logLevels = logging.LevelNames.mapIt(it.toLowerAscii).join("|")
+  logLevels = logging.Level.mapIt(($it)[3..^1].toLowerAscii).join("|")
   modes = Mode.mapIt($it).join("|")
   help = &"""
     -v, --version - print version
@@ -48,7 +47,7 @@ proc run*() =
             echo "Compiled @ " & CompileDate & " " & CompileTime
             return
           of "loglevel", "l":
-            config.logLevel = logging.LevelNames.index(value.toUpperAscii)
+            config.logLevel = parseEnum[logging.Level](&"lvl{value}")
           of "help", "h":
             echo help
             return
@@ -59,6 +58,7 @@ proc run*() =
             return
       else: discard
 
+  # TODO: add logger helper - include file name (and possibly line) in log message
   let
     logFile = joinPath(getAppDir(), &"{mode}.log")
     logFmtStr = &"[$datetime] {mode} $levelname: "

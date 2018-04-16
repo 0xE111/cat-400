@@ -11,11 +11,6 @@ type
   InputSystem* = object of System
 
 
-var
-  event = sdl.Event()
-  message: ref Message
-
-
 proc `$`*(event: sdl.Event): string = $event.kind
 
 
@@ -40,7 +35,7 @@ method init*(self: ref InputSystem) =
 
 method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   case event.kind
-    of sdl.QUIT:  # TODO: move to defaults?
+    of sdl.QUIT:
       new(QuitMessage).send(@[
         config.systems.video,
         config.systems.network,
@@ -50,6 +45,8 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
 
 method update*(self: ref InputSystem, dt: float) =
   # process all network events
+  var event {.global.} = sdl.Event()
+  
   while sdl.pollEvent(event.addr) != 0:
     self.handle(event)
 

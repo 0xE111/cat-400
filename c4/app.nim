@@ -80,7 +80,7 @@ proc run*(initialState: ref State) =
   config.state.switch(initialState)
   runLoop(
     updatesPerSecond = 30,
-    fixedFrequencyCallback = proc(dt: float): bool =  # TODO: mexFrequencyCallback?
+    fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
       return config.state.update(dt),
   )
 
