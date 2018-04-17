@@ -34,12 +34,22 @@ method init*(self: ref InputSystem) =
   procCall ((ref System)self).init()
 
 method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
+  ## Handling of basic sdl event. These are pretty reasonable defaults.
   case event.kind
     of sdl.QUIT:
       new(QuitMessage).send(@[
         config.systems.video,
         config.systems.network,
       ])
+    of sdl.WINDOWEVENT:
+      case event.window.event
+        of sdl.WINDOWEVENT_SIZE_CHANGED:
+          (ref WindowResizeMessage)(
+            width: event.window.data1,
+            height: event.window.data2,
+          ).send(config.systems.video)
+        else:
+          discard
     else:
       discard
 

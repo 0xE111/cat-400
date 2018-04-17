@@ -1,15 +1,17 @@
-import "../wrappers/msgpack/msgpack"
 import typetraits
+from strformat import `&`
 
-from "../core/messages" import Message
-from "../core/entities" import Entity
-from "../systems/physics" import Physics
+import "../wrappers/msgpack/msgpack"
+import "../core/messages"
 
 
 type
-  QuitMessage* = object of Message
-  ## This message is a signal to disconnect and terminate process
+  QuitMessage* = object of Message  ## this message is a signal to disconnect and terminate process
+  WindowResizeMessage* = object of Message
+    width*, height*: int
 
 
-register(Message, QuitMessage)
-method `$`(self: ref QuitMessage): string = "QuitMessage"
+registerWithStringify(QuitMessage)
+
+register(Message, WindowResizeMessage)
+method `$`*(self: ref WindowResizeMessage): string = &"WindowResize {self.width}x{self.height}"

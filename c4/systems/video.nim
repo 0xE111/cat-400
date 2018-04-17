@@ -35,6 +35,17 @@ var
   fontRes, panelRes, cubeRes: horde3d.Res
 
 
+proc updateViewport*(self: horde3d.Node, width, height: int) =
+  ## Updates camera viewport
+  # TODO: check whether self is Camera and not every Node
+
+  self.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
+  self.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
+  self.SetNodeParamI(horde3d.Camera.ViewportWidthI, width.cint)
+  self.SetNodeParamI(horde3d.Camera.ViewportHeightI, height.cint)
+  self.SetupCameraView(45.cfloat, (width / height).cfloat, (0.5).cfloat, 2048.cfloat)
+
+
 method init*(self: ref VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
@@ -98,11 +109,7 @@ method init*(self: ref VideoSystem) =
 
     # setting up camera
     self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, window.width.cint)
-    self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, window.height.cint)
-    self.camera.SetupCameraView(45.cfloat, (window.width/window.height).cfloat, (0.5).cfloat, 2048.cfloat)
+    self.camera.updateViewport(window.width, window.height)
 
     self.pipeline.ResizePipelineBuffers(window.width.cint, window.height.cint)
 
@@ -119,11 +126,6 @@ method update*(self: ref VideoSystem, dt: float) =
   procCall ((ref System)self).update(dt)
 
   horde3d.utShowFrameStats(fontRes, panelRes, 1)
-  # # DEMO!!!
-  # model.SetNodeTransform(
-  #   0, 0, -5,  # Translation
-  #   0, 0, 0,   # Rotation
-  #   1, 1, 1 )  # Scale
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.Render()
