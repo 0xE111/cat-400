@@ -104,6 +104,31 @@ method init*(self: ref NetworkSystem) =
 
   procCall ((ref System)self).init()
 
+method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
+  case event.`type`
+  of EVENT_TYPE_CONNECT:
+    self.peers[event.peer] = new(messages.Peer)
+    logging.debug &"--- Connection established: {event.peer[]}"
+  of EVENT_TYPE_RECEIVE:
+    var message: ref Message
+    event.packet[].toString().unpack(message)
+    
+    # include sender info into the message
+    if self.peers.hasKey(event.peer):
+      message.peer = self.peers[event.peer]
+      logging.debug &"<-- Received {message} from peer {message.peer[]}"
+      self.store(message)  # TODO: event.channelID data is missing in message
+    else:
+      logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
+
+    enet.packet_destroy(event.packet)
+  of EVENT_TYPE_DISCONNECT:
+    logging.debug &"-x- Connection closed: {event.peer[]}"
+    self.peers.del(event.peer)
+    event.peer.peer_reset()
+  else:
+    discard
+
 method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.base.} =
   var enetAddress: enet.Address
   discard enet.address_set_host(enetAddress.addr, address.host.cstring)
@@ -114,31 +139,22 @@ method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.ba
 
   # further connection success / failure is handled by handleConnect / handleDisconnect
   
-method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 2000) {.base.} =
+method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.} =
   if not force:
     enet.peer_disconnect(peer, 0)
 
     var event {.global.}: Event
     while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
-      case event.`type`
-        of EVENT_TYPE_RECEIVE:
-          event.packet.packet_destroy()
-        of EVENT_TYPE_DISCONNECT:
-          logging.debug &"-x- Disconnected from {peer[]}"
-          self.peers.del(peer)
-          peer.peer_reset()
-          return
-        else:
-          discard
+      self.handle(event)
+
+  if not self.peers.hasKey(peer):  # if successfully disconnected from peer
+    return
 
   if not force:
     logging.warn "Soft disconnection from {peer[]} failed"
   logging.debug &"-x- Force disconnected from {peer[]}"
   self.peers.del(peer)
   peer.peer_reset()
-  
-# proc pollConnection*(self: var enet.Event, connection: Connection, timeout = 0) =
-#   discard enet.host_service(connection.host, addr(self), timeout.uint32)
 
 method disconnect*(self: ref NetworkSystem, force = false) {.base.} =
   for peer in self.peers.keys:
@@ -146,33 +162,10 @@ method disconnect*(self: ref NetworkSystem, force = false) {.base.} =
 
 method update*(self: ref NetworkSystem, dt: float) =
   ## Check whether there is any network event and process if any
-  var event: enet.Event
+  var event {.global.}: enet.Event
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
-    # for each event type call corresponding handlers
-    case event.`type`
-      of EVENT_TYPE_CONNECT:
-        self.peers[event.peer] = new(messages.Peer)
-        logging.debug &"--- Connection established: {event.peer[]}"
-      of EVENT_TYPE_RECEIVE:
-        var message: ref Message
-        event.packet[].toString().unpack(message)
-        
-        # include sender info into the message
-        if self.peers.hasKey(event.peer):
-          message.peer = self.peers[event.peer]
-          logging.debug &"<-- Received {message} from peer {message.peer[]}"
-          self.store(message)  # TODO: event.channelID data is missing in message
-        else:
-          logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
-
-        enet.packet_destroy(event.packet)
-      of EVENT_TYPE_DISCONNECT:
-        logging.debug &"-x- Connection closed: {event.peer[]}"
-        self.peers.del(event.peer)
-        event.peer.peer_reset()
-      else:
-        discard
+    self.handle(event)
   
   procCall ((ref System)self).update(dt)
 
