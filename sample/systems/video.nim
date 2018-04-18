@@ -10,6 +10,7 @@ import c4.defaults.messages as default_messages
 import c4.wrappers.horde3d.horde3d
 
 import "../core/messages"
+import "../utils/matrix"
 
 
 var entityMap = initTable[Entity, Entity]()  # converter: remote Entity -> local Entity
@@ -47,34 +48,33 @@ method process(self: ref VideoSystem, message: ref RotateMessage) =
     sx, sy, sz,
   )
 
-method process(self: ref VideoSystem, message: ref MoveForwardMessage) =
+proc translate(node: horde3d.Node, vector: Vector) =
+  ## Translates node relative to its direction
+  # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
-  self.camera.GetNodeTransform(
+  node.GetNodeTransform(
     tx.addr, ty.addr, tz.addr,
     rx.addr, ry.addr, rz.addr,
     sx.addr, sy.addr, sz.addr,
-  )  
-
-  let (px, py, pz) = getProjection(rx, ry)
-
-  self.camera.SetNodeTransform(
-    tx + px, ty + py, tz + pz,
-    rx, ry, rz,
-    sx, sy, sz
   )
+
+  let vector = vector.rotate(rx, ry)
+
+  node.SetNodeTransform(
+    tx + vector[0], ty + vector[1], tz + vector[2],
+    rx, ry, rz,
+    sx, sy, sz,
+  )
+
+
+method process(self: ref VideoSystem, message: ref MoveForwardMessage) =
+  self.camera.translate(Vector(@[0.0, 0.0, -1.0]))
 
 method process(self: ref VideoSystem, message: ref MoveBackwardMessage) =
-  var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
-  self.camera.GetNodeTransform(
-    tx.addr, ty.addr, tz.addr,
-    rx.addr, ry.addr, rz.addr,
-    sx.addr, sy.addr, sz.addr,
-  )
+  self.camera.translate(Vector(@[0.0, 0.0, 1.0]))
 
-  let (px, py, pz) = getProjection(rx, ry)
+method process(self: ref VideoSystem, message: ref MoveLeftMessage) =
+  self.camera.translate(Vector(@[-1.0, 0.0, 0.0]))
 
-  self.camera.SetNodeTransform(
-    tx - px, ty - py, tz - pz,
-    rx, ry, rz,
-    sx, sy, sz
-  )
+method process(self: ref VideoSystem, message: ref MoveRightMessage) =
+  self.camera.translate(Vector(@[1.0, 0.0, 0.0]))

@@ -20,6 +20,8 @@ type
     pitch*: float32
   MoveForwardMessage* = object of EntityMessage
   MoveBackwardMessage* = object of EntityMessage
+  MoveLeftMessage* = object of EntityMessage
+  MoveRightMessage* = object of EntityMessage
 
 
 registerWithStringify(ConnectMessage)
@@ -32,3 +34,5 @@ registerWithStringify(PhysicsMessage)
 registerWithStringify(RotateMessage)
 registerWithStringify(MoveForwardMessage)
 registerWithStringify(MoveBackwardMessage)
+registerWithStringify(MoveLeftMessage)
+registerWithStringify(MoveRightMessage)

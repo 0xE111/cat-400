@@ -27,22 +27,26 @@ method handle(self: ref CustomInputSystem, event: sdl.Event) =
     of sdl.KEYDOWN:
       case event.key.keysym.sym
         # connect
-        of sdl.K_c:
+        of K_c:
           new(ConnectMessage).send(config.systems.network)
 
         # load scene
-        of sdl.K_l:
+        of K_l:
           new(LoadSceneMessage).send(config.systems.network)
 
         # movement keys
-        of sdl.K_w, sdl.K_s:
+        of K_w, K_s, K_a, K_d:
           var message: ref Message
 
           case event.key.keysym.sym
-            of sdl.K_w:
+            of K_w:
               message = new(MoveForwardMessage)
-            of sdl.K_s:
+            of K_s:
               message = new(MoveBackwardMessage)
+            of K_a:
+              message = new(MoveLeftMessage)
+            of K_d:
+              message = new(MoveRightMessage)
             else:
               discard
             

@@ -18,7 +18,7 @@ import "../messages" as custom_messages
 method onEnter(self: ref LoadingServerState) =
   var cube: Entity
 
-  for i in 1..30:
+  for i in 1..60:
     cube = newEntity()
     (ref AddEntityMessage)(entity: cube).send(config.systems.network)
 

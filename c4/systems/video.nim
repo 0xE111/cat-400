@@ -1,6 +1,5 @@
 import sdl2.sdl
 import "../wrappers/horde3d/horde3d"
-import math
 import logging
 import strformat
 
@@ -163,18 +162,3 @@ proc transform*(
 
 proc `=destroy`*(self: var Video) =
   self.node.RemoveNode()
-
-proc getProjection*(rx, ry: cfloat): tuple[projX, projY, projZ: cfloat] =
-  ## Given rotation over X and Y axis, returns projection of initial [0, 0, -1] vector
-  ## rx and ry are degrees (not rad)
-
-  # convert to rad
-  let
-    rx = rx * PI / 180
-    ry = ry * PI / 180
-
-  result = (
-    projX: - sin(ry).cfloat * cos(rx).cfloat,
-    projY: sin(rx).cfloat,
-    projZ: - cos(rx).cfloat * cos(ry).cfloat,
-  )
