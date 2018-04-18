@@ -2,7 +2,7 @@
 
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
-<!-- ![Teaser](https://media.giphy.com/media/NQi9oRoyIvC0OPdO1d/giphy.gif) -->
+![Teaser](https://github.com/c0ntribut0r/cat-400/raw/master/teaser.jpg)
 
 ## Brief overview
 
@@ -26,9 +26,10 @@ Then, clone the repo and compile the sample.
 
 ```shell
 cd /tmp
-nimble install https://github.com/c0ntribut0r/cat-400@#head
 git clone https://github.com/c0ntribut0r/cat-400
-cd cat-400/sample
+cd cat-400
+nimble install
+cd sample
 nimble collectAssets
 nim c -r sample.nim -l=debug
 ```
