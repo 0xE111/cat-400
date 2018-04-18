@@ -83,5 +83,6 @@ proc run*(initialState: ref State) =
     fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
       return config.state.update(dt),
   )
+  # TODO: GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
 
   logging.debug "Finishing process"

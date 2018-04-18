@@ -19,24 +19,37 @@ method handle(self: ref CustomInputSystem, event: sdl.Event) =
     of sdl.MOUSEMOTION:
       var x, y: cint
       discard sdl.getRelativeMouseState(x.addr, y.addr)
-      (ref RotationMessage)(
+      (ref RotateMessage)(
         yaw: x.float32,
         pitch: y.float32,
       ).send(config.systems.video)
 
     of sdl.KEYDOWN:
       case event.key.keysym.sym
+        # connect
         of sdl.K_c:
           new(ConnectMessage).send(config.systems.network)
 
+        # load scene
         of sdl.K_l:
           new(LoadSceneMessage).send(config.systems.network)
 
-        of sdl.K_w:
-          new(ForwardMessage).send(config.systems.video)
+        # movement keys
+        of sdl.K_w, sdl.K_s:
+          var message: ref Message
 
-        of sdl.K_s:
-          new(BackwardMessage).send(config.systems.video)
+          case event.key.keysym.sym
+            of sdl.K_w:
+              message = new(MoveForwardMessage)
+            of sdl.K_s:
+              message = new(MoveBackwardMessage)
+            else:
+              discard
+            
+          message.send(@[
+            config.systems.video,  # this message is sent directly to video system for client-side movement prediction
+            config.systems.network,  # as well as to the server
+          ])
           
         else:
           discard

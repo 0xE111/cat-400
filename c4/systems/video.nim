@@ -1,12 +1,14 @@
 import sdl2.sdl
 import "../wrappers/horde3d/horde3d"
+import math
+import logging
+import strformat
 
-from logging import debug, fatal
-from strformat import `&`
 from os import getAppDir
 from ospaths import `/`
-from "../core/messages" import Message, `$`
-from "../systems" import System, init, update
+
+import "../core/messages"
+import "../systems"
 import "../config"
 
 
@@ -54,7 +56,7 @@ method init*(self: ref VideoSystem) =
 
   try:
     if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
-      raise newException(LibraryError, "Could not init SDL video subsystem" & $sdl.getError())
+      raise newException(LibraryError, "Could not init SDL video subsystem")
 
     # var displayMode: sdl.DisplayMode
     # if sdl.getCurrentDisplayMode(0, displayMode.addr) != 0:
@@ -69,14 +71,17 @@ method init*(self: ref VideoSystem) =
       (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
     if self.window == nil:
-      raise newException(LibraryError, "Could not create SDL window: " & $sdl.getError())
+      raise newException(LibraryError, "Could not create SDL window")
 
     if sdl.glCreateContext(self.window) == nil:
-      raise newException(LibraryError, "Could not create SDL OpenGL context: " & $sdl.getError())
+      raise newException(LibraryError, "Could not create SDL OpenGL context")
+    
+    if sdl.setRelativeMouseMode(true) != 0:
+      raise newException(LibraryError, "Could not enable relative mouse mode")
 
   except LibraryError:
+    logging.fatal getCurrentExceptionMsg() & ": " & $sdl.getError()
     sdl.quitSubSystem(sdl.INIT_VIDEO)
-    logging.fatal(getCurrentExceptionMsg())
     raise
     
   logging.debug("SDL video system initialized")
@@ -158,3 +163,18 @@ proc transform*(
 
 proc `=destroy`*(self: var Video) =
   self.node.RemoveNode()
+
+proc getProjection*(rx, ry: cfloat): tuple[projX, projY, projZ: cfloat] =
+  ## Given rotation over X and Y axis, returns projection of initial [0, 0, -1] vector
+  ## rx and ry are degrees (not rad)
+
+  # convert to rad
+  let
+    rx = rx * PI / 180
+    ry = ry * PI / 180
+
+  result = (
+    projX: - sin(ry).cfloat * cos(rx).cfloat,
+    projY: sin(rx).cfloat,
+    projZ: - cos(rx).cfloat * cos(ry).cfloat,
+  )

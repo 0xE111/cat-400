@@ -2,7 +2,7 @@
 
 "Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
 
-![Teaser](https://media.giphy.com/media/NQi9oRoyIvC0OPdO1d/giphy.gif)
+<!-- ![Teaser](https://media.giphy.com/media/NQi9oRoyIvC0OPdO1d/giphy.gif) -->
 
 ## Brief overview
 
@@ -11,10 +11,6 @@ C4 is being developed for custom needs. Please note that it's more educational p
 ## ★ Your help required!
 
 C4 tries to be clear and well-designed. Your contribution is highly appreciated! Sometimes even an idea or better design/implementation would be very helpful. Check out [current issues](https://github.com/c0ntribut0r/cat-400/issues).
-
-## TODOs
-
-* GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
 
 ## Demo
 

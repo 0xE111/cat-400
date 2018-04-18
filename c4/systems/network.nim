@@ -76,6 +76,7 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   else:
     self.send(message)  # do not store and send all incoming messages
     # TODO: recipient handling - to which peer is this message?
+    # TODO: group and send bulk?
  
 method init*(self: ref NetworkSystem) =
   # TODO: make these params configurable

@@ -1,8 +1,8 @@
 import c4.core.messages
 import c4.wrappers.enet.enet
 import c4.wrappers.msgpack.msgpack
-import typetraits
 import c4.systems.physics
+import typetraits
 
 
 type
@@ -15,12 +15,11 @@ type
   PhysicsMessage* = object of EntityMessage
     physics*: ref Physics
 
-  RotationMessage* = object of EntityMessage
+  RotateMessage* = object of EntityMessage
     yaw*: float32
     pitch*: float32
-  
-  ForwardMessage* = object of EntityMessage
-  BackwardMessage* = object of EntityMessage
+  MoveForwardMessage* = object of EntityMessage
+  MoveBackwardMessage* = object of EntityMessage
 
 
 registerWithStringify(ConnectMessage)
@@ -29,4 +28,7 @@ registerWithStringify(LoadSceneMessage)
 registerWithStringify(AddEntityMessage)
 registerWithStringify(DelEntityMessage)
 registerWithStringify(PhysicsMessage)
-registerWithStringify(RotationMessage)
+
+registerWithStringify(RotateMessage)
+registerWithStringify(MoveForwardMessage)
+registerWithStringify(MoveBackwardMessage)

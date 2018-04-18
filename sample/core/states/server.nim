@@ -16,19 +16,18 @@ import "../messages" as custom_messages
 
 
 method onEnter(self: ref LoadingServerState) =
-  let player = newEntity()  # create new entity
-  (ref AddEntityMessage)(entity: player).send(config.systems.network)  # send message
+  var cube: Entity
 
-  player[ref Physics] = (ref Physics)(x: 1, y: 2, z: 3)  # init physics for player
-  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).send(config.systems.network)
-  player[ref Physics].x = 3  # update player physics
-  (ref PhysicsMessage)(entity: player, physics: player[ref Physics]).send(config.systems.network)
+  for i in 1..30:
+    cube = newEntity()
+    (ref AddEntityMessage)(entity: cube).send(config.systems.network)
 
-  let cube = newEntity()
-  (ref AddEntityMessage)(entity: cube).send(config.systems.network)
-
-  cube[ref Physics] = (ref Physics)(x: 0, y: 0, z: -5)
-  (ref PhysicsMessage)(entity: cube, physics: cube[ref Physics]).send(config.systems.network)
+    cube[ref Physics] = (ref Physics)(
+      x: @[i.float, i.float/2, 0, -i.float/2, -i.float, -i.float/2, 0, i.float/2][i mod 8],
+      y: i.float,
+      z: @[0.0, -i.float/2, -i.float, -i.float/2, 0, i.float/2, i.float, i.float/2][i mod 8],
+    )
+    (ref PhysicsMessage)(entity: cube, physics: cube[ref Physics]).send(config.systems.network)
 
   logging.debug "Server scene loaded"
 

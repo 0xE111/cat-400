@@ -1,5 +1,5 @@
 import tables
-from strformat import `&`
+import strformat
 import logging
 
 import c4.core.entities
@@ -30,7 +30,7 @@ method process(self: ref VideoSystem, message: ref PhysicsMessage) =
     translation=(message.physics.x, message.physics.y, message.physics.z)
   )
 
-method process(self: ref VideoSystem, message: ref RotationMessage) =
+method process(self: ref VideoSystem, message: ref RotateMessage) =
   # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
   self.camera.GetNodeTransform(
@@ -41,11 +41,29 @@ method process(self: ref VideoSystem, message: ref RotationMessage) =
 
   self.camera.SetNodeTransform(
     tx, ty, tz,
-    rx - message.pitch.cfloat, ry - message.yaw.cfloat, 0.cfloat,
+    (rx - (message.pitch / 8).cfloat).max(-85).min(85),  # here we limit camera pitch
+    ry - (message.yaw / 8).cfloat,
+    0.cfloat,
     sx, sy, sz,
   )
 
-method process(self: ref VideoSystem, message: ref ForwardMessage) =
+method process(self: ref VideoSystem, message: ref MoveForwardMessage) =
+  var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
+  self.camera.GetNodeTransform(
+    tx.addr, ty.addr, tz.addr,
+    rx.addr, ry.addr, rz.addr,
+    sx.addr, sy.addr, sz.addr,
+  )  
+
+  let (px, py, pz) = getProjection(rx, ry)
+
+  self.camera.SetNodeTransform(
+    tx + px, ty + py, tz + pz,
+    rx, ry, rz,
+    sx, sy, sz
+  )
+
+method process(self: ref VideoSystem, message: ref MoveBackwardMessage) =
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
   self.camera.GetNodeTransform(
     tx.addr, ty.addr, tz.addr,
@@ -53,8 +71,10 @@ method process(self: ref VideoSystem, message: ref ForwardMessage) =
     sx.addr, sy.addr, sz.addr,
   )
 
+  let (px, py, pz) = getProjection(rx, ry)
+
   self.camera.SetNodeTransform(
-    tx, ty, tz + 1,
+    tx - px, ty - py, tz - pz,
     rx, ry, rz,
     sx, sy, sz
   )
