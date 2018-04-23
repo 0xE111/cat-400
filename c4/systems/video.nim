@@ -4,7 +4,8 @@ import logging
 import strformat
 
 from os import getAppDir
-from ospaths import `/`
+import ospaths
+import sequtils
 
 import "../core/messages"
 import "../systems"
@@ -18,34 +19,31 @@ type
   ]
 
   VideoSystem* = object of System
-    window: sdl.Window
-    pipeline: horde3d.Res
     camera*: horde3d.Node
+    window: sdl.Window
+    pipelineResource, fontResource, panelResource: horde3d.Res
 
   Video* {.inheritable.} = object
-    node: horde3d.Node
+    node*: horde3d.Node
 
 
-const
-  forwardPipeline = staticRead("../wrappers/horde3d/assets/pipelines/forward.pipeline.xml")
-
-let
-  assetsDir = getAppDir() / "assets/video"
-  
-var
-  fontRes, panelRes, cubeRes: horde3d.Res
+let assetsDir = getAppDir() / "assets" / "video"
 
 
-proc updateViewport*(self: horde3d.Node, width, height: int) =
+proc updateViewport*(self: ref VideoSystem, width, height: int) =
   ## Updates camera viewport
-  # TODO: check whether self is Camera and not every Node
+  self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0)
+  self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0)
+  self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, width)
+  self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, height)
+  self.camera.SetupCameraView(45.0, width.float / height.float, 0.5, 2048.0)
 
-  self.SetNodeParamI(horde3d.Camera.ViewportXI, 0.cint)
-  self.SetNodeParamI(horde3d.Camera.ViewportYI, 0.cint)
-  self.SetNodeParamI(horde3d.Camera.ViewportWidthI, width.cint)
-  self.SetNodeParamI(horde3d.Camera.ViewportHeightI, height.cint)
-  self.SetupCameraView(45.cfloat, (width / height).cfloat, (0.5).cfloat, 2048.cfloat)
+  self.pipelineResource.ResizePipelineBuffers(width, height)
 
+proc loadResources*(self: ref VideoSystem) =
+  logging.debug "Loading resources from " & assetsDir
+  if not utLoadResourcesFromDisk(assetsDir):
+    raise newException(LibraryError, "Could not load resources")
 
 method init*(self: ref VideoSystem) =
   # ---- SDL ----
@@ -63,10 +61,10 @@ method init*(self: ref VideoSystem) =
   
     self.window = sdl.createWindow(
       &"{config.title} v{config.version}",
-      window.x.cint,
-      window.y.cint,
-      window.width.cint,
-      window.height.cint,
+      window.x,
+      window.y,
+      window.width,
+      window.height,
       (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
     if self.window == nil:
@@ -83,43 +81,37 @@ method init*(self: ref VideoSystem) =
     sdl.quitSubSystem(sdl.INIT_VIDEO)
     raise
     
-  logging.debug("SDL video system initialized")
+  logging.debug "SDL video system initialized"
 
   # ---- Horde3d ----
-  logging.debug("Initializing " & $horde3d.GetVersionString())
+  logging.debug "Initializing " & $horde3d.GetVersionString()
 
   try:
     if not horde3d.Init(horde3d.RenderDevice.OpenGL4):
       raise newException(LibraryError, "Could not init Horde3D: " & $horde3d.GetError())
   
     # load default resources
-    self.pipeline = horde3d.AddResource(horde3d.ResTypes.Pipeline, "pipelines/forward.pipeline.xml", 0.cint)
-    if not self.pipeline.LoadResource(forwardPipeline, forwardPipeline.len + 1):
-      raise newException(LibraryError, "Could not load Horde3D resources")
+    self.pipelineResource = AddResource(ResTypes.Pipeline, "pipelines/forward.pipeline.xml")
+    self.fontResource = AddResource(ResTypes.Material, "overlays/font.material.xml")
+    self.panelResource = AddResource(ResTypes.Material,  "overlays/panel.material.xml")
+    if @[self.pipelineResource, self.fontResource, self.panelResource].any(proc (res: Res): bool = res == 0):
+      raise newException(LibraryError, "Could not add one or more resources")
 
-    fontRes = AddResource(ResTypes.Material, "overlays/font.material.xml", 0.cint)
-    panelRes = AddResource(ResTypes.Material, "overlays/panel.material.xml", 0.cint)
-    cubeRes = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml", 0.cint)
-    
-    logging.debug("Searching for assets in " & assetsDir)
-    if not utLoadResourcesFromDisk(assetsDir):
-      raise newException(LibraryError, "Could not load resources")
+    self.loadResources()
 
     # DEMO
     logging.debug "Adding light to the scene"
-    var light = RootNode.AddLightNode("light", 0.cint, "LIGHTING", "SHADOWMAP")
-    light.SetNodeTransform(0.cfloat, 20.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 0.cfloat, 1.cfloat, 1.cfloat, 1.cfloat)
-    light.SetNodeParamF(Light.RadiusF, 0.cint, 50.cfloat)
+    var light = RootNode.AddLightNode("light", 0, "LIGHTING", "SHADOWMAP")
+    light.SetNodeTransform(0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+    light.SetNodeParamF(Light.RadiusF, 0, 50.0)
 
     # setting up camera
-    self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipeline)
-    self.camera.updateViewport(window.width, window.height)
-
-    self.pipeline.ResizePipelineBuffers(window.width.cint, window.height.cint)
+    self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipelineResource)
+    self.updateViewport(window.width, window.height)
 
   except LibraryError:
     horde3d.Release()
-    logging.fatal(getCurrentExceptionMsg())
+    logging.fatal getCurrentExceptionMsg()
     raise
 
   logging.debug "Horde3d initialized"
@@ -129,7 +121,8 @@ method init*(self: ref VideoSystem) =
 method update*(self: ref VideoSystem, dt: float) =
   procCall ((ref System)self).update(dt)
 
-  horde3d.utShowFrameStats(fontRes, panelRes, 1)
+  if config.logLevel <= lvlDebug:
+    horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.Render()
@@ -141,24 +134,24 @@ method update*(self: ref VideoSystem, dt: float) =
 method `=destroy`*(self: ref VideoSystem) {.base.} =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.Release()
-  logging.debug("Video system unloaded")
+  logging.debug "Video system unloaded"
 
+# ---- component ----
+method init*(self: var Video) {.base.} =
+  # self.node = RootNode.AddNodes(someRes)
+  discard
 
-proc init*(self: var Video) =
-  logging.debug "Adding node to scene"
-  self.node = RootNode.AddNodes(cubeRes)
-
-proc transform*(
+method transform*(
   self: var Video,
   translation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),
   rotation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),
   scale: tuple[x, y, z: float] = (1.0, 1.0, 1.0)
-) =
+) {.base.} =
   self.node.SetNodeTransform(
     translation.x, translation.y, translation.z,
     rotation.x, rotation.y, rotation.z,
     scale.x, scale.y, scale.z,
   )
 
-proc `=destroy`*(self: var Video) =
+method `=destroy`*(self: var Video) {.base.} =
   self.node.RemoveNode()

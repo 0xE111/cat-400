@@ -28,7 +28,7 @@ proc copyDir(src, dst: string) =
   mkDir(dst)
 
   for file in src.listFiles:
-    echo "Adding asset: " & dst / file.extractFilename
+    echo dst / file.extractFilename
     file.cpFile(dst / file.extractFilename)
   
   for dir in src.listDirs:

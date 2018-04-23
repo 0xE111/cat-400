@@ -23,9 +23,9 @@ method onEnter(self: ref LoadingServerState) =
     (ref AddEntityMessage)(entity: cube).send(config.systems.network)
 
     cube[ref Physics] = (ref Physics)(
-      x: @[i.float, i.float/2, 0, -i.float/2, -i.float, -i.float/2, 0, i.float/2][i mod 8],
-      y: i.float,
-      z: @[0.0, -i.float/2, -i.float, -i.float/2, 0, i.float/2, i.float, i.float/2][i mod 8],
+      x: 0.float,
+      y: 0.float,
+      z: -i.float * 6,
     )
     (ref PhysicsMessage)(entity: cube, physics: cube[ref Physics]).send(config.systems.network)
 

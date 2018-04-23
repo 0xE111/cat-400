@@ -20,4 +20,4 @@ method process*(self: ref NetworkSystem, message: ref QuitMessage) =
   config.state.switch(new(FinalState))
 
 method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
-  self.camera.updateViewport(message.width, message.height)
+  self.updateViewport(message.width, message.height)

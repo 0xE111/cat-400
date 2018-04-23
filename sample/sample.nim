@@ -13,7 +13,8 @@ import core.states.server
 config.title = "Sample game"
 config.version = "0.1"
 config.systems.input = new(CustomInputSystem)
-config.settings.video.window.fullscreen = true
+config.systems.video = new(CustomVideoSystem)
+# config.settings.video.window.fullscreen = true
 
 
 when isMainModule:

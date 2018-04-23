@@ -140,7 +140,7 @@ proc GetResType*(res: Res): cint
 proc GetResName*(res: Res): cstring
 proc GetNextResource*(`type`: cint|ResTypes; start: Res): Res
 proc FindResource*(`type`: cint|ResTypes; name: cstring): Res
-proc AddResource*(`type`: cint|ResTypes; name: cstring; flags: cint): Res
+proc AddResource*(`type`: cint|ResTypes; name: cstring; flags: cint = 0): Res
 proc CloneResource*(sourceRes: Res; name: cstring): Res
 proc RemoveResource*(res: Res): cint
 proc IsResLoaded*(res: Res): bool

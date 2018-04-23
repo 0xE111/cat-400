@@ -13,15 +13,39 @@ import "../core/messages"
 import "../utils/matrix"
 
 
+type
+  CustomVideoSystem* = object of VideoSystem
+
+  CubeVideo* = object of Video
+
+var
+  cubeResource: horde3d.Res  # TODO: move to CustomVideoSystem
+
+
 var entityMap = initTable[Entity, Entity]()  # converter: remote Entity -> local Entity
 
+# DEMO
+# var skyboxRes: horde3d.Res
+
+method init*(self: ref CustomVideoSystem) =
+  procCall ((ref VideoSystem)self).init()
+
+  # load custom resources
+  cubeResource = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")
+  if cubeResource == 0:
+    let msg = "Custom resources not loaded"
+    logging.fatal msg
+    raise newException(LibraryError, msg)
+
+  self.loadResources()
+  # skybox = self.load
 
 method process(self: ref VideoSystem, message: ref AddEntityMessage) =
   var entity = newEntity()
   entityMap[message.entity] = entity
 
   logging.debug &"Created entity {entity}"
-  entity[ref Video] = new(Video)
+  entity[ref Video] = new(CubeVideo)
   entity[ref Video][].init()
 
 method process(self: ref VideoSystem, message: ref PhysicsMessage) =
@@ -78,3 +102,7 @@ method process(self: ref VideoSystem, message: ref MoveLeftMessage) =
 
 method process(self: ref VideoSystem, message: ref MoveRightMessage) =
   self.camera.translate(Vector(@[1.0, 0.0, 0.0]))
+
+# ---- component ----
+method init(self: var CubeVideo) =
+  self.node = RootNode.AddNodes(cubeResource)
