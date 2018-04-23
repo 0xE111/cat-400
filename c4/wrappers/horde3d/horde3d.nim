@@ -181,7 +181,7 @@ proc SetNodeParamF*(node: Node; param: cint|Light; compIdx: cint; value: cfloat)
 proc GetNodeParamStr*(node: Node; param: cint): cstring
 proc SetNodeParamStr*(node: Node; param: cint; value: cstring)
 proc GetNodeFlags*(node: Node): cint
-proc SetNodeFlags*(node: Node; flags: cint; recursive: bool)
+proc SetNodeFlags*(node: Node; flags: cint|NodeFlags; recursive: bool)
 proc GetNodeAABB*(node: Node; minX: ptr cfloat; minY: ptr cfloat; minZ: ptr cfloat; maxX: ptr cfloat; maxY: ptr cfloat; maxZ: ptr cfloat)
 proc FindNodes*(startNode: Node; name: cstring; `type`: cint): cint
 proc GetNodeFindResult*(index: cint): Node

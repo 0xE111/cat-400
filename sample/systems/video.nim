@@ -20,6 +20,7 @@ type
 
 var
   cubeResource: horde3d.Res  # TODO: move to CustomVideoSystem
+  skyboxResource: horde3d.Res
 
 
 var entityMap = initTable[Entity, Entity]()  # converter: remote Entity -> local Entity
@@ -32,13 +33,17 @@ method init*(self: ref CustomVideoSystem) =
 
   # load custom resources
   cubeResource = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")
-  if cubeResource == 0:
+  skyboxResource = AddResource(ResTypes.SceneGraph, "models/skybox/skybox.scene.xml")
+  if cubeResource == 0 or skyboxResource == 0:
     let msg = "Custom resources not loaded"
     logging.fatal msg
     raise newException(LibraryError, msg)
 
   self.loadResources()
-  # skybox = self.load
+
+  var sky = RootNode.AddNodes(skyboxResource)
+  sky.SetNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
+  sky.SetNodeFlags(NodeFlags.NoCastShadow, true)
 
 method process(self: ref VideoSystem, message: ref AddEntityMessage) =
   var entity = newEntity()

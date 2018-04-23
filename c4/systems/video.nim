@@ -41,9 +41,22 @@ proc updateViewport*(self: ref VideoSystem, width, height: int) =
   self.pipelineResource.ResizePipelineBuffers(width, height)
 
 proc loadResources*(self: ref VideoSystem) =
+  # TODO: think of better resource management
   logging.debug "Loading resources from " & assetsDir
   if not utLoadResourcesFromDisk(assetsDir):
     raise newException(LibraryError, "Could not load resources")
+
+# type
+#   Resource* = tuple[kind: ResTypes, path: string]
+#
+# proc get*(self: Resource): horde3d.Res =
+#   ## Gets resource from horde3d resource manager or tries to load it.
+#   ## Raises exception if resource could not be loaded.
+#   # TODO: check whether it works fine
+#   result = horde3d.FindResource(self.kind, self.path)
+#   if result == 0:
+#     result = horde3d.AddResource(self.kind, self.path, 0)
+#     logging.debug "LOADED RES: " & $result
 
 method init*(self: ref VideoSystem) =
   # ---- SDL ----
