@@ -1,5 +1,4 @@
 <Material>
 	<Shader source="shaders/skybox.shader"/>
-	
 	<Sampler name="albedoMap" map="models/skybox/skybox.dds" />
 </Material>

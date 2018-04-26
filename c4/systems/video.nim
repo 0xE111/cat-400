@@ -32,13 +32,13 @@ let assetsDir = getAppDir() / "assets" / "video"
 
 proc updateViewport*(self: ref VideoSystem, width, height: int) =
   ## Updates camera viewport
-  self.camera.SetNodeParamI(horde3d.Camera.ViewportXI, 0)
-  self.camera.SetNodeParamI(horde3d.Camera.ViewportYI, 0)
-  self.camera.SetNodeParamI(horde3d.Camera.ViewportWidthI, width)
-  self.camera.SetNodeParamI(horde3d.Camera.ViewportHeightI, height)
-  self.camera.SetupCameraView(45.0, width.float / height.float, 0.5, 2048.0)
+  self.camera.setNodeParamI(horde3d.Camera.ViewportXI, 0)
+  self.camera.setNodeParamI(horde3d.Camera.ViewportYI, 0)
+  self.camera.setNodeParamI(horde3d.Camera.ViewportWidthI, width)
+  self.camera.setNodeParamI(horde3d.Camera.ViewportHeightI, height)
+  self.camera.setupCameraView(45.0, width.float / height.float, 0.5, 2048.0)
 
-  self.pipelineResource.ResizePipelineBuffers(width, height)
+  self.pipelineResource.resizePipelineBuffers(width, height)
 
 proc loadResources*(self: ref VideoSystem) =
   # TODO: think of better resource management
@@ -97,16 +97,16 @@ method init*(self: ref VideoSystem) =
   logging.debug "SDL video system initialized"
 
   # ---- Horde3d ----
-  logging.debug "Initializing " & $horde3d.GetVersionString()
+  logging.debug "Initializing " & $horde3d.getVersionString()
 
   try:
-    if not horde3d.Init(horde3d.RenderDevice.OpenGL4):
-      raise newException(LibraryError, "Could not init Horde3D: " & $horde3d.GetError())
+    if not horde3d.init(horde3d.RenderDevice.OpenGL4):
+      raise newException(LibraryError, "Could not init Horde3D: " & $horde3d.getError())
   
     # load default resources
-    self.pipelineResource = AddResource(ResTypes.Pipeline, "pipelines/forward.pipeline.xml")
-    self.fontResource = AddResource(ResTypes.Material, "overlays/font.material.xml")
-    self.panelResource = AddResource(ResTypes.Material,  "overlays/panel.material.xml")
+    self.pipelineResource = addResource(ResTypes.Pipeline, "pipelines/forward.pipeline.xml")
+    self.fontResource = addResource(ResTypes.Material, "overlays/font.material.xml")
+    self.panelResource = addResource(ResTypes.Material,  "overlays/panel.material.xml")
     if @[self.pipelineResource, self.fontResource, self.panelResource].any(proc (res: Res): bool = res == 0):
       raise newException(LibraryError, "Could not add one or more resources")
 
@@ -114,16 +114,16 @@ method init*(self: ref VideoSystem) =
 
     # DEMO
     logging.debug "Adding light to the scene"
-    var light = RootNode.AddLightNode("light", 0, "LIGHTING", "SHADOWMAP")
-    light.SetNodeTransform(0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
-    light.SetNodeParamF(Light.RadiusF, 0, 50.0)
+    var light = RootNode.addLightNode("light", 0, "LIGHTING", "SHADOWMAP")
+    light.setNodeTransform(0.0, 20.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+    light.setNodeParamF(Light.RadiusF, 0, 50.0)
 
     # setting up camera
-    self.camera = horde3d.RootNode.AddCameraNode("camera", self.pipelineResource)
+    self.camera = horde3d.RootNode.addCameraNode("camera", self.pipelineResource)
     self.updateViewport(window.width, window.height)
 
   except LibraryError:
-    horde3d.Release()
+    horde3d.release()
     logging.fatal getCurrentExceptionMsg()
     raise
 
@@ -138,15 +138,15 @@ method update*(self: ref VideoSystem, dt: float) =
     horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
-  self.camera.Render()
+  self.camera.render()
   self.window.glSwapWindow()
-  horde3d.FinalizeFrame()  # TODO: is this needed?
-  horde3d.ClearOverlays()
+  horde3d.finalizeFrame()  # TODO: is this needed?
+  horde3d.clearOverlays()
 
 {.experimental.}
 method `=destroy`*(self: ref VideoSystem) {.base.} =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
-  horde3d.Release()
+  horde3d.release()
   logging.debug "Video system unloaded"
 
 # ---- component ----
@@ -160,11 +160,11 @@ method transform*(
   rotation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),
   scale: tuple[x, y, z: float] = (1.0, 1.0, 1.0)
 ) {.base.} =
-  self.node.SetNodeTransform(
+  self.node.setNodeTransform(
     translation.x, translation.y, translation.z,
     rotation.x, rotation.y, rotation.z,
     scale.x, scale.y, scale.z,
   )
 
 method `=destroy`*(self: var Video) {.base.} =
-  self.node.RemoveNode()
+  self.node.removeNode()

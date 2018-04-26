@@ -32,8 +32,8 @@ method init*(self: ref CustomVideoSystem) =
   procCall ((ref VideoSystem)self).init()
 
   # load custom resources
-  cubeResource = AddResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")
-  skyboxResource = AddResource(ResTypes.SceneGraph, "models/skybox/skybox.scene.xml")
+  cubeResource = addResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")
+  skyboxResource = addResource(ResTypes.SceneGraph, "models/skybox/skybox.scene.xml")
   if cubeResource == 0 or skyboxResource == 0:
     let msg = "Custom resources not loaded"
     logging.fatal msg
@@ -41,9 +41,9 @@ method init*(self: ref CustomVideoSystem) =
 
   self.loadResources()
 
-  var sky = RootNode.AddNodes(skyboxResource)
-  sky.SetNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
-  sky.SetNodeFlags(NodeFlags.NoCastShadow, true)
+  var sky = RootNode.addNodes(skyboxResource)
+  sky.setNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
+  sky.setNodeFlags(NodeFlags.NoCastShadow, true)
 
 method process(self: ref VideoSystem, message: ref AddEntityMessage) =
   var entity = newEntity()
@@ -63,13 +63,13 @@ method process(self: ref VideoSystem, message: ref PhysicsMessage) =
 method process(self: ref VideoSystem, message: ref RotateMessage) =
   # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
-  self.camera.GetNodeTransform(
+  self.camera.getNodeTransform(
     tx.addr, ty.addr, tz.addr,
     rx.addr, ry.addr, rz.addr,
     sx.addr, sy.addr, sz.addr,
   )
 
-  self.camera.SetNodeTransform(
+  self.camera.setNodeTransform(
     tx, ty, tz,
     (rx - (message.pitch / 8).cfloat).max(-85).min(85),  # here we limit camera pitch
     ry - (message.yaw / 8).cfloat,
@@ -81,7 +81,7 @@ proc translate(node: horde3d.Node, vector: Vector) =
   ## Translates node relative to its direction
   # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
-  node.GetNodeTransform(
+  node.getNodeTransform(
     tx.addr, ty.addr, tz.addr,
     rx.addr, ry.addr, rz.addr,
     sx.addr, sy.addr, sz.addr,
@@ -89,7 +89,7 @@ proc translate(node: horde3d.Node, vector: Vector) =
 
   let vector = vector.rotate(rx, ry)
 
-  node.SetNodeTransform(
+  node.setNodeTransform(
     tx + vector[0], ty + vector[1], tz + vector[2],
     rx, ry, rz,
     sx, sy, sz,
@@ -110,4 +110,4 @@ method process(self: ref VideoSystem, message: ref MoveRightMessage) =
 
 # ---- component ----
 method init(self: var CubeVideo) =
-  self.node = RootNode.AddNodes(cubeResource)
+  self.node = RootNode.addNodes(cubeResource)
