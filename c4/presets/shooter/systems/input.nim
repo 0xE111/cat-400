@@ -1,20 +1,20 @@
 import sdl2.sdl
-from strformat import `&`
-from logging import debug
+import strformat
+import logging
 
-import c4.core.messages
-import c4.systems
-import c4.config
-import c4.systems.input
-import c4.presets.default.messages as default_messages
-import "../core/messages" as custom_messages
+import "../../../config"
+import "../../../core/messages"
+import "../../../systems"
+import "../../../systems/input"
+import "../../default/messages" as default_messages
+import "../messages" as shooter_messages
 
 
 type
-  CustomInputSystem* = object of InputSystem
+  ShooterInputSystem* = object of InputSystem
 
 
-method handle(self: ref CustomInputSystem, event: sdl.Event) =
+method handle(self: ref ShooterInputSystem, event: sdl.Event) =
   case event.kind
     of sdl.MOUSEMOTION:
       var x, y: cint

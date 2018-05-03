@@ -1,15 +1,16 @@
 import logging
-from strformat import `&`
+import strformat
 
-import c4.config
-import c4.core.states
-import c4.presets.default.states as default_states
-import c4.systems
-import c4.systems.network
-import c4.core.messages as c4_messages
-import c4.presets.default.messages as default_messages
+import "../../../config"
+import "../../../core/states"
+import "../../../core/messages"
+import "../../../systems"
+import "../../../systems/network"
 
-import "../core/messages"
+import "../../default/messages" as default_messages
+import "../../default/states" as default_states
+
+import "../messages" as shooter_messages
 
 
 method process(self: ref NetworkSystem, message: ref LoadSceneMessage) =

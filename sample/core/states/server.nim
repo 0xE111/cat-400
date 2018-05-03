@@ -12,7 +12,7 @@ import c4.systems.physics
 import c4.presets.default.states as default_states
 import c4.config
 
-import "../messages" as custom_messages
+import c4.presets.shooter.messages as shooter_messages
 
 
 method onEnter(self: ref LoadingServerState) =

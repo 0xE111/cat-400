@@ -2,19 +2,21 @@ import tables
 import strformat
 import logging
 
-import c4.core.entities
-import c4.systems.video
-import c4.core.messages as c4_messages
-import c4.presets.default.states as default_states
-import c4.presets.default.messages as default_messages
-import c4.wrappers.horde3d.horde3d
+import "../../../core/entities"
+import "../../../systems/video"
+import "../../../core/messages"
 
-import "../core/messages"
+import "../../default/states" as default_states
+import "../../default/messages" as default_messages
+
+import "../../../wrappers/horde3d/horde3d"
+
+import "../messages" as shooter_messages
 import "../utils/matrix"
 
 
 type
-  CustomVideoSystem* = object of VideoSystem
+  ShooterVideoSystem* = object of VideoSystem
 
   CubeVideo* = object of Video
 
@@ -28,7 +30,7 @@ var entityMap = initTable[Entity, Entity]()  # converter: remote Entity -> local
 # DEMO
 # var skyboxRes: horde3d.Res
 
-method init*(self: ref CustomVideoSystem) =
+method init*(self: ref ShooterVideoSystem) =
   procCall ((ref VideoSystem)self).init()
 
   # load custom resources
@@ -45,7 +47,7 @@ method init*(self: ref CustomVideoSystem) =
   sky.setNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
   sky.setNodeFlags(NodeFlags.NoCastShadow, true)
 
-method process(self: ref VideoSystem, message: ref AddEntityMessage) =
+method process(self: ref ShooterVideoSystem, message: ref AddEntityMessage) =
   var entity = newEntity()
   entityMap[message.entity] = entity
 
@@ -53,14 +55,14 @@ method process(self: ref VideoSystem, message: ref AddEntityMessage) =
   entity[ref Video] = new(CubeVideo)
   entity[ref Video][].init()
 
-method process(self: ref VideoSystem, message: ref PhysicsMessage) =
+method process(self: ref ShooterVideoSystem, message: ref PhysicsMessage) =
   var entity = entityMap[message.entity]
   logging.debug &"Moving entity {entity} to {message.physics.x} {message.physics.y} {message.physics.z}"
   entity[ref Video][].transform(
     translation=(message.physics.x, message.physics.y, message.physics.z)
   )
 
-method process(self: ref VideoSystem, message: ref RotateMessage) =
+method process(self: ref ShooterVideoSystem, message: ref RotateMessage) =
   # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
   self.camera.getNodeTransform(
@@ -96,16 +98,16 @@ proc translate(node: horde3d.Node, vector: Vector) =
   )
 
 
-method process(self: ref VideoSystem, message: ref MoveForwardMessage) =
+method process(self: ref ShooterVideoSystem, message: ref MoveForwardMessage) =
   self.camera.translate(Vector(@[0.0, 0.0, -1.0]))
 
-method process(self: ref VideoSystem, message: ref MoveBackwardMessage) =
+method process(self: ref ShooterVideoSystem, message: ref MoveBackwardMessage) =
   self.camera.translate(Vector(@[0.0, 0.0, 1.0]))
 
-method process(self: ref VideoSystem, message: ref MoveLeftMessage) =
+method process(self: ref ShooterVideoSystem, message: ref MoveLeftMessage) =
   self.camera.translate(Vector(@[-1.0, 0.0, 0.0]))
 
-method process(self: ref VideoSystem, message: ref MoveRightMessage) =
+method process(self: ref ShooterVideoSystem, message: ref MoveRightMessage) =
   self.camera.translate(Vector(@[1.0, 0.0, 0.0]))
 
 # ---- component ----
