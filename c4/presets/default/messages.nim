@@ -1,8 +1,8 @@
 import typetraits
 from strformat import `&`
 
-import "../wrappers/msgpack/msgpack"
-import "../core/messages"
+import "../../wrappers/msgpack/msgpack"
+import "../../core/messages"
 
 
 type

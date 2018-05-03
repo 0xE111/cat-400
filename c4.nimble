@@ -1,4 +1,4 @@
-from strutils import format, split, join
+from strutils import format, split, join, splitLines
 import strformat
 
 # Constants
@@ -14,7 +14,7 @@ proc getGitVersion*(): string {.compileTime.} =
 version = pinnedVersion.split('-')[0]  # don't include number of updates
 author = "c0ntribut0r"
 description = "Game framework"
-license = "MIT"
+license = staticRead("LICENSE").splitLines()[0]
 
 # Dirs
 skipDirs = @["sample"]

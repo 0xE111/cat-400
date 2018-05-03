@@ -12,8 +12,8 @@ import config
 import core.states
 import app
 
-import defaults.handlers as default_handlers
-import defaults.states as default_states
+import presets.default.handlers as default_handlers
+import presets.default.states as default_states
 
 import systems.input
 import systems.network

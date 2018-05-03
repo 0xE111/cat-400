@@ -3,11 +3,11 @@ from strformat import `&`
 
 import c4.config
 import c4.core.states
-import c4.defaults.states as default_states
+import c4.presets.default.states as default_states
 import c4.systems
 import c4.systems.network
 import c4.core.messages as c4_messages
-import c4.defaults.messages as default_messages
+import c4.presets.default.messages as default_messages
 
 import "../core/messages"
 

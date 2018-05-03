@@ -1,10 +1,10 @@
 import logging
 
-import "../config"
-import "../core/states"
-import "../systems"
-import "../systems/network"
-import "../systems/video"
+import "../../config"
+import "../../core/states"
+import "../../systems"
+import "../../systems/network"
+import "../../systems/video"
 
 import messages as default_messages
 import states as default_states

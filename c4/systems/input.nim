@@ -4,7 +4,7 @@ from strformat import `&`
 import "../systems"
 import "../core/messages"
 import "../config"
-import "../defaults/messages" as default_messages
+import "../presets/default/messages" as default_messages
 
 
 type

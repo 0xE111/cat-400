@@ -10,7 +10,7 @@ import systems.physics as physics_system
 import systems.video as video_system
 import systems.input as input_system
 
-import defaults.states as default_states
+import presets.default.states as default_states
 
 
 method update(self: ref State, dt: float): bool {.base, inline.} = true  # every state does not finish loop but does nothin

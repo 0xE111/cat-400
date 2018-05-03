@@ -6,7 +6,7 @@ import c4.core.messages
 import c4.systems
 import c4.config
 import c4.systems.input
-import c4.defaults.messages as default_messages
+import c4.presets.default.messages as default_messages
 import "../core/messages" as custom_messages
 
 

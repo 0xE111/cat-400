@@ -5,7 +5,7 @@ import "../systems"
 import "../config"
 import "../core/entities"
 import "../core/messages"
-import "../defaults/messages" as default_messages
+import "../presets/default/messages" as default_messages
 import "../wrappers/enet/enet"
 import "../wrappers/msgpack/msgpack"
 import streams

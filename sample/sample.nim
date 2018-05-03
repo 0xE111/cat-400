@@ -14,7 +14,7 @@ config.title = "Sample game"
 config.version = "0.1"
 config.systems.input = new(CustomInputSystem)
 config.systems.video = new(CustomVideoSystem)
-# config.settings.video.window.fullscreen = true
+config.settings.video.window.fullscreen = false
 
 
 when isMainModule:

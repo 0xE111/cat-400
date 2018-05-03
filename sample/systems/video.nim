@@ -5,8 +5,8 @@ import logging
 import c4.core.entities
 import c4.systems.video
 import c4.core.messages as c4_messages
-import c4.defaults.states as default_states
-import c4.defaults.messages as default_messages
+import c4.presets.default.states as default_states
+import c4.presets.default.messages as default_messages
 import c4.wrappers.horde3d.horde3d
 
 import "../core/messages"
