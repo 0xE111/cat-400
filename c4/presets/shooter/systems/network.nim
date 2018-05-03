@@ -13,22 +13,26 @@ import "../../default/states" as default_states
 import "../messages" as shooter_messages
 
 
-method process(self: ref NetworkSystem, message: ref LoadSceneMessage) =
+type
+  ShooterNetworkSystem* = object of NetworkSystem
+
+
+method process(self: ref ShooterNetworkSystem, message: ref LoadSceneMessage) =
   # processing incoming LoadScene message
   config.state.switch(new(LoadingServerState))
 
-method store(self: ref NetworkSystem, message: ref ConnectMessage) =
+method store(self: ref ShooterNetworkSystem, message: ref ConnectMessage) =
   # by default network system sends all local incoming messages
   # however, we want to store and process ConnectMessage
   procCall ((ref System)self).store(message)
 
-method process(self: ref NetworkSystem, message: ref ConnectMessage) =
+method process(self: ref ShooterNetworkSystem, message: ref ConnectMessage) =
   if not message.isExternal:
     logging.debug &"Connecting to port {config.settings.network.port}"
     self.connect(("localhost", config.settings.network.port))
 
-method process(self: ref NetworkSystem, message: ref AddEntityMessage) =
+method process(self: ref ShooterNetworkSystem, message: ref AddEntityMessage) =
   message.send(config.systems.video)
 
-method process(self: ref NetworkSystem, message: ref PhysicsMessage) =
+method process(self: ref ShooterNetworkSystem, message: ref PhysicsMessage) =
   message.send(config.systems.video)

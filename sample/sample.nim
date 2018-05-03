@@ -14,6 +14,7 @@ config.title = "Sample game"
 config.version = "0.1"
 config.systems.input = new(ShooterInputSystem)
 config.systems.video = new(ShooterVideoSystem)
+config.systems.network = new(ShooterNetworkSystem)
 config.settings.video.window.fullscreen = false
 
 
