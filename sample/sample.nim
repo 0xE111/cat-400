@@ -7,7 +7,7 @@ import c4.presets.shooter.systems.video
 import c4.presets.shooter.systems.physics
 import c4.presets.shooter.systems.network
 
-import core.states.server
+import states.server
 
 
 config.title = "Sample game"
