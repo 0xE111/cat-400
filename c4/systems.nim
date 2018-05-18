@@ -1,14 +1,15 @@
 import deques
-from core.messages import Message, `$`
-from logging import debug
-from strformat import `&`
-
+import core.messages
+import logging
+import strformat
 
 type
   MessageQueue* = Deque[ref Message]
 
   System* = object {.inheritable.}
     messageQueue: MessageQueue
+
+  SystemComponent* = object {.inheritable.}
 
 
 # ---- System procs ----
@@ -28,6 +29,15 @@ method update*(self: ref System, dt: float) {.base.} =
     while self.messageQueue.len > 0:
       message = self.messageQueue.popFirst()
       self.process(message)  # may create new messages during work
+
+
+# ---- Components support ----
+method initComponent*(self: ref System, component: ref SystemComponent) {.base.} =
+  raise newException(LibraryError, &"Component {component[]} is not supported by {self[]} system")
+
+method destroyComponent*(self: ref System, component: ref SystemComponent) {.base.} =
+  raise newException(LibraryError, &"Component {component[]} is not supported by {self[]} system")
+
 
 # ---- Message procs ----
 proc send*(self: ref Message, system: ref System) =

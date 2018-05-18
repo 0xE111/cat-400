@@ -57,9 +57,9 @@ method process(self: ref ShooterVideoSystem, message: ref AddEntityMessage) =
 
 method process(self: ref ShooterVideoSystem, message: ref PhysicsMessage) =
   var entity = entityMap[message.entity]
-  logging.debug &"Moving entity {entity} to {message.physics.x} {message.physics.y} {message.physics.z}"
+  logging.debug &"Moving entity {entity} to {message.x} {message.y} {message.z}"
   entity[ref Video][].transform(
-    translation=(message.physics.x, message.physics.y, message.physics.z)
+    translation=(message.x.float, message.y.float, message.z.float)
   )
 
 method process(self: ref ShooterVideoSystem, message: ref RotateMessage) =

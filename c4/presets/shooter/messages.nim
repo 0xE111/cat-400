@@ -1,7 +1,7 @@
-import c4.core.messages
-import c4.wrappers.enet.enet
-import c4.wrappers.msgpack.msgpack
-import c4.systems.physics
+import "../../core/messages"
+import "../../wrappers/enet/enet"
+import "../../wrappers/msgpack/msgpack"
+import "../../systems/physics"
 import typetraits
 
 
@@ -13,7 +13,7 @@ type
   DelEntityMessage* = object of EntityMessage
 
   PhysicsMessage* = object of EntityMessage
-    physics*: ref Physics
+    x*, y*, z*: float32
 
   RotateMessage* = object of EntityMessage
     yaw*: float32

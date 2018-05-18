@@ -720,7 +720,7 @@ proc jointSetPUAxis2*(a2: dJointID; x: dReal; y: dReal; z: dReal) {.importc: "dJ
 proc jointSetPUAxis3*(a2: dJointID; x: dReal; y: dReal; z: dReal) {.importc: "dJointSetPUAxis3".}
 proc jointSetPUAxisP*(id: dJointID; x: dReal; y: dReal; z: dReal) {.importc: "dJointSetPUAxisP".}
 proc jointSetPUParam*(a2: dJointID; parameter: cint; value: dReal) {.importc: "dJointSetPUParam".}
-proc jointAddPUTorque*(j: dJointID; torque: dReal) {.importc: "dJointAddPUTorque".}
+# proc jointAddPUTorque*(j: dJointID; torque: dReal) {.importc: "dJointAddPUTorque".}
 proc jointSetPistonAnchor*(a2: dJointID; x: dReal; y: dReal; z: dReal) {.importc: "dJointSetPistonAnchor".}
 proc jointSetPistonAnchorOffset*(j: dJointID; x: dReal; y: dReal; z: dReal; dx: dReal; dy: dReal; dz: dReal) {.importc: "dJointSetPistonAnchorOffset".}
 proc jointSetPistonAxis*(a2: dJointID; x: dReal; y: dReal; z: dReal) {.importc: "dJointSetPistonAxis".}
