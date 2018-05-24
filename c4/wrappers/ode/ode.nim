@@ -585,7 +585,7 @@ proc bodyCreate*(a2: dWorldID): dBodyID {.importc: "dBodyCreate".}
 proc bodyDestroy*(a2: dBodyID) {.importc: "dBodyDestroy".}
 proc bodySetData*(a2: dBodyID; data: pointer) {.importc: "dBodySetData".}
 proc bodyGetData*(a2: dBodyID): pointer {.importc: "dBodyGetData".}
-proc bodySetPosition*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetPosition".}
+proc bodySetPosition*(body: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetPosition".}
 proc bodySetRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodySetRotation".}
 proc bodySetQuaternion*(a2: dBodyID; q: dQuaternion) {.importc: "dBodySetQuaternion".}
 proc bodySetLinearVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetLinearVel".}

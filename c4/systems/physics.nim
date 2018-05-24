@@ -36,10 +36,12 @@ method `=destroy`*(self: ref PhysicsSystem) {.base.} =
 
 method initComponent*(self: ref PhysicsSystem, component: ref Physics) =
   logging.debug &"Initializing component for {self[]} system"
-  var mass: ptr ode.dMass = cast[ptr ode.dMass](alloc(sizeof(ode.dMass)))  # TODO: is this okay?
+  # var mass: ptr ode.dMass = cast[ptr ode.dMass](alloc(sizeof(ode.dMass)))  # TODO: is this okay?
+  var mass = ode.dMass()
 
   logging.debug &"Initializing mass"
-  # mass.massSetZero()
+  # mass.addr.massSetZero()
+  echo $mass.mass
   # mass.massSetSphereTotal(1.0, 0.2)
 
   logging.debug &"Creating body"
