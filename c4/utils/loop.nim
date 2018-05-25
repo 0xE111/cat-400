@@ -10,7 +10,7 @@ proc runLoop*(
   fixedFrequencyCallback: Callback = nil,
   maxFrequencyCallback: Callback = nil,
 ) =
-  # handlers will receive dt - delta time between two last calls
+  # handlers will receive dt - delta time between two last calls (in seconds, floating point)
   let 
     skipSeconds = 1 / updatesPerSecond
     maxUpdatesSkip = int(updatesPerSecond.float * 0.3)
