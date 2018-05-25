@@ -1,4 +1,5 @@
-from logging import debug
+import logging
+import strformat
 
 import c4.core.messages
 import c4.presets.default.messages as default_messages
@@ -29,8 +30,9 @@ method onEnter(self: ref LoadingServerState) =
     config.systems.physics.initComponent(physics)
     physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
     cube[ref Physics] = physics
-    var position = cast[array[3, ode.dReal]](physics.body.bodyGetPosition())
-    (ref PhysicsMessage)(entity: cube, x: position[0].float, y: position[1], z: position[2]).send(config.systems.network)
+
+    var position = physics.body.bodyGetPosition()
+    (ref PhysicsMessage)(entity: cube, x: position[][0], y: position[][1], z: position[][2]).send(config.systems.network)
 
   logging.debug "Server scene loaded"
 

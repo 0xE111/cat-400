@@ -12,6 +12,8 @@ Install directly from git subdir:
 nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/wrappers/ode@#head"
 ```
 
+Please ensure you set the same precision as ODE compiled library you're going to use (`.so` or `.dll`). To set precision, define either `dIDEDOUBLE` (the default) or `dIDESINGLE` for nim compiler.
+
 ## License
 
 MIT. Do whatever you want.

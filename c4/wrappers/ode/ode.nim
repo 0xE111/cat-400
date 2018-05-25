@@ -39,7 +39,7 @@ when defined(dIDEDOUBLE):
 elif defined(dIDESINGLE):
   const precision = Precision.single
 else:
-  const precision = Precision.single
+  const precision = Precision.double
 
 type
   ptrdiff_t* {.importc: "ptrdiff_t", header: "<stddef.h>".} = int
@@ -590,7 +590,7 @@ proc bodySetRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodySetRotation".}
 proc bodySetQuaternion*(a2: dBodyID; q: dQuaternion) {.importc: "dBodySetQuaternion".}
 proc bodySetLinearVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetLinearVel".}
 proc bodySetAngularVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetAngularVel".}
-proc bodyGetPosition*(a2: dBodyID): ptr dReal {.importc: "dBodyGetPosition".}
+proc bodyGetPosition*(a2: dBodyID): ptr array[0..2, ode.dReal] {.importc: "dBodyGetPosition".}
 proc bodyCopyPosition*(body: dBodyID; pos: dVector3) {.importc: "dBodyCopyPosition".}
 proc bodyGetRotation*(a2: dBodyID): ptr dReal {.importc: "dBodyGetRotation".}
 proc bodyCopyRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodyCopyRotation".}
