@@ -5,7 +5,7 @@ import logging
 import "../../../config"
 import "../../../core/messages"
 import "../../../systems"
-import "../../../systems/input"
+import "../../../systems/input/sdl" as input
 import "../../default/messages" as default_messages
 import "../messages" as shooter_messages
 

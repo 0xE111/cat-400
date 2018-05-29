@@ -1,7 +1,7 @@
 import "../../core/messages"
 import "../../wrappers/enet/enet"
 import "../../wrappers/msgpack/msgpack"
-import "../../systems/physics"
+import "../../systems/physics/ode"
 import typetraits
 
 

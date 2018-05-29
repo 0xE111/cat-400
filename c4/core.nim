@@ -15,11 +15,6 @@ import app
 import presets.default.handlers as default_handlers
 import presets.default.states as default_states
 
-import systems.input
-import systems.network
-import systems.video
-import systems.physics
-
 
 const 
   frameworkVersion = staticRead("version.txt")

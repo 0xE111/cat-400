@@ -1,10 +1,10 @@
 from sdl2.sdl import nil
 from logging import debug, fatal
 from strformat import `&`
-import "../systems"
-import "../core/messages"
-import "../config"
-import "../presets/default/messages" as default_messages
+import "../../systems"
+import "../../core/messages"
+import "../../config"
+import "../../presets/default/messages" as default_messages
 
 
 type

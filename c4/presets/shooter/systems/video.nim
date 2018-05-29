@@ -3,7 +3,7 @@ import strformat
 import logging
 
 import "../../../core/entities"
-import "../../../systems/video"
+import "../../../systems/video/horde3d" as video
 import "../../../core/messages"
 
 import "../../default/states" as default_states

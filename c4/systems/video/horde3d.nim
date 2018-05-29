@@ -1,5 +1,5 @@
 import sdl2.sdl
-import "../wrappers/horde3d/horde3d"
+import "../../wrappers/horde3d/horde3d"
 import logging
 import strformat
 
@@ -7,9 +7,9 @@ from os import getAppDir
 import ospaths
 import sequtils
 
-import "../core/messages"
-import "../systems"
-import "../config"
+import "../../core/messages"
+import "../../systems"
+import "../../config"
 
 
 type
@@ -151,7 +151,7 @@ method `=destroy`*(self: ref VideoSystem) {.base.} =
 
 # ---- component ----
 method init*(self: var Video) {.base.} =
-  # self.node = RootNode.AddNodes(someRes)
+  # self.node = RootNode.AddNodes(someRes)  # TODO!!!!!!
   discard
 
 method transform*(

@@ -3,8 +3,8 @@ import logging
 import "../../config"
 import "../../core/states"
 import "../../systems"
-import "../../systems/network"
-import "../../systems/video"
+import "../../systems/network/enet"
+import "../../systems/video/horde3d"
 
 import messages as default_messages
 import states as default_states

@@ -5,10 +5,10 @@ from utils.loop import runLoop
 from strformat import `&`
 
 import systems
-import systems.network as network_system
-import systems.physics as physics_system
-import systems.video as video_system
-import systems.input as input_system
+import systems.network.enet
+import systems.physics.ode
+import systems.video.horde3d
+import systems.input.sdl
 
 import presets.default.states as default_states
 

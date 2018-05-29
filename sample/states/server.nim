@@ -7,8 +7,8 @@ import c4.core.entities
 import c4.core.states
 
 import c4.systems
-import c4.systems.network
-import c4.systems.physics
+import c4.systems.network.enet as network
+import c4.systems.physics.ode as physics
 
 import c4.wrappers.ode.ode
 
@@ -29,6 +29,11 @@ method onEnter(self: ref LoadingServerState) =
     var physics = new(ShooterPhysics)
     config.systems.physics.initComponent(physics)
     physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
+
+    var mass = ode.dMass()
+    mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
+    physics.body.bodySetMass(mass.addr)
+
     cube[ref Physics] = physics
 
     var position = physics.body.bodyGetPosition()

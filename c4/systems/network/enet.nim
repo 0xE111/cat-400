@@ -1,14 +1,14 @@
 import logging
 import tables
-from strformat import `&`
-import "../systems"
-import "../config"
-import "../core/entities"
-import "../core/messages"
-import "../presets/default/messages" as default_messages
-import "../wrappers/enet/enet"
-import "../wrappers/msgpack/msgpack"
+import strformat
 import streams
+import "../../systems"
+import "../../config"
+import "../../core/entities"
+import "../../core/messages"
+import "../../presets/default/messages" as default_messages
+import "../../wrappers/enet/enet"
+import "../../wrappers/msgpack/msgpack"
 
 
 type

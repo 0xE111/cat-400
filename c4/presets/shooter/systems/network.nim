@@ -5,7 +5,7 @@ import "../../../config"
 import "../../../core/states"
 import "../../../core/messages"
 import "../../../systems"
-import "../../../systems/network"
+import "../../../systems/network/enet"
 
 import "../../default/messages" as default_messages
 import "../../default/states" as default_states

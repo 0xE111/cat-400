@@ -1,4 +1,4 @@
-import "../../../systems/physics"
+import "../../../systems/physics/ode"
 
   
 type
