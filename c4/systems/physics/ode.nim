@@ -8,9 +8,10 @@ import "../../systems"
 import "../../presets/shooter/messages"
 import "../../wrappers/ode/ode"
 import "../../core/entities"
+import "../../utils/floats"
 
 
-const simulationStep = 0.01
+const simulationStep = 1 / 30
 
 type
   PhysicsSystem* = object of System
@@ -19,6 +20,8 @@ type
 
   Physics* = object of SystemComponent
     body*: dBodyID
+    geometry*: dGeomID
+    prevPosition: tuple[x, y, z: dReal]
 
 
 method init*(self: ref PhysicsSystem) =
@@ -28,6 +31,7 @@ method init*(self: ref PhysicsSystem) =
   logging.debug "ODE initialized"
 
   procCall ((ref System)self).init()
+
 
 method update*(self: ref PhysicsSystem, dt: float) =
   let
@@ -40,10 +44,12 @@ method update*(self: ref PhysicsSystem, dt: float) =
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
 
-  # TODO: it's not the best idea to send position on every physics update?
+  # send only updated position
   for entity, physics in getComponents(ref Physics).pairs():
     let position = physics.body.bodyGetPosition()[]
-    (ref PhysicsMessage)(entity: entity, x: position[0], y: position[1], z: position[2]).send(config.systems.network)
+    if (position[0] != physics.prevPosition.x) or (position[1] != physics.prevPosition.y) or (position[1] != physics.prevPosition.z):
+      physics.prevPosition = (position[0], position[1], position[2])
+      (ref PhysicsMessage)(entity: entity, x: position[0], y: position[1], z: position[2]).send(config.systems.network)
 
   procCall ((ref System)self).update(dt)
 
@@ -59,8 +65,11 @@ method initComponent*(self: ref PhysicsSystem, component: ref Physics) =
 
   component.body = self.world.bodyCreate()
   component.body.bodySetPosition(0.0, 0.0, 0.0)
+
+  component.prevPosition = (0.0, 0.0, 0.0)
   
   # logging.debug &"Initializing mass"
+  # var mass: = create(ode.dMass)
   # var mass: ode.dMass  # var mass: ptr ode.dMass = cast[ptr ode.dMass](alloc(sizeof(ode.dMass)))
   # mass.addr.massSetBoxTotal(1.0, 1.0, 1.0, 1.0)
   # component.body.bodySetMass(mass.addr)

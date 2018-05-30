@@ -16,6 +16,7 @@ import presets.default.handlers as default_handlers
 import presets.default.states as default_states
 
 
+# TODO: use `finalizer` kw for every `new()` call
 const 
   frameworkVersion = staticRead("version.txt")
 

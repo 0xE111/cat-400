@@ -24,13 +24,20 @@ type
 
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
-  $address.host & ":" & $address.port
+  const ipLength = "000.000.000.000".len
+  var address = address
+
+  result = newString(ipLength)
+  if address_get_host_ip(address.addr, result, ipLength) != 0:
+    raise newException(LibraryError, "Could not get printable address")
+
+  result &= &":{$address.port}"
 
 proc `$`*(host: enet.Host): string =
-  "Host: " & $host.address
+  $host.address
 
 proc `$`*(peer: enet.Peer): string =
-  "Peer: " & $peer.address
+  $peer.address
 
 proc `$`*(packet: ptr Packet): string =
   "Packet of size " & $packet.dataLength
