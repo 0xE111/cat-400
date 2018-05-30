@@ -1,8 +1,9 @@
+import strformat
+
 import "../../core/messages"
 import "../../wrappers/enet/enet"
-import "../../wrappers/msgpack/msgpack"
 import "../../systems/physics/ode"
-import typetraits
+import "../../utils/stringify"
 
 
 type
@@ -24,15 +25,28 @@ type
   MoveRightMessage* = object of EntityMessage
 
 
-registerWithStringify(ConnectMessage)
-registerWithStringify(LoadSceneMessage)
+messages.register(ConnectMessage)
+strMethod(ConnectMessage)
 
-registerWithStringify(AddEntityMessage)
-registerWithStringify(DelEntityMessage)
-registerWithStringify(PhysicsMessage)
+messages.register(LoadSceneMessage)
+strMethod(LoadSceneMessage)
 
-registerWithStringify(RotateMessage)
-registerWithStringify(MoveForwardMessage)
-registerWithStringify(MoveBackwardMessage)
-registerWithStringify(MoveLeftMessage)
-registerWithStringify(MoveRightMessage)
+messages.register(AddEntityMessage)
+strMethod(AddEntityMessage)
+messages.register(DelEntityMessage)
+strMethod(DelEntityMessage)
+
+messages.register(PhysicsMessage)
+strMethod(PhysicsMessage)
+
+messages.register(RotateMessage)
+method `$`*(self: ref RotateMessage): string = &"{self.type.name}: {$self.yaw}, {$self.pitch}"
+
+messages.register(MoveForwardMessage)
+strMethod(MoveForwardMessage)
+messages.register(MoveBackwardMessage)
+strMethod(MoveBackwardMessage)
+messages.register(MoveLeftMessage)
+strMethod(MoveLeftMessage)
+messages.register(MoveRightMessage)
+strMethod(MoveRightMessage)

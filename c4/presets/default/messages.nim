@@ -1,8 +1,8 @@
 import typetraits
-from strformat import `&`
+import strformat
 
-import "../../wrappers/msgpack/msgpack"
 import "../../core/messages"
+import "../../utils/stringify"
 
 
 type
@@ -11,7 +11,8 @@ type
     width*, height*: int
 
 
-registerWithStringify(QuitMessage)
+messages.register(QuitMessage)
+strMethod(QuitMessage)
 
-register(Message, WindowResizeMessage)
-method `$`*(self: ref WindowResizeMessage): string = &"WindowResize {self.width}x{self.height}"
+messages.register(WindowResizeMessage)
+method `$`*(self: ref WindowResizeMessage): string = &"WindowResize: {self.width}x{self.height}"

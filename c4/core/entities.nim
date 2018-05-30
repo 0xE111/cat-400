@@ -49,3 +49,21 @@ template has*(entity: Entity, t: typedesc): bool = getComponents(t).hasKey(entit
 template del*(entity: Entity, t: typedesc) = getComponents(t).del(entity)
 template `[]`*(entity: Entity, t: typedesc): var typed = getComponents(t)[entity]
 template `[]=`*(entity: Entity, t: typedesc, value: t) = getComponents(t)[entity] = value
+
+
+when isMainModule:
+  var
+    ent1 = newEntity()
+    ent2 = newEntity()
+  
+  ent1[int] = 1
+  ent1[string] = "Entity 1"
+  
+  ent2[int] = 2
+  
+  ent1.delete()
+  ent2.delete()
+  
+  const failMsg = "Component destructors don't work!"
+  assert(not ent1.has(string), failMsg)
+  assert(not ent2.has(int), failMsg)
