@@ -13,10 +13,6 @@ type
     ## Network system should populate the `peer` field when receiving Message from remote machine.
     ## You need to call `core.messages.register` so that msgpack4nim knows how to (de)serialize your custom message.
     peer*: ref Peer  ## Message sender; nil means that the message is local.
-  
-  EntityMessage* = object of Message
-    ## A message that is related to (or affects) an Entity - i.e. AddEntityMessage, RotateEntityMessage etc.
-    entity*: Entity
 
 
 proc isExternal*(self: ref Message): bool =

@@ -24,7 +24,7 @@ method onEnter(self: ref LoadingServerState) =
 
   for i in 1..10:
     cube = newEntity()
-    (ref AddEntityMessage)(entity: cube).send(config.systems.network)
+    (ref CreateEntityMessage)(entity: cube).send(config.systems.network)
 
     var physics = new(ActionPhysics)
     config.systems.physics.initComponent(physics)
@@ -35,7 +35,6 @@ method onEnter(self: ref LoadingServerState) =
     physics.body.bodySetMass(mass.addr)
 
     cube[ref Physics] = physics
-
     var position = physics.body.bodyGetPosition()
     (ref PhysicsMessage)(entity: cube, x: position[][0], y: position[][1], z: position[][2]).send(config.systems.network)
 

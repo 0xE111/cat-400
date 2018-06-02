@@ -19,7 +19,8 @@ type
   NetworkSystem* = object of System
     host: ptr enet.Host  # remember own host
     peers: Table[ptr enet.Peer, ref messages.Peer]  # table for converting internal enet.Peer into generic Peer
-    entities: Table[Entity, Entity]  # table for converting remote Entity to local one
+    entitiesMap*: Table[Entity, Entity]  # table for converting remote Entity to local one
+    # TODO: exposing `entitiesMap` is not a good idea!
 
 
 # ---- helpers ----
@@ -81,7 +82,7 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   if message.isExternal:
     procCall ((ref System)self).store(message)  # save all external messages for further processing
   else:
-    self.send(message)  # do not store and send all incoming messages
+    self.send(message)  # do not store and send all local incoming messages
     # TODO: recipient handling - to which peer is this message?
     # TODO: group and send bulk?
  
@@ -109,6 +110,7 @@ method init*(self: ref NetworkSystem) =
     raise newException(LibraryError, "An error occured while trying to init host. Maybe that port is already in use?")
 
   self.peers = initTable[ptr enet.Peer, ref messages.Peer]()
+  self.entitiesMap = initTable[Entity, Entity]()
 
   procCall ((ref System)self).init()
 

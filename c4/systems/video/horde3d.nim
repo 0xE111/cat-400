@@ -143,8 +143,7 @@ method update*(self: ref VideoSystem, dt: float) =
   horde3d.finalizeFrame()  # TODO: is this needed?
   horde3d.clearOverlays()
 
-{.experimental.}
-method `=destroy`*(self: ref VideoSystem) {.base.} =
+proc `=destroy`*(self: var VideoSystem) =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.release()
   logging.debug "Video system unloaded"
