@@ -2,6 +2,8 @@ import deques
 import core.messages
 import logging
 import strformat
+import core.entities
+
 
 type
   MessageQueue* = Deque[ref Message]
@@ -38,6 +40,8 @@ method initComponent*(self: ref System, component: ref SystemComponent) {.base.}
 method destroyComponent*(self: ref System, component: ref SystemComponent) {.base.} =
   raise newException(LibraryError, &"Component {component[]} is not supported by {self[]} system")
 
+method update*(self: ref SystemComponent, dt: float, entity: Entity) {.base.} =
+  discard
 
 # ---- Message procs ----
 proc send*(self: ref Message, system: ref System) =

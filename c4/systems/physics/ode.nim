@@ -5,7 +5,6 @@ import tables
 
 import "../../config"
 import "../../systems"
-import "../../presets/shooter/messages"
 import "../../wrappers/ode/ode"
 import "../../core/entities"
 import "../../utils/floats"
@@ -21,7 +20,6 @@ type
   Physics* = object of SystemComponent
     body*: dBodyID
     geometry*: dGeomID
-    prevPosition: tuple[x, y, z: dReal]
 
 
 method init*(self: ref PhysicsSystem) =
@@ -38,23 +36,18 @@ method update*(self: ref PhysicsSystem, dt: float) =
     dt = dt + self.simulationStepRemains
     nSteps = (dt / simulationStep).int
   
-  self.simulationStepRemains = dt.fmod(simulationStep)
+  self.simulationStepRemains = dt.mod(simulationStep)
 
   for i in 0..<nSteps:
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
-
-  # send only updated position
+  
   for entity, physics in getComponents(ref Physics).pairs():
-    let position = physics.body.bodyGetPosition()[]
-    if (position[0] != physics.prevPosition.x) or (position[1] != physics.prevPosition.y) or (position[1] != physics.prevPosition.z):
-      physics.prevPosition = (position[0], position[1], position[2])
-      (ref PhysicsMessage)(entity: entity, x: position[0], y: position[1], z: position[2]).send(config.systems.network)
+    physics.update(dt, entity)
 
   procCall ((ref System)self).update(dt)
 
-{.experimental.}
-method `=destroy`*(self: ref PhysicsSystem) {.base.} =
+proc `=destroy`*(self: var PhysicsSystem) =
   self.world.worldDestroy()
   ode.closeODE()
   logging.debug "ODE destroyed"
@@ -65,8 +58,6 @@ method initComponent*(self: ref PhysicsSystem, component: ref Physics) =
 
   component.body = self.world.bodyCreate()
   component.body.bodySetPosition(0.0, 0.0, 0.0)
-
-  component.prevPosition = (0.0, 0.0, 0.0)
   
   # logging.debug &"Initializing mass"
   # var mass: = create(ode.dMass)

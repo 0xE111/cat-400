@@ -177,7 +177,6 @@ method update*(self: ref NetworkSystem, dt: float) =
   
   procCall ((ref System)self).update(dt)
 
-{.experimental.}
-method `=destroy`*(self: ref NetworkSystem) {.base.} =
+proc `=destroy`*(self: var NetworkSystem) =
   enet.host_destroy(self.host)
   enet.deinitialize()

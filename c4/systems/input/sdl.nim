@@ -62,7 +62,6 @@ method update*(self: ref InputSystem, dt: float) =
 
   procCall ((ref System)self).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
 
-{.experimental.}
-method `=destroy`*(self: ref InputSystem) {.base.} =
+proc `=destroy`*(self: var InputSystem) =
   sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems
   logging.debug("Input system destroyed")

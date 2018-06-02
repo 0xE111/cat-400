@@ -15,8 +15,8 @@ import c4.wrappers.ode.ode
 import c4.presets.default.states as default_states
 import c4.config
 
-import c4.presets.shooter.messages as shooter_messages
-import c4.presets.shooter.systems.physics as shooter_physics
+import c4.presets.action.messages as action_messages
+import c4.presets.action.systems.physics as action_physics
 
 
 method onEnter(self: ref LoadingServerState) =
@@ -26,7 +26,7 @@ method onEnter(self: ref LoadingServerState) =
     cube = newEntity()
     (ref AddEntityMessage)(entity: cube).send(config.systems.network)
 
-    var physics = new(ShooterPhysics)
+    var physics = new(ActionPhysics)
     config.systems.physics.initComponent(physics)
     physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
 

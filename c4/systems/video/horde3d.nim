@@ -166,5 +166,5 @@ method transform*(
     scale.x, scale.y, scale.z,
   )
 
-method `=destroy`*(self: var Video) {.base.} =
+proc `=destroy`*(self: var Video) =
   self.node.removeNode()
