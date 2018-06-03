@@ -55,6 +55,7 @@ proc dirGenDocs(src, dst: string) =
     if not tail.startsWith("_") and tail != nimcacheDir():
       dirGenDocs(dir, dst)
 
-task genDocs, "Generate doc files":  
-  rmDir "docs"
-  dirGenDocs("c4", "docs")
+task genDocs, "Generate doc files":
+  const docsDir = "docs"
+  docsDir.rmDir()
+  dirGenDocs("c4", docsDir)
