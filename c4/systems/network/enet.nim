@@ -119,11 +119,22 @@ method init*(self: ref NetworkSystem) =
 
   procCall ((ref System)self).init()
 
+# forward declaration, needed for ``handle`` method
+method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.}
+
 method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
   case event.`type`
   of EVENT_TYPE_CONNECT:
+    # We need to check whether new peer is already connected. If yes then we just close previous connection and open a new one.
+    for peer in self.peers.keys():
+      if peer.address == event.peer.address:
+        logging.debug &"Peer {peer[]} was already connected, closing previous connection"
+        self.disconnect(peer)
+        self.peers.del(peer)  # TODO: is it safe to delete while iterating over?
+      
     self.peers[event.peer] = new(messages.Peer)
     logging.debug &"--- Connection established: {event.peer[]}"
+    logging.debug &"Current # of peers: {self.peers.len}"
   of EVENT_TYPE_RECEIVE:
     var message: ref Message
     event.packet[].toString().unpack(message)
@@ -208,8 +219,11 @@ method store(self: ref NetworkSystem, message: ref ConnectMessage) =
   procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
-  ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
+  ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified. Only one connection is allowed, so any further connects will dismiss previous ones.
   if not message.isExternal:
+    # Disconnect before new connection. As a most common case, peer may connect to only one another peer (client connects to only one server). However, if it's not your case, and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
+    self.disconnect()
+
     logging.debug &"Connecting to {message.address}"
     self.connect(message.address)
 
