@@ -6,10 +6,7 @@ import "../../../core/states"
 import "../../../core/messages"
 import "../../../systems"
 import "../../../systems/network/enet"
-
 import "../../default/messages" as default_messages
-import "../../default/handlers" as default_handlers
-import "../../default/states" as default_states
 
 import "../messages" as action_messages
 

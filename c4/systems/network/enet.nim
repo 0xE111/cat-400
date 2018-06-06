@@ -28,6 +28,19 @@ type
     # TODO: exposing `entitiesMap` is not a good idea!
 
 
+# ---- messages ----
+type
+  ConnectMessage* = object of Message
+    ## Send this message to network system in order to connect to server.
+    ## Example: (ref ConnectMessage)(address: ("localhost", "5555")).send(config.systems.network)
+    address*: Address
+  
+messages.register(ConnectMessage)
+method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
+
+# TODO: DisconnectMessage
+
+
 # ---- helpers ----
 proc `$`*(address: enet.Address): string =
   const ipLength = "000.000.000.000".len
@@ -78,18 +91,6 @@ method send*(
 
   if immediate:
     enet.host_flush(self.host)
-
-method store*(self: ref NetworkSystem, message: ref Message) =
-  ## Network system stores messages differently by default.
-  ## While other systems store all incoming messages for futher processing, network system _sends_ all local messages without storing and processing them.
-  ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
-  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it (see defaults/handlers.nim).
-  if message.isExternal:
-    procCall ((ref System)self).store(message)  # save all external messages for further processing
-  else:
-    self.send(message)  # do not store and send all local incoming messages
-    # TODO: recipient handling - to which peer is this message?
-    # TODO: group and send bulk?
  
 method init*(self: ref NetworkSystem) =
   # TODO: make these params configurable
@@ -189,19 +190,19 @@ proc `=destroy`*(self: var NetworkSystem) =
   enet.deinitialize()
 
 
-# ---- messages ----
-type
-  ConnectMessage* = object of Message
-    ## Send this message to network system in order to connect to server.
-    ## Example: (ref ConnectMessage)(address: ("localhost", "5555")).send(config.systems.network)
-    address*: Address
-  
-messages.register(ConnectMessage)
-method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
-
-# TODO: DisconnectMessage
-
 # ---- handlers ----
+method store*(self: ref NetworkSystem, message: ref Message) =
+  ## Network system stores messages differently by default.
+  ## While other systems store all incoming messages for futher processing, network system _sends_ all local messages without storing and processing them.
+  ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
+  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it (see defaults/handlers.nim).
+  if message.isExternal:
+    procCall ((ref System)self).store(message)  # save all external messages for further processing
+  else:
+    self.send(message)  # do not store and send all local incoming messages
+    # TODO: recipient handling - to which peer is this message?
+    # TODO: group and send bulk?
+
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
   if not message.isExternal:
@@ -213,3 +214,28 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
 method store*(self: ref NetworkSystem, message: ref QuitMessage) =
   ## By default network system sends all local incoming messages to remote peers. However, we don't need to send ``QuitMessage`` over the network, we only need to store it and then disconnect and shutdown when processing it.
   procCall ((ref System)self).store(message)
+
+method process*(self: ref NetworkSystem, message: ref QuitMessage) =
+  self.disconnect()
+  logging.debug "Disconnected"
+
+# TODO: send `CreateEntityMessage` and `DeleteEntityMessage` RELIABLE!
+
+method process*(self: ref NetworkSystem, message: ref EntityMessage) =
+  ## Every entity message requires converting remote Entity to local one.
+  ## Call this in every method which processes `EntityMessage` subtypes.
+  assert(message.isExternal, &"Message is not external: {message}")
+  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
+  message.entity = self.entitiesMap[message.entity]
+  logging.debug "Mapped external Entity to local one"
+
+method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
+  assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
+  let entity = newEntity()
+  self.entitiesMap[message.entity] = entity
+
+method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
+  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
+  let entity = self.entitiesMap[message.entity]
+  self.entitiesMap.del(message.entity)
+  entity.delete()
