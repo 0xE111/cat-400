@@ -88,5 +88,4 @@ proc run*() =
 
     return
 
-  let initialState = if config.mode == Mode.server: new(InitialServerState) else: new(InitialClientState)
-  app.run(initialState)
+  app.run()
