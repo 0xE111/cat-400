@@ -8,7 +8,7 @@ import "../../../core/messages"
 
 import "../../../wrappers/horde3d/horde3d"
 
-import "../messages" as action_messages
+import physics
 import "../utils/matrix"
 
 
@@ -46,11 +46,11 @@ method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
   message.entity[ref Video] = new(CubeVideo)
   message.entity[ref Video][].init()
 
-method process(self: ref ActionVideoSystem, message: ref PhysicsMessage) =
-  logging.debug &"Moving entity {message.entity} to {message.x} {message.y} {message.z}"
-  message.entity[ref Video][].transform(
-    translation=(message.x.float, message.y.float, message.z.float)
-  )
+# method process(self: ref ActionVideoSystem, message: ref ActionPhysicsMessage) =
+#   logging.debug &"Moving entity {message.entity} to {message.x} {message.y} {message.z}"
+#   message.entity[ref Video][].transform(
+#     translation=(message.x.float, message.y.float, message.z.float)
+#   )
 
 method process(self: ref ActionVideoSystem, message: ref RotateMessage) =
   # TODO: ugly
@@ -88,17 +88,9 @@ proc translate(node: horde3d.Node, vector: Vector) =
   )
 
 
-method process(self: ref ActionVideoSystem, message: ref MoveForwardMessage) =
-  self.camera.translate(Vector(@[0.0, 0.0, -1.0]))
+method process(self: ref ActionVideoSystem, message: ref MoveMessage) =
+  self.camera.translate(Vector(@[message.x, message.y, message.z]))
 
-method process(self: ref ActionVideoSystem, message: ref MoveBackwardMessage) =
-  self.camera.translate(Vector(@[0.0, 0.0, 1.0]))
-
-method process(self: ref ActionVideoSystem, message: ref MoveLeftMessage) =
-  self.camera.translate(Vector(@[-1.0, 0.0, 0.0]))
-
-method process(self: ref ActionVideoSystem, message: ref MoveRightMessage) =
-  self.camera.translate(Vector(@[1.0, 0.0, 0.0]))
 
 # ---- component ----
 method init(self: var CubeVideo) =

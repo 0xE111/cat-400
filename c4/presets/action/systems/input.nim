@@ -6,7 +6,7 @@ import "../../../config"
 import "../../../core/messages"
 import "../../../systems"
 import "../../../systems/input/sdl" as input
-import "../messages" as action_messages
+import physics
 
 
 type
@@ -27,22 +27,27 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
       case event.key.keysym.sym
         # movement keys
         of K_w, K_s, K_a, K_d:
-          var message: ref Message
+          var
+            x = 0.0
+            y = 0.0
+            z = 0.0
 
           case event.key.keysym.sym
             of K_w:
-              message = new(MoveForwardMessage)
+              z = -1.0
             of K_s:
-              message = new(MoveBackwardMessage)
+              z = 1.0
             of K_a:
-              message = new(MoveLeftMessage)
+              x = -1.0
             of K_d:
-              message = new(MoveRightMessage)
+              x = 1.0
             else:
               discard
             
-          message.send(@[
-            config.systems.video,  # this message is sent directly to video system for client-side movement prediction
+          (ref MoveMessage)(
+            x: x, y: y, z: z,
+          ).send(@[
+            # config.systems.video,  # this message is sent directly to video system for client-side movement prediction
             config.systems.network,  # as well as to the server
           ])
           

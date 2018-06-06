@@ -19,10 +19,12 @@ proc initServer*() =
     config.systems.network = new(NetworkSystem)
   config.systems.network.init()
   logging.info &"Server listening at localhost:{config.settings.network.port}"
+  new(SystemReadyMessage).send(config.systems.network)
 
   if config.systems.physics.isNil:
     config.systems.physics = new(PhysicsSystem)
   config.systems.physics.init()
+  new(SystemReadyMessage).send(config.systems.physics)
 
 proc initClient*() =
   logging.debug "Initializing client"
@@ -30,14 +32,17 @@ proc initClient*() =
   if config.systems.network.isNil:
     config.systems.network = new(NetworkSystem)
   config.systems.network.init()
+  new(SystemReadyMessage).send(config.systems.network)
 
   if config.systems.input.isNil:
     config.systems.input = new(InputSystem)
   config.systems.input.init()
+  new(SystemReadyMessage).send(config.systems.input)
 
   if config.systems.video.isNil:
     config.systems.video = new(VideoSystem)
   config.systems.video.init()
+  new(SystemReadyMessage).send(config.systems.video)
 
 proc run*() =
   logging.debug "Starting process"

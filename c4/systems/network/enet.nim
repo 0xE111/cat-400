@@ -41,9 +41,9 @@ method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.addr
 
 
 # ---- helpers ----
-proc `$`*(address: enet.Address): string =
+proc `$`*(self: enet.Address): string =
   const ipLength = "000.000.000.000".len
-  var address = address
+  var address = self
 
   result = newString(ipLength)
   if address_get_host_ip(address.addr, result, ipLength) != 0:
@@ -51,14 +51,17 @@ proc `$`*(address: enet.Address): string =
 
   result &= &":{$address.port}"
 
-proc `$`*(host: enet.Host): string =
-  $host.address
+proc `$`*(self: Address): string =
+  &"{self.host}:{self.port}"
 
-proc `$`*(peer: enet.Peer): string =
-  $peer.address
+proc `$`*(self: enet.Host): string =
+  $self.address
 
-proc `$`*(packet: ptr Packet): string =
-  "Packet of size " & $packet.dataLength
+proc `$`*(self: enet.Peer): string =
+  $self.address
+
+proc `$`*(self: ptr Packet): string =
+  "Packet of size " & $self.dataLength
 
 proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
@@ -95,7 +98,7 @@ method init*(self: ref NetworkSystem) =
   # TODO: make these params configurable
   var
     numConnections = 32
-    numChannels = 2
+    numChannels = 1
     inBandwidth = 0
     outBandwidth = 0
 
@@ -131,10 +134,10 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
         logging.debug &"Peer {peer[]} was already connected, closing previous connection"
         self.disconnect(peer)
         self.peers.del(peer)  # TODO: is it safe to delete while iterating over?
-      
+
     self.peers[event.peer] = new(messages.Peer)
     logging.debug &"--- Connection established: {event.peer[]}"
-    logging.debug &"Current # of peers: {self.peers.len}"
+    logging.debug &"Current # of connections: {self.peers.len}"
   of EVENT_TYPE_RECEIVE:
     var message: ref Message
     event.packet[].toString().unpack(message)
@@ -203,7 +206,7 @@ proc `=destroy`*(self: var NetworkSystem) =
 # ---- handlers ----
 method store*(self: ref NetworkSystem, message: ref Message) =
   ## Network system stores messages differently by default.
-  ## While other systems store all incoming messages for futher processing, network system _sends_ all local messages without storing and processing them.
+  ## While other systems store all incoming messages for futher processing, network system sends all local messages without storing and processing them.
   ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
   ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it (see defaults/handlers.nim).
   if message.isExternal:
@@ -229,8 +232,13 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
 
 # TODO: process DisconnectMessage
 
+# TODO: maybe there's a way to combine two following methods into one?
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## By default network system sends all local incoming messages to remote peers. However, we don't need to send ``QuitMessage`` over the network, we only need to store it and then disconnect and shutdown when processing it.
+  procCall ((ref System)self).store(message)
+
+method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
+  ## Same for ``SystemReadyMessage`` - there's no need to send this message over the network, so we just store and process it.
   procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
