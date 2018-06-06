@@ -39,8 +39,6 @@ proc initClient*() =
     config.systems.video = new(VideoSystem)
   config.systems.video.init()
 
-
-# ---- general procs ----
 proc run*() =
   logging.debug "Starting process"
 

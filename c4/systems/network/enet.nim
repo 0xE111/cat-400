@@ -1,12 +1,15 @@
+## Basic UDP networking system based on Enet library.
+## It takes care of messages (de)serialization and establishing connection between client and server.
+
 import logging
 import tables
 import strformat
 import streams
+import typetraits
 import "../../systems"
 import "../../config"
 import "../../core/entities"
 import "../../core/messages"
-import "../../presets/default/messages" as default_messages
 import "../../wrappers/enet/enet"
 import "../../wrappers/msgpack/msgpack"
 
@@ -182,3 +185,24 @@ method update*(self: ref NetworkSystem, dt: float) =
 proc `=destroy`*(self: var NetworkSystem) =
   enet.host_destroy(self.host)
   enet.deinitialize()
+
+
+# ---- messages ----
+type
+  ConnectMessage* = object of Message
+    ## Send this message to network system in order to connect to server.
+    ## Example: (ref ConnectMessage)(address: ("localhost", "5555")).send(config.systems.network)
+    address*: Address
+  
+messages.register(ConnectMessage)
+method `$`*(self: ref ConnectMessage): string = &"{self.type.name}: {self.address}"
+
+# TODO: DisconnectMessage
+
+# ---- handlers ----
+method process(self: ref NetworkSystem, message: ref ConnectMessage) =
+  if not message.isExternal:
+    logging.debug &"Connecting to {message.address}"
+    self.connect(message.address)
+
+# TODO: process DisconnectMessage

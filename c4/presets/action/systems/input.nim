@@ -14,7 +14,7 @@ type
   ActionInputSystem* = object of InputSystem
 
 
-method handle(self: ref ActionInputSystem, event: sdl.Event) =
+method handle*(self: ref ActionInputSystem, event: sdl.Event) =
   case event.kind
     of sdl.MOUSEMOTION:
       var x, y: cint
@@ -26,14 +26,6 @@ method handle(self: ref ActionInputSystem, event: sdl.Event) =
 
     of sdl.KEYDOWN:
       case event.key.keysym.sym
-        # connect
-        of K_c:
-          new(ConnectMessage).send(config.systems.network)
-
-        # load scene
-        of K_l:
-          new(LoadSceneMessage).send(config.systems.network)
-
         # movement keys
         of K_w, K_s, K_a, K_d:
           var message: ref Message

@@ -18,10 +18,6 @@ type
   ActionNetworkSystem* = object of NetworkSystem
 
 
-method process(self: ref ActionNetworkSystem, message: ref LoadSceneMessage) =
-  # processing incoming LoadScene message
-  config.state.switch(new(LoadingServerState))
-
 method store(self: ref ActionNetworkSystem, message: ref ConnectMessage) =
   # by default network system sends all local incoming messages
   # however, we want to store and process ConnectMessage
@@ -35,7 +31,4 @@ method process(self: ref ActionNetworkSystem, message: ref PhysicsMessage) =
   procCall ((ref NetworkSystem)self).process(message)
   message.send(config.systems.video)
 
-method process(self: ref NetworkSystem, message: ref ConnectMessage) =
-  if not message.isExternal:
-    logging.debug &"Connecting to port {config.settings.network.port}"
-    self.connect(("localhost", config.settings.network.port))
+# TODO: DisconnectMessage
