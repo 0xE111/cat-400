@@ -3,8 +3,11 @@ import c4.utils.stringify
 
 
 type
+  # This message will reset physics system to initial state, so that we can play again
   ResetSceneMessage* = object of Message
 
 
+# Always ``register`` Message subtypes. If not registered, network system won't have a knowledge on how to serialize the message, which will lead to sending pure ``Message`` instead of your subtype.
 messages.register(ResetSceneMessage)
+# It's a good practice to define ``$`` methods for all message sybtypes, because they will be displayed in debug info. ``strMethod`` is a macro which will define ``$`` as just type name, but for complex messages you'll probably want to define ``$`` explicitly, e.g. ``method `$`(self: ref ComplexMessage): string = &"{self[].type.name}: {self.someFieldA}, {self.someFieldB}"
 strMethod(ResetSceneMessage)

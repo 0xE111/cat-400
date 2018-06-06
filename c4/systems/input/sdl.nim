@@ -1,6 +1,7 @@
-from sdl2.sdl import nil
-from logging import debug, fatal
-from strformat import `&`
+import sdl2.sdl
+import logging
+import strformat
+import typetraits
 import "../../systems"
 import "../../core/messages"
 import "../../config"
@@ -14,9 +15,14 @@ type
 proc `$`*(event: sdl.Event): string = $event.kind
 
 
-# ---- message handling ----
-method process*(self: ref InputSystem, message: ref QuitMessage) =
-  logging.debug("Input processing Quit message")
+# ---- messages ----
+type
+  WindowResizeMessage* = object of Message
+    width*, height*: int
+
+messages.register(WindowResizeMessage)
+method `$`*(self: ref WindowResizeMessage): string = &"{self[].type.name}: {self.width}x{self.height}"
+
 
 # ---- workflow methods ----
 method init*(self: ref InputSystem) =

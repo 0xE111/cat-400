@@ -1,15 +1,16 @@
 import sdl2.sdl
-import "../../wrappers/horde3d/horde3d"
 import logging
 import strformat
-
-from os import getAppDir
+import os
 import ospaths
 import sequtils
+import typetraits
 
+import "../../wrappers/horde3d/horde3d"
 import "../../core/messages"
 import "../../systems"
 import "../../config"
+import "../input/sdl" as sdl_input  # TODO: is this okay?
 
 
 type
@@ -167,3 +168,8 @@ method transform*(
 
 proc `=destroy`*(self: var Video) =
   self.node.removeNode()
+
+
+# ---- handlers ----
+method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
+  self.updateViewport(message.width, message.height)
