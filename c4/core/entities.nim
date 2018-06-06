@@ -1,6 +1,10 @@
 ## This module defines Entity - a base unit for representing a game object.
 
 import tables
+import strformat
+import typetraits
+
+import messages
 
 
 type
@@ -50,6 +54,24 @@ template del*(entity: Entity, t: typedesc) = getComponents(t).del(entity)
 template `[]`*(entity: Entity, t: typedesc): var typed = getComponents(t)[entity]
 template `[]=`*(entity: Entity, t: typedesc, value: t) = getComponents(t)[entity] = value
 
+
+# ---- messages ----
+type
+  EntityMessage* = object of Message
+    ## A message that is related to (or affects) an Entity. This message should not be used directly. Instead, inherit your own message type from this one.
+    entity*: Entity
+
+  CreateEntityMessage* = object of EntityMessage  ## \
+    ## Message that notifies systems about entity creation.
+  DeleteEntityMessage* = object of EntityMessage  ## \
+    ## Message that notifies systems about entity deletion.
+
+
+messages.register(CreateEntityMessage)
+method `$`*(self: ref CreateEntityMessage): string = &"{self[].type.name}: {self.entity}"
+messages.register(DeleteEntityMessage)
+method `$`*(self: ref DeleteEntityMessage): string = &"{self[].type.name}: {self.entity}"
+    
 
 when isMainModule:
   var

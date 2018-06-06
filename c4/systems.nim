@@ -1,8 +1,10 @@
 import deques
-import core.messages
 import logging
 import strformat
+
+import core.messages
 import core.entities
+import utils.stringify
 
 
 type
@@ -51,3 +53,18 @@ proc send*(self: ref Message, system: ref System) =
 proc send*(self: ref Message, systems: seq[ref System]) =
   for system in systems:
     self.send(system)
+
+
+# ---- messages ----
+type
+  SystemReadyMessage* = object of Message  ## \
+    ## This message is sent to a system when it's initialization if complete
+
+  SystemQuitMessage* = object of Message  ## \
+    ## This message is a signal to disconnect and terminate systems and whole process
+
+messages.register(SystemReadyMessage)
+strMethod(SystemReadyMessage)
+
+messages.register(SystemQuitMessage)
+strMethod(SystemQuitMessage)
