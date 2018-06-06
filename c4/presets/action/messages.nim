@@ -1,10 +1,11 @@
 import strformat
+import typetraits
 
+import "../../core/entities"
 import "../../core/messages"
 import "../../wrappers/enet/enet"
 import "../../systems/physics/ode"
 import "../../utils/stringify"
-import "../default/messages" as default_messages
 
 
 type

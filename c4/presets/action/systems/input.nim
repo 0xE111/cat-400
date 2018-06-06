@@ -6,7 +6,6 @@ import "../../../config"
 import "../../../core/messages"
 import "../../../systems"
 import "../../../systems/input/sdl" as input
-import "../../default/messages" as default_messages
 import "../messages" as action_messages
 
 

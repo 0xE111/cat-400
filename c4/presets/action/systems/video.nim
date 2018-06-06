@@ -5,7 +5,6 @@ import logging
 import "../../../core/entities"
 import "../../../systems/video/horde3d" as video
 import "../../../core/messages"
-import "../../default/messages" as default_messages
 
 import "../../../wrappers/horde3d/horde3d"
 

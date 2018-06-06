@@ -11,7 +11,6 @@ import "../../systems"
 import "../../config"
 import "../../core/entities"
 import "../../core/messages"
-import "../../presets/default/messages" as default_messages
 import "../../wrappers/enet/enet"
 import "../../wrappers/msgpack/msgpack"
 
@@ -203,6 +202,11 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     # TODO: recipient handling - to which peer is this message?
     # TODO: group and send bulk?
 
+method store(self: ref NetworkSystem, message: ref ConnectMessage) =
+  # by default network system sends all local incoming messages
+  # however, we want to store and process ConnectMessage
+  procCall ((ref System)self).store(message)
+
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
   if not message.isExternal:
@@ -211,11 +215,11 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
 
 # TODO: process DisconnectMessage
 
-method store*(self: ref NetworkSystem, message: ref QuitMessage) =
+method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## By default network system sends all local incoming messages to remote peers. However, we don't need to send ``QuitMessage`` over the network, we only need to store it and then disconnect and shutdown when processing it.
   procCall ((ref System)self).store(message)
 
-method process*(self: ref NetworkSystem, message: ref QuitMessage) =
+method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   self.disconnect()
   logging.debug "Disconnected"
 

@@ -2,10 +2,10 @@ import sdl2.sdl
 import logging
 import strformat
 import typetraits
+
 import "../../systems"
 import "../../core/messages"
 import "../../config"
-import "../../presets/default/messages" as default_messages
 
 
 type
@@ -43,7 +43,7 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   ## Handling of basic sdl event. These are pretty reasonable defaults.
   case event.kind
     of sdl.QUIT:
-      new(QuitMessage).send(@[
+      new(SystemQuitMessage).send(@[
         config.systems.video,
         config.systems.network,
       ])
