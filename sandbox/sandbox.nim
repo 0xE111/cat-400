@@ -10,7 +10,7 @@ import c4.presets.action.systems.network
 import states.server
 
 
-config.title = "Sample game"
+config.title = "Sandbox"
 config.version = "0.1"
 config.systems.physics = new(ActionPhysicsSystem)
 config.systems.input = new(ActionInputSystem)

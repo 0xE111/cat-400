@@ -13,7 +13,7 @@ import systems.input.sdl
 import presets.default.states as default_states
 
 
-method update(self: ref State, dt: float): bool {.base, inline.} = true  # every state does not finish loop but does nothin
+method update(self: ref State, dt: float): bool {.base, inline.} = true  # every state does not finish loop but does nothing
 method update(self: ref FinalState, dt: float): bool {.inline.} = false  # but FinalState breaks the loop by returning false
 
 
@@ -62,7 +62,7 @@ method onEnter*(self: ref InitialClientState) =
 
   config.state.switch(new(RunningClientState))
 
-method update(self: ClientState, dt: float): bool =
+method update(self: ClientState, dt: float): bool {.base.} =
   config.systems.network.update(dt)
   true
 

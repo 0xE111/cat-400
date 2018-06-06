@@ -17,10 +17,14 @@ type
     health*: uint8
     prevPosition: tuple[x, y, z: dReal]
 
+const
+  G* = 9.81
+
 
 method init*(self: ref ActionPhysicsSystem) =
   procCall ((ref PhysicsSystem)self).init()
-  self.world.worldSetGravity(0, -1, 0)
+  
+  self.world.worldSetGravity(0, -G, 0)
 
 
 method initComponent*(self: ref ActionPhysicsSystem, component: ref ActionPhysics) =

@@ -17,12 +17,14 @@ license = "MIT"
 
 
 # Dependencies
-requires "nim >= 0.17.3"
+requires "nim >= 0.18.1"
 requires "c4 >= " & version
 
 if detectOs(Linux):
   foreignDep "sdl"
   foreignDep "enet"
+  foreignDep "horde3d"
+  foreignDep "ode"
 
 proc copyDir(src, dst: string) =
   mkDir(dst)
