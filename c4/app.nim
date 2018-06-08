@@ -11,38 +11,31 @@ import systems.video.horde3d
 import systems.input.sdl
 
 
+template initSystem(system: ref System, defaultSystemType: typedesc) =
+  ## Shortcut to:
+  ## - create default system (if custom is not defined)
+  ## - init system
+  ## - send ``SystemReady`` message to that system
+
+  if system.isNil:
+    system = new(defaultSystemType)
+  
+  system.init()
+  new(SystemReadyMessage).send(system)
+
+
 proc initServer*() =
   logging.debug "Initializing server"
   
-  # set up network and physics system for server
-  if config.systems.network.isNil:
-    config.systems.network = new(NetworkSystem)
-  config.systems.network.init()
-  logging.info &"Server listening at localhost:{config.settings.network.port}"
-  new(SystemReadyMessage).send(config.systems.network)
-
-  if config.systems.physics.isNil:
-    config.systems.physics = new(PhysicsSystem)
-  config.systems.physics.init()
-  new(SystemReadyMessage).send(config.systems.physics)
+  initSystem(config.systems.network, NetworkSystem)
+  initSystem(config.systems.physics, PhysicsSystem)
 
 proc initClient*() =
   logging.debug "Initializing client"
 
-  if config.systems.network.isNil:
-    config.systems.network = new(NetworkSystem)
-  config.systems.network.init()
-  new(SystemReadyMessage).send(config.systems.network)
-
-  if config.systems.input.isNil:
-    config.systems.input = new(InputSystem)
-  config.systems.input.init()
-  new(SystemReadyMessage).send(config.systems.input)
-
-  if config.systems.video.isNil:
-    config.systems.video = new(VideoSystem)
-  config.systems.video.init()
-  new(SystemReadyMessage).send(config.systems.video)
+  initSystem(config.systems.network, NetworkSystem)
+  initSystem(config.systems.input, InputSystem)
+  initSystem(config.systems.video, VideoSystem)
 
 proc run*() =
   logging.debug "Starting process"

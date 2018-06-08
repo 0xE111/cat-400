@@ -241,6 +241,9 @@ method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   ## Same for ``SystemReadyMessage`` - there's no need to send this message over the network, so we just store and process it.
   procCall ((ref System)self).store(message)
 
+method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
+  logging.info &"Server listening at localhost:{config.settings.network.port}"
+
 method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   self.disconnect()
   logging.debug "Disconnected"
