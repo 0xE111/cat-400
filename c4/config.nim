@@ -3,7 +3,6 @@
 from logging import Level
 from utils.loading import load
 
-from core.states import State
 from systems as systems_module import System
 
 
@@ -21,7 +20,6 @@ var
   # these are configurable settings
   title* = ""
   version* = "0.0"
-  state*: ref State  # TODO: move to app?
 
   # here you may override default systems with your custom ones
   systems* = (

@@ -23,15 +23,14 @@ type
   NetworkSystem* = object of System
     host: ptr enet.Host  # remember own host
     peers: Table[ptr enet.Peer, ref messages.Peer]  # table for converting internal enet.Peer into generic Peer
-    entitiesMap*: Table[Entity, Entity]  # table for converting remote Entity to local one
-    # TODO: exposing `entitiesMap` is not a good idea!
+    entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
 
 
 # ---- messages ----
 type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
-    ## Example: (ref ConnectMessage)(address: ("localhost", "5555")).send(config.systems.network)
+    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
     address*: Address
   
 messages.register(ConnectMessage)
@@ -217,8 +216,8 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     # TODO: group and send bulk?
 
 method store(self: ref NetworkSystem, message: ref ConnectMessage) =
-  # by default network system sends all local incoming messages
-  # however, we want to store and process ConnectMessage
+  ## By default network system sends all local incoming messages.
+  ## However, we want to store and process ConnectMessage
   procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
