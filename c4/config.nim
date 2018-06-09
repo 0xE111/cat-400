@@ -1,6 +1,4 @@
-## This is a global config for the framework. You may change any of the settings by direct assignment:
-##   import c4.config
-##   config.title = "Your title"
+## This is a global config for the framework. You may change any of the settings by direct assignment: ``config.title = "Your game title"``
 
 from logging import Level
 from utils.loading import load

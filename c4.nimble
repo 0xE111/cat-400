@@ -48,7 +48,7 @@ proc dirGenDocs(src, dst: string) =
         destFile = destDir / name.addFileExt("html")
 
       mkDir destDir
-      discard staticExec(&"nim doc2 -o={destFile} {file}")
+      discard staticExec(&"nim doc0 -o={destFile} {file}")
 
   for dir in src.listDirs:
     let (head, tail) = dir.splitPath()

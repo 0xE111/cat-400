@@ -58,7 +58,7 @@ proc send*(self: ref Message, systems: seq[ref System]) =
 # ---- messages ----
 type
   SystemReadyMessage* = object of Message  ## \
-    ## This message is sent to a system when it's initialization if complete
+    ## This message is sent to a system when its initialization is complete
 
   SystemQuitMessage* = object of Message  ## \
     ## This message is a signal to disconnect and terminate systems and whole process
