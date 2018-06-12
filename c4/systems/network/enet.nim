@@ -13,6 +13,7 @@ import "../../core/entities"
 import "../../core/messages"
 import "../../wrappers/enet/enet"
 import "../../wrappers/msgpack/msgpack"
+import "../../utils/stringify"
 
 
 type
@@ -31,12 +32,19 @@ type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
     ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
-    address*: Address
+    ## The server's network system will also receive this message after successful connection of client.
+    address*: Address  ## Address to connect to (server's address)
+
+  DisconnectMessage* = object of Message
+    ## Send this message to network system in order to disconnect from server.
+    ## Example: ``new(DisconnectMessage).send(config.systems.network)``
+    ## The server's network system will also receive this message after successful disconnection of client.
   
 messages.register(ConnectMessage)
 method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
 
-# TODO: DisconnectMessage
+messages.register(DisconnectMessage)
+strMethod(DisconnectMessage)
 
 
 # ---- helpers ----
@@ -101,7 +109,7 @@ method init*(self: ref NetworkSystem) =
     inBandwidth = 0
     outBandwidth = 0
 
-  if enet.initialize() != 0.cint:
+  if enet.initialize() != 0:
     let err = "An error occurred during initialization"
     logging.fatal(err)
     raise newException(LibraryError, err)
@@ -128,13 +136,25 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
   case event.`type`
   of EVENT_TYPE_CONNECT:
     # We need to check whether new peer is already connected. If yes then we just close previous connection and open a new one.
+    
+    # First, disconnect peers with same address as newly connected one
+    var peersToDelete: seq[ptr enet.Peer] = @[]
     for peer in self.peers.keys():
       if peer.address == event.peer.address:
         logging.debug &"Peer {peer[]} was already connected, closing previous connection"
         self.disconnect(peer)
-        self.peers.del(peer)  # TODO: is it safe to delete while iterating over?
+        peersToDelete.add(peer)
+    
+    # Second, for each disconnected peer send a ``DisconnectMessage`` to local network system and
+    # delete this peer from peer mapping table.
+    for peer in peersToDelete:
+      (ref DisconnectMessage)(peer: self.peers[peer]).send(self)
+      self.peers.del(peer)
 
-    self.peers[event.peer] = new(messages.Peer)
+    # Now, send ``ConnectMessage`` for newly created connection
+    let newPeer = new(messages.Peer)
+    self.peers[event.peer] = newPeer
+    (ref ConnectMessage)(peer: newPeer).send(self)
     logging.debug &"--- Connection established: {event.peer[]}"
     logging.debug &"Current # of connections: {self.peers.len}"
   of EVENT_TYPE_RECEIVE:
@@ -152,6 +172,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     enet.packet_destroy(event.packet)
   of EVENT_TYPE_DISCONNECT:
     logging.debug &"-x- Connection closed: {event.peer[]}"
+    (ref DisconnectMessage)(peer: self.peers[event.peer]).send(self)
     self.peers.del(event.peer)
     event.peer.peer_reset()
   else:
@@ -207,7 +228,7 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   ## Network system stores messages differently by default.
   ## While other systems store all incoming messages for futher processing, network system sends all local messages without storing and processing them.
   ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
-  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it (see defaults/handlers.nim).
+  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it.
   if message.isExternal:
     procCall ((ref System)self).store(message)  # save all external messages for further processing
   else:
@@ -217,11 +238,11 @@ method store*(self: ref NetworkSystem, message: ref Message) =
 
 method store(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## By default network system sends all local incoming messages.
-  ## However, we want to store and process ConnectMessage
+  ## However, we want to store and process ``ConnectMessage``.
   procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
-  ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified. Only one connection is allowed, so any further connects will dismiss previous ones.
+  ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified. Only one connection is allowed, so any previous connections will be closed.
   if not message.isExternal:
     # Disconnect before new connection. As a most common case, peer may connect to only one another peer (client connects to only one server). However, if it's not your case, and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
     self.disconnect()
@@ -229,7 +250,15 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
     logging.debug &"Connecting to {message.address}"
     self.connect(message.address)
 
-# TODO: process DisconnectMessage
+method store(self: ref NetworkSystem, message: ref DisconnectMessage) =
+  ## By default network system sends all local incoming messages.
+  ## However, we want to store and process ``DisconnectMessage``.
+  procCall ((ref System)self).store(message)
+
+method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
+  ## Disconnect when receiving ``DisconnectMessage``
+  logging.debug "Disconnecting"
+  self.disconnect()
 
 # TODO: maybe there's a way to combine two following methods into one?
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
@@ -251,7 +280,7 @@ method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
 
 method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one.
-  ## Call this in every method which processes `EntityMessage` subtypes.
+  ## Call this in every method which processes ``EntityMessage`` subtypes.
   assert(message.isExternal, &"Message is not external: {message}")
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
   message.entity = self.entitiesMap[message.entity]
