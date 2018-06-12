@@ -141,7 +141,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     var peersToDelete: seq[ptr enet.Peer] = @[]
     for peer in self.peers.keys():
       if peer.address == event.peer.address:
-        logging.debug &"Peer {peer[]} was already connected, closing previous connection"
+        logging.debug &"-x- Closing existing connection: {event.peer[]}"
         self.disconnect(peer)
         peersToDelete.add(peer)
     
@@ -257,8 +257,9 @@ method store(self: ref NetworkSystem, message: ref DisconnectMessage) =
 
 method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
   ## Disconnect when receiving ``DisconnectMessage``
-  logging.debug "Disconnecting"
-  self.disconnect()
+  if not message.isExternal:
+    logging.debug "Disconnecting"
+    self.disconnect()
 
 # TODO: maybe there's a way to combine two following methods into one?
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =

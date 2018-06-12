@@ -6,9 +6,10 @@ import typetraits
 import "../../../systems"
 import "../../../config"
 import "../../../core/messages"
-import "../../../systems/physics/ode" as physics_system
-import "../../../wrappers/ode/ode"
 import "../../../core/entities"
+import "../../../systems/physics/ode" as physics_system
+import "../../../systems/network/enet"
+import "../../../wrappers/ode/ode"
 
   
 type
@@ -63,3 +64,10 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
     #   pitch: 0.0,  
     #   yaw: 0.0,
     # ).send(config.systems.network)
+
+
+method process*(self: ref ActionPhysicsSystem, message: ref ConnectMessage) =
+  logging.debug &"Physics system received {message}"
+
+method process*(self: ref ActionPhysicsSystem, message: ref DisconnectMessage) =
+  logging.debug &"Physics system received {message}"

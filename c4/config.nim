@@ -8,7 +8,7 @@ from systems as systems_module import System
 
 type
   Mode* = enum
-    ## Process may run in client / server / both modes
+    ## Mode of the process
     client, server, multi
 
 

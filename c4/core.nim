@@ -1,5 +1,5 @@
 from parseopt import nil
-from logging import nil
+import logging
 from ospaths import joinPath
 from osproc import startProcess, running, kill, ProcessOption
 from os import getAppDir, getAppFilename, commandLineParams, sleep
@@ -25,8 +25,11 @@ const
     -m, --mode=[{modes}] - launch server/client/both 
   """
 
-
 proc run*() =
+  ## Handles CLI args, sets up logging and runs client / server / overseer process.
+  ##
+  ## Run this in your main module.
+
   # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
     case kind
