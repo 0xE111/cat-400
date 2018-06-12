@@ -40,6 +40,10 @@ type
     ## Example: ``new(DisconnectMessage).send(config.systems.network)``
     ## The server's network system will also receive this message after successful disconnection of client.
   
+
+proc `$`*(self: Address): string =
+  &"{self.host}:{self.port}"
+
 messages.register(ConnectMessage)
 method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
 
@@ -48,7 +52,7 @@ strMethod(DisconnectMessage)
 
 
 # ---- helpers ----
-proc `$`*(self: enet.Address): string =
+proc getHost*(self: enet.Address): string =
   const ipLength = "000.000.000.000".len
   var address = self
 
@@ -56,10 +60,8 @@ proc `$`*(self: enet.Address): string =
   if address_get_host_ip(address.addr, result, ipLength) != 0:
     raise newException(LibraryError, "Could not get printable address")
 
-  result &= &":{$address.port}"
-
-proc `$`*(self: Address): string =
-  &"{self.host}:{self.port}"
+proc `$`*(self: enet.Address): string =
+  result = &"{self.getHost}:{self.port}"
 
 proc `$`*(self: enet.Host): string =
   $self.address
