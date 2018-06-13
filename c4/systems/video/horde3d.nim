@@ -10,7 +10,7 @@ import "../../wrappers/horde3d/horde3d"
 import "../../core/messages"
 import "../../systems"
 import "../../config"
-import "../input/sdl" as sdl_input  # TODO: is this okay?
+import "../input/sdl" as sdl_input
 
 
 type
@@ -24,7 +24,7 @@ type
     window: sdl.Window
     pipelineResource, fontResource, panelResource: horde3d.Res
 
-  Video* {.inheritable.} = object
+  Video* = object of SystemComponent
     node*: horde3d.Node
 
 
@@ -150,10 +150,6 @@ proc `=destroy`*(self: var VideoSystem) =
   logging.debug "Video system unloaded"
 
 # ---- component ----
-method init*(self: var Video) {.base.} =
-  # self.node = RootNode.AddNodes(someRes)  # TODO!!!!!!
-  discard
-
 method transform*(
   self: var Video,
   translation: tuple[x, y, z: float] = (0.0, 0.0, 0.0),

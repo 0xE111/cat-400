@@ -15,36 +15,6 @@ import "../utils/matrix"
 type
   ActionVideoSystem* = object of VideoSystem
 
-  CubeVideo* = object of Video
-
-var
-  cubeResource: horde3d.Res  # TODO: move to CustomVideoSystem
-  skyboxResource: horde3d.Res
-
-
-# DEMO
-# var skyboxRes: horde3d.Res
-
-method init*(self: ref ActionVideoSystem) =
-  procCall ((ref VideoSystem)self).init()
-
-  # load custom resources
-  cubeResource = addResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")
-  skyboxResource = addResource(ResTypes.SceneGraph, "models/skybox/skybox.scene.xml")
-  if cubeResource == 0 or skyboxResource == 0:
-    let msg = "Custom resources not loaded"
-    logging.fatal msg
-    raise newException(LibraryError, msg)
-
-  self.loadResources()
-
-  var sky = RootNode.addNodes(skyboxResource)
-  sky.setNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
-  sky.setNodeFlags(NodeFlags.NoCastShadow, true)
-
-method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
-  message.entity[ref Video] = new(CubeVideo)
-  message.entity[ref Video][].init()
 
 # method process(self: ref ActionVideoSystem, message: ref ActionPhysicsMessage) =
 #   logging.debug &"Moving entity {message.entity} to {message.x} {message.y} {message.z}"
@@ -90,8 +60,3 @@ proc translate(node: horde3d.Node, vector: Vector) =
 
 method process(self: ref ActionVideoSystem, message: ref MoveMessage) =
   self.camera.translate(Vector(@[message.x, message.y, message.z]))
-
-
-# ---- component ----
-method init(self: var CubeVideo) =
-  self.node = RootNode.addNodes(cubeResource)

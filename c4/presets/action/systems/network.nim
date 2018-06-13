@@ -28,19 +28,25 @@ method process(self: ref ActionNetworkSystem, message: ref RotateMessage) =
   message.send(config.systems.video)
 
 method process*(self: ref ActionNetworkSystem, message: ref ConnectMessage) =
-  ## When new peer connects, we want to create a corresponding entity,
-  ## thus we forward this message to physics system
+  ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
+  ## 
+  ## Also we need to handle connection on client side, that's why we send this message to video system as well.
   procCall ((ref NetworkSystem)self).process(message)
 
-  # if server receives external ``ConnectMessage`` - send it to physics system
-  if message.isExternal and config.mode == server:
-    message.send(config.systems.physics)
+  if message.isExternal:
+    if config.mode == server:
+      message.send(config.systems.physics)
+    elif config.mode == client:
+      message.send(config.systems.video)
 
 method process*(self: ref ActionNetworkSystem, message: ref DisconnectMessage) =
-  ## When peer disconnects, we want to delete corresponding entity,
-  ## thus we forward this message to physics system
+  ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.
+  ## 
+  ## Also we need to handle disconnection on client side, that's why we send this message to video system as well.
   procCall ((ref NetworkSystem)self).process(message)
 
-  # if server receives external ``DisconnectMessage`` - send it to physics system
-  if message.isExternal and config.mode == server:
-    message.send(config.systems.physics)
+  if message.isExternal:
+    if config.mode == server:
+      message.send(config.systems.physics)
+    elif config.mode == client:
+      message.send(config.systems.video)

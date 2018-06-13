@@ -23,29 +23,29 @@ method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage)
   # We want to load our scene when physics system is ready.
   logging.debug "Loading scene"
 
-  var cube: Entity
+  # var cube: Entity
 
-  for i in 1..10:
-    cube = newEntity()
-    (ref CreateEntityMessage)(entity: cube).send(config.systems.network)
+  # for i in 1..10:
+  #   cube = newEntity()
+  #   (ref CreateEntityMessage)(entity: cube).send(config.systems.network)
 
-    var physics = new(ActionPhysics)
-    config.systems.physics.initComponent(physics)
-    physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
+  #   var physics = new(ActionPhysics)
+  #   config.systems.physics.initComponent(physics)
+  #   physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
 
-    var mass = ode.dMass()
-    mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
-    physics.body.bodySetMass(mass.addr)
+  #   var mass = ode.dMass()
+  #   mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
+  #   physics.body.bodySetMass(mass.addr)
 
-    cube[ref Physics] = physics
-    var position = physics.body.bodyGetPosition()
-    (ref MoveMessage)(
-      entity: cube,
-      x: position[][0],
-      y: position[][1],
-      z: position[][2],
-    ).send(config.systems.network)
+  #   cube[ref Physics] = physics
+  #   var position = physics.body.bodyGetPosition()
+  #   (ref MoveMessage)(
+  #     entity: cube,
+  #     x: position[][0],
+  #     y: position[][1],
+  #     z: position[][2],
+  #   ).send(config.systems.network)
 
-    # TODO: add RotateMessage
+  #   # TODO: add RotateMessage
 
-  logging.debug "Scene loaded"
+  # logging.debug "Scene loaded"

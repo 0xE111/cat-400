@@ -27,31 +27,10 @@ type
     entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
 
 
-# ---- messages ----
-type
-  ConnectMessage* = object of Message
-    ## Send this message to network system in order to connect to server.
-    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
-    ## The server's network system will also receive this message after successful connection of client.
-    address*: Address  ## Address to connect to (server's address)
-
-  DisconnectMessage* = object of Message
-    ## Send this message to network system in order to disconnect from server.
-    ## Example: ``new(DisconnectMessage).send(config.systems.network)``
-    ## The server's network system will also receive this message after successful disconnection of client.
-  
-
+# ---- helpers ----
 proc `$`*(self: Address): string =
   &"{self.host}:{self.port}"
 
-messages.register(ConnectMessage)
-method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
-
-messages.register(DisconnectMessage)
-strMethod(DisconnectMessage)
-
-
-# ---- helpers ----
 proc getHost*(self: enet.Address): string =
   const ipLength = "000.000.000.000".len
   var address = self
@@ -75,6 +54,26 @@ proc `$`*(self: ptr Packet): string =
 proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
   copyMem(result.cstring, packet.data, packet.dataLength)
+
+# ---- messages ----
+type
+  ConnectMessage* = object of Message
+    ## Send this message to network system in order to connect to server.
+    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
+    ## The server's network system will also receive this message after successful connection of client.
+    address*: Address  ## Address to connect to (server's address)
+
+  DisconnectMessage* = object of Message
+    ## Send this message to network system in order to disconnect from server.
+    ## Example: ``new(DisconnectMessage).send(config.systems.network)``
+    ## The server's network system will also receive this message after successful disconnection of client.
+  
+
+messages.register(ConnectMessage)
+method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
+
+messages.register(DisconnectMessage)
+strMethod(DisconnectMessage)
   
 # ---- methods ----
 method send*(
