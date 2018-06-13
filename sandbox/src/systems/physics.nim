@@ -1,4 +1,5 @@
 import logging
+import strformat
 
 import c4.systems.physics.ode as ode_physics
 import c4.presets.action.systems.physics
@@ -11,6 +12,7 @@ import "../messages"
 
 type
   SandboxPhysicsSystem* = object of ActionPhysicsSystem
+    cubes: seq[Entity]    
 
 
 method init*(self: ref SandboxPhysicsSystem) =
@@ -20,22 +22,36 @@ method init*(self: ref SandboxPhysicsSystem) =
   self.world.worldSetGravity(0, 0, 0)
 
 method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage) =
-  # We want to load our scene when physics system is ready.
-  logging.debug "Loading scene"
+  # We want to reset our scene when physics system is ready.
+  new(ResetSceneMessage).send(self)
 
-  # var cube: Entity
+method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) =
+  logging.debug "Resetting scene"
 
-  # for i in 1..10:
-  #   cube = newEntity()
+  self.cubes = @[]
+
+  let cubeCoords = @[
+    (-1.5, 0.5, -10.0), (-0.5, 0.5, -10.0), (0.5, 0.5, -10.0), (1.5, 0.5, -10.0),
+    (-1.0, 1.5, -10.0), (0.0, 1.5, -10.0), (1.0, 1.5, -10.0),
+    (-0.5, 2.5, -10.0), (0.5, 2.5, -10.0),
+    (0.0, 3.5, -10.0),
+  ]
+
+  var cube: Entity
+
+  for coords in cubeCoords:
+    cube = newEntity()
   #   (ref CreateEntityMessage)(entity: cube).send(config.systems.network)
 
-  #   var physics = new(ActionPhysics)
-  #   config.systems.physics.initComponent(physics)
-  #   physics.body.bodySetPosition(0.0, 0.0, -i.float * 6)
+    var physics = new(ActionPhysics)
+    config.systems.physics.initComponent(physics)
+    physics.body.bodySetPosition(coords[0], coords[1], coords[2])
 
-  #   var mass = ode.dMass()
-  #   mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
-  #   physics.body.bodySetMass(mass.addr)
+    var mass = ode.dMass()
+    mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
+    physics.body.bodySetMass(mass.addr)
+
+    self.cubes.add(cube)
 
   #   cube[ref Physics] = physics
   #   var position = physics.body.bodyGetPosition()
@@ -48,4 +64,4 @@ method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage)
 
   #   # TODO: add RotateMessage
 
-  # logging.debug "Scene loaded"
+  logging.debug "Scene loaded"
