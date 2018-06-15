@@ -68,3 +68,7 @@ method initComponent*(self: ref PhysicsSystem, component: ref Physics) =
 method destroyComponent*(self: ref PhysicsSystem, component: ref Physics) =
   logging.debug &"Physics system: destroying component"
   component.body.bodyDestroy()
+
+proc getPosition*(self: ref Physics): tuple[x, y, z: float] =
+  let position = self.body.bodyGetPosition()[]
+  result = (x: position[0], y: position[1], z: position[2])

@@ -33,10 +33,9 @@ proc `$`*(self: Address): string =
 
 proc getHost*(self: enet.Address): string =
   const ipLength = "000.000.000.000".len
-  var address = self
 
   result = newString(ipLength)
-  if address_get_host_ip(address.addr, result, ipLength) != 0:
+  if address_get_host_ip(self.unsafeAddr, result, ipLength) != 0:
     raise newException(LibraryError, "Could not get printable address")
 
 proc `$`*(self: enet.Address): string =
@@ -59,14 +58,22 @@ proc toString(packet: enet.Packet): string =
 type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
+    ##
     ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
+    ##
     ## The server's network system will also receive this message after successful connection of client.
     address*: Address  ## Address to connect to (server's address)
 
   DisconnectMessage* = object of Message
     ## Send this message to network system in order to disconnect from server.
+    ##
     ## Example: ``new(DisconnectMessage).send(config.systems.network)``
+    ##
     ## The server's network system will also receive this message after successful disconnection of client.
+
+  PrivateMessage* = object of Message
+    ## Base type for sending message to only specific ``Peer``. Network system will send this message only to one Peer instead of broadcasting it.
+    recipient*: ref messages.Peer
   
 
 messages.register(ConnectMessage)
@@ -74,12 +81,12 @@ method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.addr
 
 messages.register(DisconnectMessage)
 strMethod(DisconnectMessage)
-  
+
 # ---- methods ----
 method send*(
   self: ref NetworkSystem,
   message: ref Message,
-  peer: ptr enet.Peer = nil,  # set nil to broadcast  # TODO: replace with ref messages.Peer
+  peer: ref messages.Peer = nil,  # set nil to broadcast
   channelId:uint8 = 0,
   reliable = false,
   immediate = false
@@ -97,8 +104,12 @@ method send*(
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
   else:
-    discard enet.peer_send(peer, channelId, packet)
-
+    # reverse Table lookup
+    for enetPeer, msgsPeer in self.peers.pairs():
+      if msgsPeer == peer:
+        discard enet.peer_send(enetPeer, channelId, packet)
+        break
+    
   if immediate:
     enet.host_flush(self.host)
  
@@ -234,8 +245,15 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     procCall ((ref System)self).store(message)  # save all external messages for further processing
   else:
     self.send(message)  # do not store and send all local incoming messages
-    # TODO: recipient handling - to which peer is this message?
     # TODO: group and send bulk?
+  
+method store*(self: ref NetworkSystem, message: ref PrivateMessage) =
+  if message.isExternal:
+    procCall ((ref System)self).store(message)
+  else:
+    let recipient = message.recipient
+    message.recipient = nil  # do not send recipient over network
+    self.send(message, recipient)
 
 method store(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## By default network system sends all local incoming messages.

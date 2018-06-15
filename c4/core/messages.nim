@@ -1,4 +1,5 @@
 ## Message is a base unit for communication between systems.
+import hashes
 
 import "../wrappers/msgpack/msgpack"
 export msgpack.pack_type, msgpack.unpack
@@ -17,6 +18,10 @@ type
 proc isExternal*(self: ref Message): bool =
   ## Check whether this message is local or from external Peer
   not self.peer.isNil
+
+proc hash*(self: ref Peer): Hash =
+  result = self[].addr.hash
+  # result = !$result
 
 # ---- msgpack stuff ----
 msgpack.register(Message)  # teach msgpack4nim to pack Message and its subclasses
