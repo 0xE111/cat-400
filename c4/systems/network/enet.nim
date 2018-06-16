@@ -23,8 +23,9 @@ type
 
   NetworkSystem* = object of System
     host: ptr enet.Host  # remember own host
-    peers: Table[ptr enet.Peer, ref messages.Peer]  # table for converting internal enet.Peer into generic Peer
-    entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
+    peers: Table[ptr enet.Peer, ref messages.Peer]  ## table for converting internal enet.Peer into messages.Peer
+    entitiesMap: Table[Entity, Entity]  ## table for converting remote Entity to local one
+    # TODO: works only on client side, does server need ``entitiesMap`` at all? (probably no, but who knows)
 
 
 # ---- helpers ----
@@ -70,10 +71,6 @@ type
     ## Example: ``new(DisconnectMessage).send(config.systems.network)``
     ##
     ## The server's network system will also receive this message after successful disconnection of client.
-
-  PrivateMessage* = object of Message
-    ## Base type for sending message to only specific ``Peer``. Network system will send this message only to one Peer instead of broadcasting it.
-    recipient*: ref messages.Peer
   
 
 messages.register(ConnectMessage)
@@ -160,13 +157,13 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     # Second, for each disconnected peer send a ``DisconnectMessage`` to local network system and
     # delete this peer from peer mapping table.
     for peer in peersToDelete:
-      (ref DisconnectMessage)(peer: self.peers[peer]).send(self)
+      (ref DisconnectMessage)(sender: self.peers[peer]).send(self)
       self.peers.del(peer)
 
     # Now, send ``ConnectMessage`` for newly created connection
     let newPeer = new(messages.Peer)
     self.peers[event.peer] = newPeer
-    (ref ConnectMessage)(peer: newPeer).send(self)
+    (ref ConnectMessage)(sender: newPeer).send(self)
     logging.debug &"--- Connection established: {event.peer[]}"
     logging.debug &"Current # of connections: {self.peers.len}"
   of EVENT_TYPE_RECEIVE:
@@ -175,8 +172,8 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     
     # include sender info into the message
     if self.peers.hasKey(event.peer):
-      message.peer = self.peers[event.peer]
-      logging.debug &"<-- Received {message} from peer {message.peer[]}"
+      message.sender = self.peers[event.peer]
+      logging.debug &"<-- Received {message} from peer {message.sender[]}"
       self.store(message)  # TODO: event.channelID data is missing in message
     else:
       logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
@@ -184,7 +181,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     enet.packet_destroy(event.packet)
   of EVENT_TYPE_DISCONNECT:
     logging.debug &"-x- Connection closed: {event.peer[]}"
-    (ref DisconnectMessage)(peer: self.peers[event.peer]).send(self)
+    (ref DisconnectMessage)(sender: self.peers[event.peer]).send(self)
     self.peers.del(event.peer)
     event.peer.peer_reset()
   else:
@@ -244,16 +241,11 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   if message.isExternal:
     procCall ((ref System)self).store(message)  # save all external messages for further processing
   else:
-    self.send(message)  # do not store and send all local incoming messages
-    # TODO: group and send bulk?
-  
-method store*(self: ref NetworkSystem, message: ref PrivateMessage) =
-  if message.isExternal:
-    procCall ((ref System)self).store(message)
-  else:
+    # do not store and send all local incoming messages
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
     self.send(message, recipient)
+    # TODO: group and send bulk?
 
 method store(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## By default network system sends all local incoming messages.
@@ -275,10 +267,14 @@ method store(self: ref NetworkSystem, message: ref DisconnectMessage) =
   procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
-  ## Disconnect when receiving ``DisconnectMessage``
   if not message.isExternal:
+    # Disconnect when receiving ``DisconnectMessage`` from any local source
     logging.debug "Disconnecting"
     self.disconnect()
+
+  if message.isExternal:
+    # When disconnecting from external Peer, remove all entity mappings 
+    self.entitiesMap = initTable[Entity, Entity]()
 
 # TODO: maybe there's a way to combine two following methods into one?
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
@@ -304,7 +300,7 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   assert(message.isExternal, &"Message is not external: {message}")
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
   message.entity = self.entitiesMap[message.entity]
-  logging.debug "Mapped external Entity to local one"
+  logging.debug &"External Entity is mapped to local {message.entity}"
 
 method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
