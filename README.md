@@ -12,7 +12,6 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 * [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/horde3d)
 * [msgpack4nim + inheritance support](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/msgpack)
 * [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/ode)
-et](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/enet)
 
 ## Brief overview
 
