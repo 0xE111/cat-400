@@ -12,11 +12,20 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 * [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/horde3d)
 * [msgpack4nim + inheritance support](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/msgpack)
 * [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/ode)
+et](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/enet)
 
 ## Brief overview
 
 C4 is more educational project rather then professional software, however if you like it you may use it and make contributions.
 
-## Updates, news, docs and other stuff
+Key features:
+- client-server architecture by default (even for single-player games) with network support
+- modularity: all code is split into "systems" (video/user input/networking etc) which work independently
+- systems communicate only by sending messages, which allows to avoid tangled code
+- ECS (entity-component-system) with custom user components support
+- simple overwriting of existing systems and ability to use your own systems
+- "presets" (aka templates) which include some reasonable defaults for specific game genre
+
+# Docs & other stuff
 
 Please visit https://cat400.io
