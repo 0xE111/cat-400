@@ -71,6 +71,9 @@ type
     ## Example: ``new(DisconnectMessage).send(config.systems.network)``
     ##
     ## The server's network system will also receive this message after successful disconnection of client.
+
+  ConnectionOpenedMessage* = object of Message
+  ConnectionClosedMessage* = object of Message
   
 
 messages.register(ConnectMessage)
@@ -157,13 +160,13 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     # Second, for each disconnected peer send a ``DisconnectMessage`` to local network system and
     # delete this peer from peer mapping table.
     for peer in peersToDelete:
-      (ref DisconnectMessage)(sender: self.peers[peer]).send(self)
+      (ref ConnectionClosedMessage)(sender: self.peers[peer]).send(self)
       self.peers.del(peer)
 
-    # Now, send ``ConnectMessage`` for newly created connection
+    # Now, send ``ConnectionOpenedMessage`` for newly created connection
     let newPeer = new(messages.Peer)
     self.peers[event.peer] = newPeer
-    (ref ConnectMessage)(sender: newPeer).send(self)
+    (ref ConnectionOpenedMessage)(sender: newPeer).send(self)
     logging.debug &"--- Connection established: {event.peer[]}"
     logging.debug &"Current # of connections: {self.peers.len}"
   of EVENT_TYPE_RECEIVE:
@@ -181,7 +184,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
     enet.packet_destroy(event.packet)
   of EVENT_TYPE_DISCONNECT:
     logging.debug &"-x- Connection closed: {event.peer[]}"
-    (ref DisconnectMessage)(sender: self.peers[event.peer]).send(self)
+    (ref ConnectionClosedMessage)(sender: self.peers[event.peer]).send(self)
     self.peers.del(event.peer)
     event.peer.peer_reset()
   else:
@@ -233,24 +236,14 @@ proc `=destroy`*(self: var NetworkSystem) =
 
 
 # ---- handlers ----
-method store*(self: ref NetworkSystem, message: ref Message) =
-  ## Network system stores messages differently by default.
-  ## While other systems store all incoming messages for futher processing, network system sends all local messages without storing and processing them.
-  ## All incoming non-local messages (from remote hosts) are stored and processed as usual.
-  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we store and process it.
-  if message.isExternal:
-    procCall ((ref System)self).store(message)  # save all external messages for further processing
-  else:
-    # do not store and send all local incoming messages
+method process*(self: ref NetworkSystem, message: ref Message) =
+  ## By default, all incoming local messages (from local systems) are sent over network.
+  ## This behaviour may be disabled for any specific message kind. For example, we don't need to send QuitMessage over the network, so we process it in specific method.
+  if not message.isExternal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
     self.send(message, recipient)
     # TODO: group and send bulk?
-
-method store(self: ref NetworkSystem, message: ref ConnectMessage) =
-  ## By default network system sends all local incoming messages.
-  ## However, we want to store and process ``ConnectMessage``.
-  procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified. Only one connection is allowed, so any previous connections will be closed.
@@ -261,29 +254,16 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
     logging.debug &"Connecting to {message.address}"
     self.connect(message.address)
 
-method store(self: ref NetworkSystem, message: ref DisconnectMessage) =
-  ## By default network system sends all local incoming messages.
-  ## However, we want to store and process ``DisconnectMessage``.
-  procCall ((ref System)self).store(message)
-
 method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
   if not message.isExternal:
     # Disconnect when receiving ``DisconnectMessage`` from any local source
     logging.debug "Disconnecting"
     self.disconnect()
 
+method process*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
   if message.isExternal:
     # When disconnecting from external Peer, remove all entity mappings 
     self.entitiesMap = initTable[Entity, Entity]()
-
-# TODO: maybe there's a way to combine two following methods into one?
-method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
-  ## By default network system sends all local incoming messages to remote peers. However, we don't need to send ``QuitMessage`` over the network, we only need to store it and then disconnect and shutdown when processing it.
-  procCall ((ref System)self).store(message)
-
-method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
-  ## Same for ``SystemReadyMessage`` - there's no need to send this message over the network, so we just store and process it.
-  procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   logging.info &"Server listening at localhost:{config.settings.network.port}"

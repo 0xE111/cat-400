@@ -33,7 +33,7 @@ method init*(self: ref SandboxVideoSystem) =
 method initComponent*(self: ref VideoSystem, component: ref Video) =
   component.node = RootNode.addNodes(cubeResource)
 
-method process*(self: ref SandboxVideoSystem, message: ref ConnectMessage) =
+method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
   ## Load skybox when connection is established
   logging.debug "Loading skybox"
 
@@ -41,7 +41,7 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectMessage) =
   self.skybox.setNodeTransform(0, 0, 0, 0, 0, 0, 210, 50, 210)
   self.skybox.setNodeFlags(NodeFlags.NoCastShadow, true)
 
-method process*(self: ref SandboxVideoSystem, message: ref DisconnectMessage) =
+method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessage) =
   ## Unload everything when connection is closed
   logging.debug "Unloading skybox"
 
