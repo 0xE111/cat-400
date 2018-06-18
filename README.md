@@ -1,6 +1,6 @@
 # Cat-400
 
-"Cat-400" (c4) is a game framework for Nim programming language. Being a framework means that c4 will do all the dirty job for you while you focus on creating your game. Under active development.
+"Cat-400" (c4) is a game framework for Nim programming language.
 
 ![Teaser](https://github.com/c0ntribut0r/cat-400/raw/master/teaser.jpg)
 
@@ -15,12 +15,16 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 
 ## Brief overview
 
-C4 is being developed for custom needs. Please note that it's more educational project rather then professional software, however if you like it you may use it and make contributions.
+C4 is more educational project rather then professional software, however if you like it you may use it and make contributions.
 
-## ★ Your help required!
+Key features:
+- client-server architecture by default (even for single-player games) with network support
+- modularity: all code is split into "systems" (video/user input/networking etc) which work independently
+- systems communicate only by sending messages, which allows to avoid tangled code
+- ECS (entity-component-system) with custom user components support
+- simple overwriting of existing systems and ability to use your own systems
+- "presets" (aka templates) which include some reasonable defaults for specific game genre
 
-C4 tries to be clear and well-designed. Your contribution is highly appreciated! Sometimes even an idea or better design/implementation would be very helpful. Check out [current issues](https://github.com/c0ntribut0r/cat-400/issues).
+# Docs & other stuff
 
-## Docs and other stuff
-
-Please visit https://cat400.io for news and docs.
+Please visit https://cat400.io
