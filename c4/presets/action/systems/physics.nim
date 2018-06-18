@@ -71,7 +71,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
     # ).send(config.systems.network)
 
 
-method process*(self: ref ActionPhysicsSystem, message: ref ConnectMessage) =
+method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding Entity for him.
   ## We also need to send all world information to new peer.
   
@@ -86,19 +86,22 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectMessage) =
   let playerEntity = newEntity()  # create new Entity
   playerEntity[ref Physics] = physics
   
-  self.peersEntities[message.sender] = playerEntity  # add it to mapping
+  self.peersEntities[message.peer] = playerEntity  # add it to mapping
 
   # send all scene data
   for entity, physics in getComponents(ref Physics).pairs():
-    (ref CreateEntityMessage)(entity: entity, recipient: message.sender).send(config.systems.network)
+    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
     let position = physics.getPosition()
-    (ref MoveMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.sender).send(config.systems.network)
+    (ref MoveMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
+
+    # TODO: send "rotate" message
 
   # # send "impersonate" message for playerEntity
   # (ref ImpersonateMessage)(entity: playerEntity).send(config.systems.network, receiver=message.peer)
 
-method process*(self: ref ActionPhysicsSystem, message: ref DisconnectMessage) =
-  # When peer disconnects, we want to remove a corresponding Entity for him.
-  logging.debug &"Received {message} message, removing entities"
-  self.peersEntities[message.sender].delete()  # delete Entity # TODO: physics not deleted!
-  self.peersEntities.del(message.sender)  # exclude peer's Entity from mapping
+method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
+  ## When peer disconnects, we want to remove a corresponding Entity.
+
+  logging.debug &"Received {message} message, removing entity"
+  self.peersEntities[message.peer].delete()  # delete Entity # TODO: physics not deleted!
+  self.peersEntities.del(message.peer)  # exclude peer's Entity from mapping

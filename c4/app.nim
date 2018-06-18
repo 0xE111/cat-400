@@ -23,13 +23,13 @@ template initSystem(system: ref System, defaultSystemType: typedesc) =
   new(SystemReadyMessage).send(system)
 
 
-proc initServer*() =
+proc initServer() =
   logging.debug "Initializing server"
   
   initSystem(config.systems.network, NetworkSystem)
   initSystem(config.systems.physics, PhysicsSystem)
 
-proc initClient*() =
+proc initClient() =
   logging.debug "Initializing client"
 
   initSystem(config.systems.network, NetworkSystem)
@@ -37,6 +37,8 @@ proc initClient*() =
   initSystem(config.systems.video, VideoSystem)
 
 proc run*() =
+  ## This proc initializes all systems and runs game loop.
+
   logging.debug "Starting process"
 
   if config.mode == Mode.server:

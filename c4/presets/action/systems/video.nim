@@ -58,5 +58,5 @@ proc translate(node: horde3d.Node, vector: Vector) =
   )
 
 
-method process(self: ref ActionVideoSystem, message: ref MoveMessage) =
-  self.camera.translate(Vector(@[message.x, message.y, message.z]))
+# method process(self: ref ActionVideoSystem, message: ref MoveMessage) =
+#   self.camera.translate(Vector(@[message.x, message.y, message.z]))

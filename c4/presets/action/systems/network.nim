@@ -15,38 +15,42 @@ type
 
 
 method process(self: ref ActionNetworkSystem, message: ref CreateEntityMessage) =
-  ## When network systems receives ``CreateEntityMessage``, it processes it and sends it to video system
+  ## Sends message to video system.
   procCall ((ref NetworkSystem)self).process(message)
   message.send(config.systems.video)
 
 method process(self: ref ActionNetworkSystem, message: ref MoveMessage) =
+  ## Sends message to video system.
   procCall ((ref NetworkSystem)self).process(message)
   message.send(config.systems.video)
 
 method process(self: ref ActionNetworkSystem, message: ref RotateMessage) =
+  ## Sends message to video system.
   procCall ((ref NetworkSystem)self).process(message)
   message.send(config.systems.video)
+
+# TODO: combine next 2 methods?
 
 method process*(self: ref ActionNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
   ## 
-  ## Also we need to handle connection on client side, that's why we send this message to video system as well.
-  procCall ((ref NetworkSystem)self).process(message)
+  ## Also we need to prepare scene on client side, that's why we send this message to video system as well.
 
-  if message.isExternal:
-    if config.mode == server:
-      message.send(config.systems.physics)
-    elif config.mode == client:
-      message.send(config.systems.video)
+  if config.mode == server:
+    message.send(config.systems.physics)
+
+  elif config.mode == client:
+    message.send(config.systems.video)
 
 method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.
   ## 
-  ## Also we need to handle disconnection on client side, that's why we send this message to video system as well.
+  ## Also we need to unload scene on client side, that's why we send this message to video system as well.
+
   procCall ((ref NetworkSystem)self).process(message)
 
-  if message.isExternal:
-    if config.mode == server:
-      message.send(config.systems.physics)
-    elif config.mode == client:
-      message.send(config.systems.video)
+  if config.mode == server:
+    message.send(config.systems.physics)
+
+  elif config.mode == client:
+    message.send(config.systems.video)

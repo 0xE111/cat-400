@@ -17,9 +17,9 @@ type
     recipient*: ref Peer  ## Message recipient; nil means that the message should be broadcasted.
 
 
-proc isExternal*(self: ref Message): bool =
+proc isLocal*(self: ref Message): bool =
   ## Check whether this message is local or from external Peer
-  not self.sender.isNil
+  self.sender.isNil
 
 proc hash*(self: ref Peer): Hash =
   result = self[].addr.hash
