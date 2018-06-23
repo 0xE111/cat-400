@@ -349,10 +349,12 @@ method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   logging.debug "Disconnected"
 
 method store*(self: ref NetworkSystem, message: ref EntityMessage) =
-  ## Server stores only local ``EntityMessage``s.
-  ## Client stores only remote ``EntityMessage``s.
-  if (config.mode == server and message.isLocal) or (config.mode == client and not message.isLocal):
+  ## Server only sends local ``EntityMessage``, client only receives remote ``EntityMessage``.
+  if (config.mode == server and message.isLocal):
     procCall self.store((ref Message)message)
+  
+  elif (config.mode == client and not message.isLocal):
+    procCall ((ref System)self).store(message)
 
 method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
@@ -374,6 +376,7 @@ method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
   let entity = newEntity()
+  logging.debug &"Client created new entity {entity}"
   self.entitiesMap[message.entity] = entity
 
 method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
@@ -386,3 +389,4 @@ method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
   let entity = self.entitiesMap[message.entity]
   self.entitiesMap.del(message.entity)
   entity.delete()
+  logging.debug &"Client deleted entity {entity}"
