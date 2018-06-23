@@ -255,9 +255,9 @@ proc `=destroy`*(self: var NetworkSystem) =
 method store*(self: ref NetworkSystem, message: ref Message) =
   ## Network system should send outgoing messages as soon as possible. If we store outgoing messages as usual, they will be processed only after all network i/o done (see ``NetworkSystem.update`` method). Thus we will lose exactly one loop cycle before actually sending the message. To avoid this case, we don't store and process any outgoing messages. Instead, we instantly request enet to send them. When ``NetworkSystem`` is updated, it sends all outgoing messages, receives new ones and then processes all stored messages.
   ##
-  ## Sometimes ``NetworkSystem`` may need to store and process message instead of sending it. For example, ``NetworkSystem`` receives ``SystemReadyMessage`` when all enet internals are initialized, This message should be processed, not sent over the network. To achieve this, we define custom ``store`` method which stores the message (``procCall (ref System)self).store(message)``).
+  ## Sometimes ``NetworkSystem`` may need to store and process message instead of sending it. For example, ``NetworkSystem`` receives ``SystemReadyMessage`` when all enet internals are initialized. This message should be processed, not sent over the network. To achieve this, we define custom ``store`` method which stores the message (``procCall (ref System)self).store(message)``).
   ##
-  ## Also, all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers.
+  ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
   # TODO: is there a better way to control in/out message restrictions?
   
@@ -331,7 +331,8 @@ method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
 
   assert message.isLocal
 
-  logging.info &"Server listening at localhost:{config.settings.network.port}"
+  if config.mode == server:
+    logging.info &"Server listening at localhost:{config.settings.network.port}"
 
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## Don't send this message over the network, store and process it instead.
