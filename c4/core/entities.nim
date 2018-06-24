@@ -32,6 +32,11 @@ proc delete*(entity: Entity) =
   #   destructor(entity)
   entities.excl(entity)  # will not alert if entity does not exist
 
+proc flush*() =
+  ## Removes all entities
+  for entity in entities:
+    entity.delete()
+
 # ---- Components ----
 proc getComponents*(t: typedesc): ref Table[Entity, t] =
   ## Returns a table of components for all entities (`Table[Entity, t]`)

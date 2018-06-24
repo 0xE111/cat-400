@@ -54,3 +54,6 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMess
 
   elif config.mode == client:
     message.send(config.systems.video)
+
+    logging.debug "Flushing local entities"
+    entities.flush()
