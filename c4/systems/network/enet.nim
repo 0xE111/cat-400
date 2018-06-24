@@ -350,8 +350,13 @@ method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
 
 method store*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Server only sends local ``EntityMessage``, client only receives remote ``EntityMessage``.
+  ##
+  ## Entity messages are sent reliably.
+
   if (config.mode == server and message.isLocal):
-    procCall self.store((ref Message)message)
+    let recipient = message.recipient
+    message.recipient = nil  # do not send recipient over network
+    self.send(message, recipient, reliable=true)
   
   elif (config.mode == client and not message.isLocal):
     procCall ((ref System)self).store(message)
@@ -365,8 +370,6 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
 
   message.entity = self.entitiesMap[message.entity]
   logging.debug &"External Entity is mapped to local {message.entity}"
-
-# TODO: send `CreateEntityMessage` and `DeleteEntityMessage` RELIABLY!
 
 method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
