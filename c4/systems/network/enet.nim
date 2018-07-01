@@ -137,7 +137,7 @@ method init*(self: ref NetworkSystem) =
 
   # set up address - nil for client, HOST_ANY+port for server
   var addressPtr: ptr enet.Address = nil
-  if config.mode == server:
+  if mode == server:
     var address = enet.Address(host: enet.HOST_ANY, port: config.settings.network.port)
     addressPtr = address.addr
 
@@ -367,7 +367,7 @@ method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
 
   assert message.isLocal
 
-  if config.mode == server:
+  if mode == server:
     logging.info &"Server listening at localhost:{config.settings.network.port}"
 
 
@@ -394,18 +394,22 @@ method store*(self: ref NetworkSystem, message: ref EntityMessage) =
   ##
   ## Entity messages are sent reliably.
 
-  if (config.mode == server and message.isLocal):
+  if (mode == server and message.isLocal):
+    # send RELIABLY over network
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
     self.send(message, recipient, reliable=true)
   
-  elif (config.mode == client and not message.isLocal):
-    procCall ((ref System)self).store(message)
+  elif (mode == client and not message.isLocal):
+    procCall ((ref System)self).store(message)  # store this message
+
+  else:
+    logging.warn &"Dropped {message}: should be local server message or remote client one (currently {mode}, local={message.isLocal})"
 
 method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
 
-  assert config.mode == client
+  assert mode == client
   assert (not message.isLocal)
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity}")
 
@@ -415,7 +419,7 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
 method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
 
-  assert config.mode == client
+  assert mode == client
   assert (not message.isLocal)
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
@@ -423,14 +427,16 @@ method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   logging.debug &"Client created new entity {entity}"
   self.entitiesMap[message.entity] = entity
 
+  procCall self.process((ref EntityMessage)message)  # map entity
+
 method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
   ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
 
-  assert config.mode == client
+  assert mode == client
   assert (not message.isLocal)
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
 
-  let entity = self.entitiesMap[message.entity]
+  let localEntity = self.entitiesMap[message.entity]
   self.entitiesMap.del(message.entity)
-  entity.delete()
-  logging.debug &"Client deleted entity {entity}"
+  localEntity.delete()
+  logging.debug &"Client deleted entity {localEntity}"
