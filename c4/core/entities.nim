@@ -39,7 +39,7 @@ proc flush*() =
 
 # ---- Components ----
 proc getComponents*(t: typedesc): ref Table[Entity, t] =
-  ## Returns a table of components for all entities (`Table[Entity, t]`)
+  ## Returns a table of components for all entities (``Table[Entity, t]``)
   var table {.global.} = newTable[Entity, t]()
   return table
 

@@ -1,5 +1,6 @@
 import logging
 
+import c4.core.entities
 import c4.systems
 import c4.systems.network.enet
 import c4.systems.video.horde3d as horde3d_video
