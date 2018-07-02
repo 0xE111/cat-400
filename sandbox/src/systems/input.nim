@@ -44,4 +44,4 @@ method handle*(self: ref SandboxInputSystem, event: sdl.Event) =
       discard
 
   # As far as we inherit from ``ActionInputSystem``, there are bunch of event handlers defined for us by default. For example, if player presses "W" key, ``ActionInputSystem`` will send ``MoveForwardMessage``. Same for mouse movements. That's why it's definitely a good idea to call parent method to fire the defaults.
-  procCall ((ref ActionInputSystem)self).handle(event)
+  procCall self.as(ref ActionInputSystem).handle(event)

@@ -41,14 +41,14 @@ const
 
 method init*(self: ref ActionPhysicsSystem) =
   ## Sets real world gravity (G) 
-  procCall ((ref PhysicsSystem)self).init()
+  procCall self.as(ref PhysicsSystem).init()
   
   self.peersEntities = initTable[ref Peer, Entity]()
   self.world.worldSetGravity(0, -G, 0)
 
 method initComponent*(self: ref ActionPhysicsSystem, component: ref ActionPhysics) =
   ## This method remembers component's inital position
-  procCall ((ref PhysicsSystem)self).initComponent(component)
+  procCall self.as(ref PhysicsSystem).initComponent(component)
 
   let position = component.getPosition()
   component.prevPosition = (position.x, position.y, position.z)

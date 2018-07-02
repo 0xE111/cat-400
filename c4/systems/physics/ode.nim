@@ -28,7 +28,7 @@ method init*(self: ref PhysicsSystem) =
   self.simulationStepRemains = 0
   logging.debug "ODE initialized"
 
-  procCall ((ref System)self).init()
+  procCall self.as(ref System).init()
 
 
 method update*(self: ref PhysicsSystem, dt: float) =
@@ -45,7 +45,7 @@ method update*(self: ref PhysicsSystem, dt: float) =
   for entity, physics in getComponents(ref Physics).pairs():
     physics.update(dt, entity)
 
-  procCall ((ref System)self).update(dt)
+  procCall self.as(ref System).update(dt)
 
 proc `=destroy`*(self: var PhysicsSystem) =
   self.world.worldDestroy()

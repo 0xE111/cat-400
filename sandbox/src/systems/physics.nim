@@ -17,7 +17,7 @@ type
 
 method init*(self: ref SandboxPhysicsSystem) =
   # Disable gravitation for now
-  procCall ((ref ActionPhysicsSystem)self).init()
+  procCall self.as(ref ActionPhysicsSystem).init()
   
   self.world.worldSetGravity(0, 0, 0)
 

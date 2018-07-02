@@ -148,7 +148,7 @@ method init*(self: ref NetworkSystem) =
   self.peersMap = initTable[ptr enet.Peer, ref messages.Peer]()
   self.entitiesMap = initTable[Entity, Entity]()
 
-  procCall ((ref System)self).init()
+  procCall self.as(ref System).init()
 
 # forward declaration, needed for ``handle`` method
 method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.}
@@ -249,7 +249,7 @@ method update*(self: ref NetworkSystem, dt: float) =
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     self.handle(event)
   
-  procCall ((ref System)self).update(dt)
+  procCall self.as(ref System).update(dt)
 
 proc `=destroy`*(self: var NetworkSystem) =
   ## Destroy current host and deinitialize enet.
@@ -282,10 +282,10 @@ method store*(self: ref NetworkSystem, message: ref ConnectMessage) =
   
   # don't send this message over the network, store and process it instead.
   if message.isLocal and mode == client:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
 
   elif not message.isLocal:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
   
   elif mode == server:
     logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
@@ -308,10 +308,10 @@ method store*(self: ref NetworkSystem, message: ref DisconnectMessage) =
   ## ``DisconnectMessage`` may be sent only to client's network system in order to disconnect from server.
 
   if message.isLocal and mode == client:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
   
   elif not message.isLocal:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
   
   elif mode != client:
     logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
@@ -330,20 +330,20 @@ method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
   ## Don't send this message over the network, store and process it instead.
 
   if message.isLocal:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
   
   else:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 
 method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
   ## Don't send this message over the network, store and process it instead.
 
   if message.isLocal:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
   
   else:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 method process*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
   ## Remove all entity mappings when client disconnects from external peer.
@@ -357,10 +357,10 @@ method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   ## Don't send this message over the network, store and process it instead.
 
   if message.isLocal:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
 
   else:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   ## Print info message.
@@ -375,10 +375,10 @@ method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## Don't send this message over the network, store and process it instead.
 
   if message.isLocal:
-    procCall ((ref System)self).store(message)
+    procCall self.as(ref System).store(message)
   
   else:
-    procCall self.store((ref Message)message)  # drop remote message with warning
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## Disconnect from all peers.
@@ -401,7 +401,7 @@ method store*(self: ref NetworkSystem, message: ref EntityMessage) =
     self.send(message, recipient, reliable=true)
   
   elif (mode == client and not message.isLocal):
-    procCall ((ref System)self).store(message)  # store this message
+    procCall self.as(ref System).store(message)  # store this message
 
   else:
     logging.warn &"Dropped {message}: should be local server message or remote client one (currently {mode}, local={message.isLocal})"
@@ -427,7 +427,7 @@ method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   logging.debug &"Client created new entity {entity}"
   self.entitiesMap[message.entity] = entity
 
-  procCall self.process((ref EntityMessage)message)  # map entity
+  procCall self.process(message.as(ref EntityMessage))  # map entity
 
 method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
   ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.

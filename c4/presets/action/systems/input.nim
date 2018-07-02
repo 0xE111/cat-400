@@ -57,4 +57,4 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
       discard
     
   # fallback to default implementation
-  procCall ((ref InputSystem)self).handle(event)
+  procCall self.as(ref InputSystem).handle(event)

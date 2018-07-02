@@ -16,17 +16,17 @@ type
 
 method process(self: ref ActionNetworkSystem, message: ref CreateEntityMessage) =
   ## Sends message to video system.
-  procCall ((ref NetworkSystem)self).process(message)
+  procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
 method process(self: ref ActionNetworkSystem, message: ref MoveMessage) =
   ## Sends message to video system.
-  procCall ((ref NetworkSystem)self).process(message)
+  procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
 method process(self: ref ActionNetworkSystem, message: ref RotateMessage) =
   ## Sends message to video system.
-  procCall ((ref NetworkSystem)self).process(message)
+  procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
 # TODO: combine next 2 methods?
@@ -47,7 +47,7 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMess
   ## 
   ## Also we need to unload scene on client side, that's why we send this message to video system as well.
 
-  procCall ((ref NetworkSystem)self).process(message)
+  procCall self.as(ref NetworkSystem).process(message)
 
   if config.mode == server:
     message.send(config.systems.physics)

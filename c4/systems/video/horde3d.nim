@@ -130,10 +130,10 @@ method init*(self: ref VideoSystem) =
 
   logging.debug "Horde3d initialized"
 
-  procCall ((ref System)self).init()
+  procCall self.as(ref System).init()
 
 method update*(self: ref VideoSystem, dt: float) =
-  procCall ((ref System)self).update(dt)
+  procCall self.as(ref System).update(dt)
 
   if config.logLevel <= lvlDebug:
     horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)

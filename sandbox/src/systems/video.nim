@@ -19,7 +19,7 @@ var
 
 
 method init*(self: ref SandboxVideoSystem) =
-  procCall ((ref VideoSystem)self).init()
+  procCall self.as(ref VideoSystem).init()
   logging.debug "Loading custom video resources"
 
   cubeResource = addResource(ResTypes.SceneGraph, "models/cube/cube.scene.xml")

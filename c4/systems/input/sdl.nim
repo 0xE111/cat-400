@@ -37,7 +37,7 @@ method init*(self: ref InputSystem) =
     logging.fatal(getCurrentExceptionMsg())
     raise
   
-  procCall ((ref System)self).init()
+  procCall self.as(ref System).init()
 
 method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   ## Handling of basic sdl event. These are pretty reasonable defaults.
@@ -66,7 +66,7 @@ method update*(self: ref InputSystem, dt: float) =
   while sdl.pollEvent(event.addr) != 0:
     self.handle(event)
 
-  procCall ((ref System)self).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
+  procCall self.as(ref System).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
 
 proc `=destroy`*(self: var InputSystem) =
   sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems

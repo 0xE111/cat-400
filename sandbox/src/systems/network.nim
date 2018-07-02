@@ -14,6 +14,6 @@ type
 
 method process*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) =
   # When network receives ``ResetSceneMessage``, it forwards the message to physics system
-  procCall ((ref ActionNetworkSystem)self).process(message)
+  procCall self.as(ref ActionNetworkSystem).process(message)
 
   message.send(config.systems.physics)

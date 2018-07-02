@@ -68,3 +68,9 @@ strMethod(SystemReadyMessage)
 
 messages.register(SystemQuitMessage)
 strMethod(SystemQuitMessage)
+
+
+# ---- helpers ----
+template `as`*(instance: typed, T: typedesc): untyped =
+  ## Converts ``instance`` to ``T`` type: ``createEntityMessage.as(ref Message)``
+  (T)(instance)
