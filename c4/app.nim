@@ -41,25 +41,31 @@ proc run*() =
 
   logging.debug "Starting process"
 
-  if config.mode == Mode.server:
-    initServer()
-    runLoop(
-      updatesPerSecond = 30,
-      fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
-        config.systems.network.update(dt)
-        config.systems.physics.update(dt)
-        true  # TODO: how to quit?
-    )
-  else:
-    initClient()
-    runLoop(
-      updatesPerSecond = 30,
-      fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
-        config.systems.network.update(dt)
-        config.systems.input.update(dt)
-        config.systems.video.update(dt)
-        true  # TODO: how to quit?
-    )
+  try:
+    if mode == Mode.server:
+      initServer()
+      runLoop(
+        updatesPerSecond = 30,
+        fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
+          config.systems.network.update(dt)
+          config.systems.physics.update(dt)
+          true  # TODO: how to quit?
+      )
+    else:
+      initClient()
+      runLoop(
+        updatesPerSecond = 30,
+        fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
+          config.systems.network.update(dt)
+          config.systems.input.update(dt)
+          config.systems.video.update(dt)
+          true  # TODO: how to quit?
+      )
+  except:
+    # log any exception from client/server before dying
+    logging.fatal &"Exception: {getCurrentExceptionMsg()}"
+    raise
+
 
   # TODO: GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
 
