@@ -3,10 +3,11 @@ import strformat
 import logging
 
 import "../../../config"
-import "../../../core/messages"
 import "../../../systems"
 import "../../../systems/input/sdl" as input
+
 import physics
+import "../messages"
 
 
 type

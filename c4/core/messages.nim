@@ -27,7 +27,7 @@ proc hash*(self: ref Peer): Hash =
 
 # ---- msgpack stuff ----
 msgpack.register(Message)  # teach msgpack4nim to pack Message and its subclasses
-method `$`*(message: ref Message): string {.base.} = "Message"
+method `$`*(self: ref Message): string {.base.} = "Message"
 
 template register*(T: typedesc) =
   ## Registers Message subtype in msgpack

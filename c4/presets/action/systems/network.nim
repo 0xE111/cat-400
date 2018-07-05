@@ -2,12 +2,12 @@ import logging
 import strformat
 
 import "../../../config"
-import "../../../core/messages"
 import "../../../core/entities"
 import "../../../systems"
 import "../../../systems/network/enet"
 
 import physics
+import "../messages"
 
 
 type

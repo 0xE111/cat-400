@@ -5,12 +5,14 @@ import typetraits
 
 import "../../../systems"
 import "../../../config"
-import "../../../core/messages"
 import "../../../core/entities"
+import "../../../core/messages"
 import "../../../systems/physics/ode" as physics_system
 import "../../../systems/network/enet"
 import "../../../wrappers/ode/ode"
 import "../../../utils/stringify"
+
+import "../messages" as action_messages
 
 
 type
@@ -20,19 +22,6 @@ type
   ActionPhysics* = object of Physics
     ## Physics component which additionally stores its previous position. Position update messages are sent only when position really changes.
     prevPosition: tuple[x, y, z: dReal]
-
-  MoveMessage* = object of EntityMessage
-    x*, y*, z*: float
-
-  RotateMessage* = object of EntityMessage
-    yaw*, pitch*: float
-
-
-messages.register(MoveMessage)
-method `$`*(self: ref MoveMessage): string = &"{self[].type.name}: {self.x}, {self.y}, {self.z} (entity {self.entity})"
-
-messages.register(RotateMessage)
-method `$`*(self: ref RotateMessage): string = &"{self[].type.name}: {self.yaw}°:{self.pitch}° (entity {self.entity})"
 
 
 const

@@ -4,12 +4,12 @@ import logging
 
 import "../../../core/entities"
 import "../../../systems/video/horde3d" as video
-import "../../../core/messages"
 
 import "../../../wrappers/horde3d/horde3d"
 
 import physics
 import "../utils/matrix"
+import "../messages"
 
 
 type
