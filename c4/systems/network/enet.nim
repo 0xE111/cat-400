@@ -413,8 +413,9 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   assert (not message.isLocal)
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity}")
 
-  message.entity = self.entitiesMap[message.entity]
-  logging.debug &"External Entity is mapped to local {message.entity}"
+  let externalEntity = message.entity
+  message.entity = self.entitiesMap[externalEntity]
+  logging.debug &"External entity {externalEntity} is converted to local {message.entity}"
 
 method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
@@ -424,8 +425,8 @@ method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
   let entity = newEntity()
-  logging.debug &"Client created new entity {entity}"
   self.entitiesMap[message.entity] = entity
+  logging.debug &"Created new mapping: {message.entity} -> {entity}"
 
   procCall self.process(message.as(ref EntityMessage))  # map entity
 
