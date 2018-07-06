@@ -186,8 +186,13 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       logging.debug &"Current # of connections: {self.peersMap.len}"
     of EVENT_TYPE_RECEIVE:
       var message: ref Message
-      event.packet[].toString().unpack(message)
 
+      try:
+        event.packet[].toString().unpack(message)
+      except Exception as exc:
+        # do not fail if received malformed message
+        logging.warn &"Could not unpack packet {event.packet[].toString()} from {event.peer[]}: {exc.msg}"
+        return
       # TODO: check that message's runtime type is not Message (which means that message was not registered)
       
       # include sender info into the message
