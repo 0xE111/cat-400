@@ -61,9 +61,9 @@ proc run*() =
           config.systems.video.update(dt)
           true  # TODO: how to quit?
       )
-  except:
+  except Exception as exc:
     # log any exception from client/server before dying
-    logging.fatal &"Exception: {getCurrentExceptionMsg()}"
+    logging.fatal &"Exception: {exc.msg}\n{exc.getStackTrace()}"
     raise
 
 
