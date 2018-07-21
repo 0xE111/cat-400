@@ -19,12 +19,12 @@ method process(self: ref ActionNetworkSystem, message: ref CreateEntityMessage) 
   procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
-method process(self: ref ActionNetworkSystem, message: ref MoveMessage) =
+method process(self: ref ActionNetworkSystem, message: ref PlayerMoveMessage) =
   ## Sends message to video system.
   procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
-method process(self: ref ActionNetworkSystem, message: ref RotateMessage) =
+method process(self: ref ActionNetworkSystem, message: ref PlayerRotateMessage) =
   ## Sends message to video system.
   procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)

@@ -22,7 +22,7 @@ type
 #     translation=(message.x.float, message.y.float, message.z.float)
 #   )
 
-method process(self: ref ActionVideoSystem, message: ref RotateMessage) =
+method process(self: ref ActionVideoSystem, message: ref PlayerRotateMessage) =
   # TODO: ugly
   var tx, ty, tz, rx, ry, rz, sx, sy, sz: cfloat
   self.camera.getNodeTransform(
@@ -58,5 +58,5 @@ proc translate(node: horde3d.Node, vector: Vector) =
   )
 
 
-# method process(self: ref ActionVideoSystem, message: ref MoveMessage) =
+# method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
 #   self.camera.translate(Vector(@[message.x, message.y, message.z]))

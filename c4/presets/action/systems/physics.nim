@@ -43,11 +43,11 @@ method initComponent*(self: ref ActionPhysicsSystem, component: ref ActionPhysic
   component.prevPosition = (position.x, position.y, position.z)
 
 method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
-  ## This method compares previous position and rotation of emtity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
+  ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
   let position = self.getPosition()
   if (position.x != self.prevPosition.x) or (position.y != self.prevPosition.y) or (position.z != self.prevPosition.z):
     self.prevPosition = (position.x, position.y, position.z)
-    (ref MoveMessage)(
+    (ref SetPositionMessage)(
       entity: entity,
       x: position.x,
       y: position.y,
@@ -81,7 +81,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   for entity, physics in getComponents(ref Physics).pairs():
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
     let position = physics.getPosition()
-    (ref MoveMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
+    (ref SetPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
 
     # TODO: send "rotate" message
 

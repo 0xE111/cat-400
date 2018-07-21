@@ -1,24 +1,29 @@
-import strformat
-import typetraits
-
 import "../../core/messages"
 import "../../core/entities"
+import "../../utils/stringify"
 
 
 type
-  MoveMessage* = object of EntityMessage
+  PlayerMoveMessage* = object of Message
     ## Message for defining player's movement direction.
     ## Yaw is angle (in radians) around Y axis.
     ## Pitch is angle around X axis.
     yaw*, pitch*: float
 
-  RotateMessage* = object of EntityMessage
+  PlayerRotateMessage* = object of Message
     ## Message for defining player's rotation. See ``MoveMessage`` for reference.
     yaw*, pitch*: float
 
+  SetPositionMessage* = object of EntityMessage
+    ## Send this message from server to client in order to update object's position.
+    x*, y*, z*: float
 
-messages.register(MoveMessage)
-method `$`*(self: ref MoveMessage): string = &"{self[].type.name}: {self[]}"
 
-messages.register(RotateMessage)
-method `$`*(self: ref RotateMessage): string = &"{self[].type.name}: {self[]}"
+messages.register(PlayerMoveMessage)
+strMethod(PlayerMoveMessage)
+
+messages.register(PlayerRotateMessage)
+strMethod(PlayerRotateMessage)
+
+messages.register(SetPositionMessage)
+strMethod(SetPositionMessage)
