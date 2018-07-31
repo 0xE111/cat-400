@@ -2,9 +2,11 @@ import logging
 import strformat
 
 import c4.config
-import c4.systems
+import c4.systems as c4_systems
 import c4.utils.loading
 import c4.systems.network.enet
+import c4.core.entities
+import c4.presets.action.messages as action_messages
 import c4.presets.action.systems.network
 
 import "../messages"
@@ -26,4 +28,19 @@ method process*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) 
   assert mode == server
   procCall self.as(ref ActionNetworkSystem).process(message)
 
-  message.send(config.systems.physics)
+  message.send(systems.physics)
+
+method process*(self: ref SandboxNetworkSystem, message: ref CreateEntityMessage) =
+  assert mode == client
+  procCall self.as(ref NetworkSystem).process(message)  # generate remote->local entity mapping
+  message.send(systems.video)
+
+method store*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
+  if mode == client:  # TODO:r use another way to separate client and server code
+    procCall self.as(ref System).store(message)  # store message
+  
+  else:
+    procCall self.as(ref NetworkSystem).store(message)  # send message
+
+method process*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
+  message.send(systems.video)

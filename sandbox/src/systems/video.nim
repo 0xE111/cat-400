@@ -1,4 +1,5 @@
 import logging
+import strformat
 
 import c4.core.entities
 import c4.systems
@@ -6,6 +7,7 @@ import c4.systems.network.enet
 import c4.systems.video.horde3d as horde3d_video
 import c4.presets.action.systems.video
 import c4.wrappers.horde3d.horde3d
+import c4.presets.action.messages
 
 
 type
@@ -48,6 +50,16 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessa
 
   self.skybox.removeNode()
 
-# method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
-#   message.entity[ref Video] = new(CubeVideo)
-#   message.entity[ref Video][].init()
+method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
+  let video = new(Video)
+  self.initComponent(video)
+
+  message.entity[ref Video] = video
+
+method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
+  var video = message.entity[ref Video]
+  video.node.setNodeTransform(
+    message.x, message.y, message.z,
+    0, 0, 0,
+    1, 1, 1
+  )

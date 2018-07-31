@@ -415,7 +415,7 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
 
   assert mode == client
-  assert (not message.isLocal)
+  assert(not message.isLocal)
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity}")
 
   let externalEntity = message.entity
