@@ -7,6 +7,7 @@ import c4.systems.network.enet
 import c4.systems.video.horde3d as horde3d_video
 import c4.presets.action.systems.video
 import c4.wrappers.horde3d.horde3d
+import c4.wrappers.horde3d.horde3d.helpers
 import c4.presets.action.messages
 
 
@@ -33,7 +34,7 @@ method init*(self: ref SandboxVideoSystem) =
 
   self.loadResources()
 
-method initComponent*(self: ref VideoSystem, component: ref Video) =
+method initComponent*(self: ref SandboxVideoSystem, component: ref Video) =
   component.node = RootNode.addNodes(cubeResource)
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
@@ -49,17 +50,3 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessa
   logging.debug "Unloading skybox"
 
   self.skybox.removeNode()
-
-method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
-  let video = new(Video)
-  self.initComponent(video)
-
-  message.entity[ref Video] = video
-
-method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
-  var video = message.entity[ref Video]
-  video.node.setNodeTransform(
-    message.x, message.y, message.z,
-    0, 0, 0,
-    1, 1, 1
-  )
