@@ -14,7 +14,7 @@ proc getTransform*(node: horde3d.Node): NodeTransform =
     result.sx.addr, result.sy.addr, result.sz.addr,
   )
 
-proc relTranslate(node: Node, vector: Vector) =
+proc relTranslate*(node: Node, vector: Vector) =
   ## Translates node relative to its direction
   let
     curTransform = node.getTransform()
