@@ -1,6 +1,6 @@
 import macros
-from ospaths import `/`, parentDir
-from os import fileExists
+import ospaths
+import os
 
 # # Unused
 # macro importString*(module, alias: static[string]): untyped =
@@ -26,3 +26,11 @@ template load*(module: static[string]): untyped =
       importString(customModule)
   else:  # import default implementation
       importString(frameworkDir / module)
+
+
+macro importDir*(dir: static[string]): untyped =
+  ## Imports all *.nim files from specific dir
+  result = newNimNode(nnkStmtList)
+  for kind, name in walkDir(dir, relative=true):
+    if kind == pcFile:
+      result.add(newNimNode(nnkImportStmt).add(newIdentNode(dir / name)))
