@@ -6,6 +6,8 @@ import src.systems.input
 import src.systems.video
 import src.systems.network
 
+import src.scenarios
+
 
 config.title = "Sandbox"
 config.version = "0.1"
