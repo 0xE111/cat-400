@@ -10,6 +10,7 @@ import "../../../core/messages"
 import "../../../systems/physics/ode" as physics_system
 import "../../../systems/network/enet"
 import "../../../wrappers/ode/ode"
+import "../../../wrappers/ode/ode/helpers"
 import "../../../utils/stringify"
 
 import "../messages" as action_messages
@@ -39,12 +40,12 @@ method initComponent*(self: ref ActionPhysicsSystem, component: ref ActionPhysic
   ## This method remembers component's inital position
   procCall self.as(ref PhysicsSystem).initComponent(component)
 
-  let position = component.getPosition()
+  let position = component.body.getPosition()
   component.prevPosition = (position.x, position.y, position.z)
 
 method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
   ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
-  let position = self.getPosition()
+  let position = self.body.getPosition()
   if (position.x != self.prevPosition.x) or (position.y != self.prevPosition.y) or (position.z != self.prevPosition.z):
     self.prevPosition = (position.x, position.y, position.z)
     (ref SetPositionMessage)(
@@ -80,7 +81,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   # send all scene data
   for entity, physics in getComponents(ref Physics).pairs():
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
-    let position = physics.getPosition()
+    let position = physics.body.getPosition()
     (ref SetPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
 
     # TODO: send "rotate" message
