@@ -1,6 +1,7 @@
 import macros
 import ospaths
 import os
+import strutils
 
 # # Unused
 # macro importString*(module, alias: static[string]): untyped =
@@ -32,5 +33,5 @@ macro importDir*(dir: static[string]): untyped =
   ## Imports all *.nim files from specific dir
   result = newNimNode(nnkStmtList)
   for kind, name in walkDir(dir, relative=true):
-    if kind == pcFile:
-      result.add(newNimNode(nnkImportStmt).add(newIdentNode(dir / name)))
+    if kind == pcFile and name.endsWith(".nim"):
+      result.add(newNimNode(nnkImportStmt).add(newIdentNode(dir / name[0..^(".nim".len + 1)])))
