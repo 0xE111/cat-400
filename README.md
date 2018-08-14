@@ -25,6 +25,8 @@ Key features:
 - simple overwriting of existing systems and ability to use your own systems
 - "presets" (aka templates) which include some reasonable defaults for specific game genre
 
-# Docs & other stuff
+Read more: https://cat400.io/articles/introduction/
+
+# Website
 
 Please visit https://cat400.io
