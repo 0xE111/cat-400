@@ -25,10 +25,10 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionOpenedMess
   ## 
   ## Also we need to prepare scene on client side, that's why we send this message to video system as well.
 
-  if config.mode == server:
+  if mode == server:
     message.send(config.systems.physics)
 
-  elif config.mode == client:
+  elif mode == client:
     message.send(config.systems.video)
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMessage) =
@@ -66,10 +66,10 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMess
 
   procCall self.as(ref NetworkSystem).process(message)
 
-  if config.mode == server:
+  if mode == server:
     message.send(config.systems.physics)
 
-  elif config.mode == client:
+  elif mode == client:
     message.send(config.systems.video)
 
     logging.debug "Flushing local entities"
