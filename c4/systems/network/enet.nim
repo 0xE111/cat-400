@@ -201,7 +201,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
         logging.debug &"<-- Received {message} from peer {message.sender[]}"
         self.store(message)  # TODO: event.channelID data is missing in message
       else:
-        logging.warn &"x<- Received message {message} from unregistered peer {event.peer[]}, discarding"
+        logging.warn &"x<- Received {message} from unregistered peer {event.peer[]}, discarding"
 
       enet.packet_destroy(event.packet)
     of EVENT_TYPE_DISCONNECT:

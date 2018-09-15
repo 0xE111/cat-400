@@ -163,6 +163,7 @@ method transform*(
   )
 
 proc `=destroy`*(self: var Video) =
+  logging.debug "Destroying video component"
   self.node.removeNode()
 
 

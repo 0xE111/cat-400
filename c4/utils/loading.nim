@@ -17,7 +17,7 @@ macro importString*(module: static[string]): untyped =
 
 const
   frameworkDir = currentSourcePath.parentDir.parentDir
-  projectDir {.strdefine.}: string = nil
+  projectDir {.strdefine.}: string = ""
 
 
 template load*(module: static[string]): untyped =

@@ -78,6 +78,6 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMess
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to remove a corresponding Entity.
 
-  logging.debug &"Received {message} message, removing entity"
+  logging.debug &"Received {message}, removing entity"
   self.peersEntities[message.peer].delete()  # delete Entity # TODO: physics not deleted!
   self.peersEntities.del(message.peer)  # exclude peer's Entity from mapping

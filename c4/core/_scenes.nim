@@ -1,7 +1,6 @@
 {.deprecated.}
 
 import entities
-import "../wrappers/msgpack/msgpack"
 
 from "../systems/physics" import Physics
 from streams import Stream, atEnd
@@ -50,8 +49,8 @@ type
   AddEntityMessage* = object of EntityMessage
   DelEntityMessage* = object of EntityMessage
 
-register(Message, AddEntityMessage)
-register(Message, DelEntityMessage)
+register(AddEntityMessage)
+register(DelEntityMessage)
 
 proc load*(self: var Scene) =
   let player = newEntity()  # create new entity
