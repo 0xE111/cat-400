@@ -21,8 +21,8 @@ license = staticRead("LICENSE").splitLines()[0]
 skipDirs = @["sandbox"]
 
 # Dependencies
-requires "nim >= 0.17.3"
-requires "msgpack4nim >= 0.2.1"
+requires "nim >= 0.18.1"
+requires "msgpack4nim >= 0.2.7"
 
 # Tasks
 task pinVersion, "Update version file":

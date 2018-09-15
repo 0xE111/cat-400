@@ -1,8 +1,10 @@
 ## Message is a base unit for communication between systems.
 import hashes
-
-import "../wrappers/msgpack/msgpack"
-export msgpack.pack_type, msgpack.unpack
+import tables
+import streams
+import strformat
+import msgpack4nim
+import typetraits
 
 
 type
@@ -17,6 +19,11 @@ type
     recipient*: ref Peer  ## Message recipient; nil means that the message should be broadcasted.
 
 
+method `$`*(self: Peer): string {.base.} =
+  ## Just ``Peer``'s address. It should definitely be redefined in network module.
+  # TODO: Redefine in network module
+  result = $cast[int](self.unsafeAddr)
+
 proc isLocal*(self: ref Message): bool =
   ## Check whether this message is local or from external Peer
   self.sender.isNil
@@ -26,9 +33,122 @@ proc hash*(self: ref Peer): Hash =
   # result = !$result
 
 # ---- msgpack stuff ----
-msgpack.register(Message)  # teach msgpack4nim to pack Message and its subclasses
-method `$`*(self: ref Message): string {.base.} = "Message"
+type
+  PackProc = proc(message: ref Message): string {.closure.}
+  UnpackProc = proc(stream: MsgStream): ref Message {.closure.}
 
-template register*(T: typedesc) =
-  ## Registers Message subtype in msgpack
-  msgpack.register(Message, T)
+var packTable = newTable[
+  uint8,
+  tuple[
+    pack: PackProc,
+    unpack: UnpackProc,
+  ],
+]()
+
+# -- Message --
+method packId(self: ref Message): uint8 {.base.} =
+  raise newException(LibraryError, "Trying to pack/unpack base Message type")
+method `$`(self: ref Message): string {.base.} = "Message"
+
+proc pack*(message: ref Message): string =
+  ## General method which selects appropriate pack method from pack table according to real message runtime type.
+  result = packTable[message.packId].pack(message)
+  echo &"Packed len: {result.len}"
+
+proc unpack*(data: string): ref Message =
+  ## General method which selects appropriate unpack method from pack table according to real message runtime type.
+  var
+    packId: uint8
+    stream = MsgStream.init(data)
+
+  stream.setPosition(0)
+  stream.unpack(packId)
+  result = packTable[packId].unpack(stream)
+
+# -- Message subtype --
+template register*(MessageType: typedesc) =
+  let messageId = packTable.len.uint8 + 1
+  method packId*(self: ref MessageType): uint8 = messageId
+  echo "Registered packId: " & MessageType.name
+  method `$`*(self: ref MessageType): string = $self[]
+
+  packTable.add(
+    messageId,
+    (
+      proc(message: ref Message): string {.closure.} =
+        let packId = message.packId
+        var stream = MsgStream.init(sizeof(packId) + sizeof(MessageType))
+
+        stream.pack packId
+        stream.pack (ref MessageType)message
+      
+        result = stream.data
+        echo &"PACKED AS {stringify(result)}"
+        discard,
+
+      proc(stream: MsgStream): ref Message {.closure.} =
+        # TODO: ugly
+        var temp: ref MessageType
+        stream.unpack(temp)
+        result = temp,
+    )
+  )
+
+
+when isMainModule:
+  type
+    MessageA = object of Message
+      msg: string
+    MessageB = object of Message
+      counter: int8
+      data: string
+      is_correct: bool
+
+  method getData(x: ref Message): string {.base.} = ""
+  method getData(x: ref MessageA): string = x.msg
+  method getData(x: ref MessageB): string = $x.counter
+
+  register(MessageA)
+  register(MessageB)
+
+  var
+    message: ref Message
+    messageA: ref MessageA
+    messageB: ref MessageB
+
+  var
+    packed: string
+    unpacked: ref Message
+
+  new(message)
+  new(messageA)
+  messageA.msg = "some message"
+  new(messageB)
+  messageB.counter = 42
+  messageB.data = "some data string"
+  messageB.is_correct = true
+  echo "----------------------------"
+
+  echo "Checking base message type..."
+  doAssertRaises(LibraryError):
+    packed = pack(message)
+  echo "----------------------------"
+
+  echo "Checking messageA..."
+  message = messageA
+  packed = pack(message)
+  echo "Packed: " & stringify(packed)
+  unpacked = packed.unpack()
+  assert(unpacked.getData() == "some message")
+  echo "----------------------------"
+
+  echo "Checking messageB..."
+  message = messageB
+  packed = pack(message)
+  echo "Packed: " & stringify(packed)
+  unpacked = packed.unpack()
+  assert(unpacked.getData() == "42")
+  echo "----------------------------"
+
+  echo "Checks passed!"
+  

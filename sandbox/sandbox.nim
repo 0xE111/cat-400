@@ -1,12 +1,12 @@
-import c4.config
-import c4.core
+import c4/config
+import c4/core
 
-import src.systems.physics
-import src.systems.input
-import src.systems.video
-import src.systems.network
+import src/systems/physics
+import src/systems/input
+import src/systems/video
+import src/systems/network
 
-import src.scenarios
+import src/scenarios
 
 
 config.title = "Sandbox"
