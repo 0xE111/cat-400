@@ -1,4 +1,28 @@
-## This module defines Entity - a base unit for representing a game object.
+## This module contains ECS (Entity-Component-System) implementation.
+## It has no dependencies with other modules, so you may use it separately in other projects.
+##
+## Before moving further, please read this excellent article by Robert Nystrom: http://gameprogrammingpatterns.com/component.html
+##
+## Now that you're familiar with basic concepts, let's see how to work with this particular implementation.
+##
+## Entity
+## ======
+##
+## ``Entity`` represents some game entity / object. It may be a tree, or wind, or player - whatever you want to.
+##
+## Under the hood each entity is nothing but a number, which you may treat as entity ID. Here it's just ``int16``, thus you may have up to ``65 536`` different entities with IDs from ``-32 768`` to ``32 767``. ``int16`` type was chosen because:
+## * signed ints are checked for boundary errors, so if you try to create entity with ID ``32 767``, it won't be treated as ``-32 768`` - and you'll get an exception;
+## * 16 bits is maximum for ``set`` type for effectiveness reasons.
+##
+## ::
+##
+##    type Entity* = int16
+##
+## Entity creation
+## ---------------
+##
+## ``newEntity()`` returns new Entity. Entity ID will be the smallest unused ID - if IDs are ``[-32 768, -32 767, -32 765]``, new Entity's ID will be ``-32 766``. If Entity limit is reached, an exception will be thrown.
+##
 
 import tables
 import strformat
@@ -15,7 +39,6 @@ type
 
 var
   entities: set[Entity] = {}  # set[int32] won't compile
-  # destructors: seq[proc(entity: Entity) {.closure.}]  # registered destructors which will be called on entity deletion
 
 
 # ---- Entity ----
@@ -44,10 +67,24 @@ proc getComponentDestructors(): var seq[ComponentDestructor] =
 
 proc getComponents*(t: typedesc): ref Table[Entity, t]
 
+# proc deleteComponent[t: typedesc](entity: Entity) {.nimcall.} =
+#   let component = getComponents(t)[entity]
+#   getComponents(t).del(entity)
+
 proc newTableAndDestructor(t: typedesc): ref Table[Entity, t] =
   # Creates a components table for specific type, as well as destructor proc for that type
   result = newTable[Entity, t]()
-  getComponentDestructors().add(proc(entity: Entity) = getComponents(t).del(entity))  # TODO: is it safe to call `del` on non-existent key
+  getComponentDestructors().add(
+    proc(entity: Entity) = 
+      let components = getComponents(t)
+      if components.hasKey(entity):
+        var component = components[entity]
+        
+        # component.`=destroy`()
+        # components[entity][].`=destroy`()
+        components.del(entity)
+  )
+  
 
 proc getComponents*(t: typedesc): ref Table[Entity, t] =
   ## Returns a table of components of specific type ``t`` (``Table[Entity, t]``)
