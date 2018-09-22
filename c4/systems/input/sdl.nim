@@ -1,4 +1,4 @@
-import sdl2.sdl
+import sdl2/sdl
 import logging
 import strformat
 import typetraits
@@ -21,7 +21,6 @@ type
     width*, height*: int
 
 messages.register(WindowResizeMessage)
-method `$`*(self: ref WindowResizeMessage): string = &"{self[].type.name}: {self.width}x{self.height}"
 
 
 # ---- workflow methods ----

@@ -1,13 +1,13 @@
 import logging
 import strformat
 
-import c4.config
-import c4.systems as c4_systems
-import c4.utils.loading
-import c4.systems.network.enet
-import c4.core.entities
-import c4.presets.action.messages as action_messages
-import c4.presets.action.systems.network
+import c4/config
+import c4/systems as c4_systems
+import c4/utils/loading
+import c4/systems/network/enet
+import c4/core/entities
+import c4/presets/action/messages as action_messages
+import c4/presets/action/systems/network
 
 import "../messages"
 

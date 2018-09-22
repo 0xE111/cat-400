@@ -64,10 +64,7 @@ type
     ## This message is a signal to disconnect and terminate systems and whole process
 
 messages.register(SystemReadyMessage)
-strMethod(SystemReadyMessage)
-
 messages.register(SystemQuitMessage)
-strMethod(SystemQuitMessage)
 
 
 # ---- helpers ----

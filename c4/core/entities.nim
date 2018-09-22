@@ -30,6 +30,7 @@ import typetraits
 import logging
 
 import messages
+import unittest
 
 
 type
@@ -133,26 +134,25 @@ type
   DeleteEntityMessage* = object of EntityMessage  ## \
     ## Message that notifies systems about entity deletion.
 
-
 messages.register(CreateEntityMessage)
-method `$`*(self: ref CreateEntityMessage): string = &"{self[].type.name}: {self.entity}"
 messages.register(DeleteEntityMessage)
-method `$`*(self: ref DeleteEntityMessage): string = &"{self[].type.name}: {self.entity}"
-    
+
 
 when isMainModule:
-  var
-    ent1 = newEntity()
-    ent2 = newEntity()
-  
-  ent1[int] = 1
-  ent1[string] = "Entity 1"
-  
-  ent2[int] = 2
-  
-  ent1.delete()
-  ent2.delete()
-  
-  const failMsg = "Component destructors don't work!"
-  assert(not ent1.has(string), failMsg)
-  assert(not ent2.has(int), failMsg)
+  suite "Entities tests":
+    test "Check auto-destruction of components":
+      var
+        ent1 = newEntity()
+        ent2 = newEntity()
+      
+      ent1[int] = 1
+      ent1[string] = "Entity 1"
+      
+      ent2[int] = 2
+      
+      ent1.delete()
+      ent2.delete()
+      
+      const failMsg = "Component destructors don't work!"
+      assert(not ent1.has(string), failMsg)
+      assert(not ent2.has(int), failMsg)

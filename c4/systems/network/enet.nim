@@ -12,7 +12,6 @@ import "../../config"
 import "../../core/entities"
 import "../../core/messages"
 import "../../wrappers/enet/enet"
-import "../../wrappers/msgpack/msgpack"
 import "../../utils/stringify"
 
 
@@ -79,16 +78,9 @@ type
   
 
 messages.register(ConnectMessage)
-method `$`*(self: ref ConnectMessage): string = &"{self[].type.name}: {self.address}"
-
 messages.register(DisconnectMessage)
-strMethod(DisconnectMessage)
-
 messages.register(ConnectionOpenedMessage)
-method `$`*(self: ref ConnectionOpenedMessage): string = &"{self[].type.name}: {self.peer[]}"
-
 messages.register(ConnectionClosedMessage)
-method `$`*(self: ref ConnectionClosedMessage): string = &"{self[].type.name}: {self.peer[]}"
 
 
 # ---- methods ----
@@ -188,12 +180,11 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       var message: ref Message
 
       try:
-        event.packet[].toString().unpack(message)
+        message = event.packet[].toString().unpack()
       except Exception as exc:
         # do not fail if received malformed message
         logging.warn &"Could not unpack packet {event.packet[].toString()} from {event.peer[]}: {exc.msg}"
         return
-      # TODO: check that message's runtime type is not Message (which means that message was not registered)
       
       # include sender info into the message
       if self.peersMap.hasKey(event.peer):

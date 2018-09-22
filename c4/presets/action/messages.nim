@@ -9,7 +9,6 @@ type PlayerMoveMessage* = object of Message
   pitch*: float  ## Angle (in radians) around X axis.
 
 messages.register(PlayerMoveMessage)
-strMethod(PlayerMoveMessage)
 
 
 type PlayerRotateMessage* = object of Message
@@ -17,7 +16,6 @@ type PlayerRotateMessage* = object of Message
   yaw*, pitch*: float
 
 messages.register(PlayerRotateMessage)
-strMethod(PlayerRotateMessage)
 
 
 type SetPositionMessage* = object of EntityMessage
@@ -25,7 +23,6 @@ type SetPositionMessage* = object of EntityMessage
   x*, y*, z*: float
 
 messages.register(SetPositionMessage)
-strMethod(SetPositionMessage)
   
 
 type SetRotationMessage* = object of EntityMessage
@@ -34,4 +31,3 @@ type SetRotationMessage* = object of EntityMessage
   pitch*: float  # Angle (in radians) around X axis.
 
 messages.register(SetRotationMessage)
-strMethod(SetRotationMessage)

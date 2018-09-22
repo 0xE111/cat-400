@@ -1,11 +1,11 @@
 import logging
-import sdl2.sdl
+import sdl2/sdl
 import strformat
 
-import c4.systems
-import c4.systems.network.enet
-import c4.config
-import c4.presets.action.systems.input
+import c4/systems
+import c4/systems/network/enet
+import c4/config
+import c4/presets/action/systems/input
 
 import "../messages"
 

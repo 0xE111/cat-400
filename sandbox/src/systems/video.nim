@@ -1,14 +1,14 @@
 import logging
 import strformat
 
-import c4.core.entities
-import c4.systems
-import c4.systems.network.enet
-import c4.systems.video.horde3d as horde3d_video
-import c4.presets.action.systems.video
-import c4.wrappers.horde3d.horde3d
-import c4.wrappers.horde3d.horde3d.helpers
-import c4.presets.action.messages
+import c4/core/entities
+import c4/systems
+import c4/systems/network/enet
+import c4/systems/video/horde3d as horde3d_video
+import c4/presets/action/systems/video
+import c4/wrappers/horde3d/horde3d
+import c4/wrappers/horde3d/horde3d/helpers
+import c4/presets/action/messages
 
 
 type
