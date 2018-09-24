@@ -66,33 +66,26 @@ proc getComponentDestructors(): var seq[ComponentDestructor] =
   var destructors {.global.}: seq[ComponentDestructor] = @[]
   return destructors
 
-proc getComponents*(t: typedesc): ref Table[Entity, t]
+proc getComponents*(T: typedesc): ref Table[Entity, T]
 
 # proc deleteComponent[t: typedesc](entity: Entity) {.nimcall.} =
 #   let component = getComponents(t)[entity]
 #   getComponents(t).del(entity)
 
-proc newTableAndDestructor(t: typedesc): ref Table[Entity, t] =
+proc newTableAndDestructor(T: typedesc): ref Table[Entity, T] =
   # Creates a components table for specific type, as well as destructor proc for that type
-  result = newTable[Entity, t]()
+  result = newTable[Entity, T]()
   getComponentDestructors().add(
-    proc(entity: Entity) = 
-      let components = getComponents(t)
-      if components.hasKey(entity):
-        var component = components[entity]
-        
-        # component.`=destroy`()
-        # components[entity][].`=destroy`()
-        components.del(entity)
+    proc(entity: Entity) = entity.del(T)
   )
   
 
-proc getComponents*(t: typedesc): ref Table[Entity, t] =
-  ## Returns a table of components of specific type ``t`` (``Table[Entity, t]``)
-  var table {.global.} = newTableAndDestructor(t)
+proc getComponents*(T: typedesc): ref Table[Entity, T] =
+  ## Returns a table of components of specific type ``T`` (``Table[Entity, T]``)
+  var table {.global.} = newTableAndDestructor(T)
   return table
 
-  # var table {.global.}: TableRef[Entity, t] 
+  # var table {.global.}: TableRef[Entity, t]
   # if table.isNil:
   #   table = newTable[Entity, t]()
   #   if destructors.isNil:  # this line may be called even earlier than `var` declarations of this file
@@ -117,10 +110,26 @@ proc flush*() =
     entity.delete()
 
 
-template has*(entity: Entity, t: typedesc): bool = getComponents(t).hasKey(entity)
-template del*(entity: Entity, t: typedesc) = getComponents(t).del(entity)
-template `[]`*(entity: Entity, t: typedesc): var typed = getComponents(t)[entity]
-template `[]=`*(entity: Entity, t: typedesc, value: t) = getComponents(t)[entity] = value
+# ---- CRUD for components ----
+template has*(entity: Entity, T: typedesc[Component]): bool =
+  ## Checks whether ``entity`` has component of type ``T``
+  getComponents(T).hasKey(entity)
+
+template del*(entity: Entity, T: typedesc[Component]) =
+  ## Deletes component ``T`` from ``entity``, or does nothing if ``entity`` doesn't have such a component
+  var components = getComponents(T)
+  if components.hasKey(entity):
+    components[entity].dispose()
+    components.del(entity)
+
+template `[]`*(entity: Entity, T: typedesc[Component]): var typed =
+  ## Returns ``T`` component for ``entity``. Make sure the component exists before retrieving it.
+  getComponents(T)[entity]
+
+template `[]=`*(entity: Entity, T: typedesc[Component], value: T) =
+  ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
+  entity.del(T)
+  getComponents(T)[entity] = value
 
 
 # ---- messages ----
@@ -139,20 +148,18 @@ messages.register(DeleteEntityMessage)
 
 
 when isMainModule:
+  type
+    TestComponent = object
+      value: int
+
+  proc onDelete(self: TestComponent) =
+    discard
+
   suite "Entities tests":
-    test "Check auto-destruction of components":
-      var
-        ent1 = newEntity()
-        ent2 = newEntity()
-      
-      ent1[int] = 1
-      ent1[string] = "Entity 1"
-      
-      ent2[int] = 2
-      
-      ent1.delete()
-      ent2.delete()
-      
-      const failMsg = "Component destructors don't work!"
-      assert(not ent1.has(string), failMsg)
-      assert(not ent2.has(int), failMsg)
+    test "Auto-destruction of components":
+      var entity = newEntity()
+      entity[TestComponent] = TestComponent(value: 42)
+      entity.delete()
+
+      check:
+        not entity.has(TestComponent)
