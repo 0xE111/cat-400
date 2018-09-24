@@ -37,6 +37,11 @@ type
   Entity* = int16  ## Entity is just an int which may have components of any type.
   # uint doesn't check boundaries
 
+  Component* = concept x
+    ## Component is something which has ``init()`` and ``dispose()`` procs
+    x.init()
+    x.dispose()
+
 
 var
   entities: set[Entity] = {}  # set[int32] won't compile
@@ -96,7 +101,7 @@ proc getComponents*(T: typedesc): ref Table[Entity, T] =
   # return table
 
 proc delete*(entity: Entity) =
-  ## Delete the Entity and all its components
+  ## Delete the Entity and all its components. Each component will be deleted as well.
   for destructor in getComponentDestructors():
     destructor(entity)
 
@@ -129,7 +134,8 @@ template `[]`*(entity: Entity, T: typedesc[Component]): var typed =
 template `[]=`*(entity: Entity, T: typedesc[Component], value: T) =
   ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
   entity.del(T)
-  getComponents(T)[entity] = value
+  value.init()
+  getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
 
 
 # ---- messages ----
@@ -152,13 +158,29 @@ when isMainModule:
     TestComponent = object
       value: int
 
-  proc onDelete(self: TestComponent) =
+  proc init(self: var TestComponent) =
+    self.value = 42
+
+  proc dispose(self: TestComponent) =
     discard
 
   suite "Entities tests":
+    test "Auto-initialization of components":
+      var
+        entity = newEntity()
+        component = TestComponent(value: 0)
+
+      entity[TestComponent] = component
+
+      check:
+        entity[TestComponent].value == 42
+
     test "Auto-destruction of components":
-      var entity = newEntity()
-      entity[TestComponent] = TestComponent(value: 42)
+      var
+        entity = newEntity()
+        component = TestComponent()
+
+      entity[TestComponent] = component
       entity.delete()
 
       check:
