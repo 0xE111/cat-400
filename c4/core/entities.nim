@@ -37,10 +37,11 @@ type
   Entity* = int16  ## Entity is just an int which may have components of any type.
   # uint doesn't check boundaries
 
-  Component* = concept x
-    ## Component is something which has ``init()`` and ``dispose()`` procs
-    x.init()
-    x.dispose()
+  Component* = concept component
+    ## Component is something which has ``init()`` and ``dispose()`` procs.
+    ## When component is attached to an Entity (``entity[Component] = component``), it is initialized - ``init()`` is called automatically. When component is detached from entity (deleted ``entity.del(Component)`` or replaced with other component ``entity[Component] = newComponent``), it is disposed - ``dispose()`` is called automatically.
+    component.init()
+    component.dispose()
 
 
 var
@@ -83,7 +84,6 @@ proc newTableAndDestructor(T: typedesc): ref Table[Entity, T] =
   getComponentDestructors().add(
     proc(entity: Entity) = entity.del(T)
   )
-  
 
 proc getComponents*(T: typedesc): ref Table[Entity, T] =
   ## Returns a table of components of specific type ``T`` (``Table[Entity, T]``)
@@ -134,8 +134,8 @@ template `[]`*(entity: Entity, T: typedesc[Component]): var typed =
 template `[]=`*(entity: Entity, T: typedesc[Component], value: T) =
   ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
   entity.del(T)
-  value.init()
   getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
+  getComponents(T)[entity].init()
 
 
 # ---- messages ----

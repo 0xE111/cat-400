@@ -1,4 +1,4 @@
-import "../horde3d"
+import ../horde3d
 import vecutils
 
 

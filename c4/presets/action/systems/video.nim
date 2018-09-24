@@ -2,15 +2,15 @@ import tables
 import strformat
 import logging
 
-import "../../../core/entities"
-import "../../../systems"
-import "../../../systems/video/horde3d" as video
+import ../../../core/entities
+import ../../../systems
+import ../../../systems/video/horde3d as video
 
-import "../../../wrappers/horde3d/horde3d"
-import "../../../wrappers/horde3d/horde3d/helpers"
+import ../../../wrappers/horde3d/horde3d
+import ../../../wrappers/horde3d/horde3d/helpers
 
 import physics
-import "../messages"
+import ../messages
 
 
 type
@@ -18,10 +18,7 @@ type
 
 
 method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
-  let video = new(Video)
-  self.initComponent(video)
-
-  message.entity[ref Video] = video
+  message.entity[ref Video] = Video.new()
 
 method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
   var video = message.entity[ref Video]

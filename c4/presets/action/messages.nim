@@ -1,6 +1,6 @@
-import "../../core/messages"
-import "../../core/entities"
-import "../../utils/stringify"
+import ../../core/messages
+import ../../core/entities
+import ../../utils/stringify
 
 
 type PlayerMoveMessage* = object of Message
@@ -23,7 +23,7 @@ type SetPositionMessage* = object of EntityMessage
   x*, y*, z*: float
 
 messages.register(SetPositionMessage)
-  
+
 
 type SetRotationMessage* = object of EntityMessage
   ## Send this message to client in order to update object's rotation.

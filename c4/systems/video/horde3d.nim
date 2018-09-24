@@ -6,11 +6,11 @@ import ospaths
 import sequtils
 import typetraits
 
-import "../../wrappers/horde3d/horde3d"
-import "../../core/messages"
-import "../../systems"
-import "../../config"
-import "../input/sdl" as sdl_input
+import ../../wrappers/horde3d/horde3d
+import ../../core/messages
+import ../../systems
+import ../../config
+import ../input/sdl as sdl_input
 
 
 type
@@ -24,13 +24,23 @@ type
     window: sdl.Window
     pipelineResource, fontResource, panelResource: horde3d.Res
 
-  Video* = object of SystemComponent
+  Video* = object {.inheritable.}
     node*: horde3d.Node
 
 
 let assetsDir = getAppDir() / "assets" / "video"
 
 
+# ---- Component ----
+method init*(self: ref Video) {.base.} =
+  raise newException(LibraryError, "Not implemented")
+
+method dispose*(self: ref Video) {.base.} =
+  logging.debug "Destroying video component"
+  self.node.removeNode()
+
+
+# ---- System ----
 proc updateViewport*(self: ref VideoSystem, width, height: int) =
   ## Updates camera viewport
   self.camera.setNodeParamI(horde3d.Camera.ViewportXI, 0)
@@ -72,7 +82,7 @@ method init*(self: ref VideoSystem) =
     # var displayMode: sdl.DisplayMode
     # if sdl.getCurrentDisplayMode(0, displayMode.addr) != 0:
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
-  
+
     self.window = sdl.createWindow(
       &"{config.title} v{config.version}",
       window.x,
@@ -86,7 +96,7 @@ method init*(self: ref VideoSystem) =
 
     if sdl.glCreateContext(self.window) == nil:
       raise newException(LibraryError, "Could not create SDL OpenGL context")
-    
+
     if sdl.setRelativeMouseMode(true) != 0:
       raise newException(LibraryError, "Could not enable relative mouse mode")
 
@@ -94,7 +104,7 @@ method init*(self: ref VideoSystem) =
     logging.fatal getCurrentExceptionMsg() & ": " & $sdl.getError()
     sdl.quitSubSystem(sdl.INIT_VIDEO)
     raise
-    
+
   logging.debug "SDL video system initialized"
 
   # ---- Horde3d ----
@@ -103,7 +113,7 @@ method init*(self: ref VideoSystem) =
   try:
     if not horde3d.init(horde3d.RenderDevice.OpenGL4):
       raise newException(LibraryError, "Could not init Horde3D: " & $horde3d.getError())
-  
+
     # load default resources
     self.pipelineResource = addResource(ResTypes.Pipeline, "pipelines/forward.pipeline.xml")
     self.fontResource = addResource(ResTypes.Material, "overlays/font.material.xml")
@@ -145,8 +155,8 @@ method update*(self: ref VideoSystem, dt: float) =
   horde3d.clearOverlays()
 
 proc `=destroy`*(self: var VideoSystem) =
-  sdl.quitSubSystem(sdl.INIT_VIDEO)
   horde3d.release()
+  sdl.quitSubSystem(sdl.INIT_VIDEO)
   logging.debug "Video system unloaded"
 
 # ---- component ----
@@ -161,10 +171,6 @@ method transform*(
     rotation.x, rotation.y, rotation.z,
     scale.x, scale.y, scale.z,
   )
-
-proc `=destroy`*(self: var Video) =
-  logging.debug "Destroying video component"
-  self.node.removeNode()
 
 
 # ---- handlers ----

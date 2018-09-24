@@ -1,6 +1,7 @@
 import logging
 import strformat
 
+import c4/config
 import c4/core/entities
 import c4/systems
 import c4/systems/network/enet
@@ -15,12 +16,21 @@ type
   SandboxVideoSystem* = object of ActionVideoSystem
     skybox: horde3d.Node
 
+  SandboxVideo* = object of Video
+
 
 var
   cubeResource: horde3d.Res
   skyboxResource: horde3d.Res
 
+# ---- Component ----
+method init*(self: ref SandboxVideo) =
+  assert config.systems.video of ref SandboxVideoSystem
 
+  self.node = RootNode.addNodes(cubeResource)
+
+
+# ---- System ----
 method init*(self: ref SandboxVideoSystem) =
   procCall self.as(ref VideoSystem).init()
   logging.debug "Loading custom video resources"
@@ -33,9 +43,6 @@ method init*(self: ref SandboxVideoSystem) =
     raise newException(LibraryError, msg)
 
   self.loadResources()
-
-method initComponent*(self: ref SandboxVideoSystem, component: ref Video) =
-  component.node = RootNode.addNodes(cubeResource)
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
   ## Load skybox when connection is established
@@ -50,3 +57,7 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessa
   logging.debug "Unloading skybox"
 
   self.skybox.removeNode()
+
+# TODO: this is duplicate, DRY
+method process(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
+  message.entity[ref Video] = SandboxVideo.new()

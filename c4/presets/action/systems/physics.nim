@@ -3,17 +3,17 @@ import logging
 import strformat
 import typetraits
 
-import "../../../systems"
-import "../../../config"
-import "../../../core/entities"
-import "../../../core/messages"
-import "../../../systems/physics/ode" as physics_system
-import "../../../systems/network/enet"
-import "../../../wrappers/ode/ode"
-import "../../../wrappers/ode/ode/helpers"
-import "../../../utils/stringify"
+import ../../../systems
+import ../../../config
+import ../../../core/entities
+import ../../../core/messages
+import ../../../systems/physics/ode as physics_system
+import ../../../systems/network/enet
+import ../../../wrappers/ode/ode
+import ../../../wrappers/ode/ode/helpers
+import ../../../utils/stringify
 
-import "../messages" as action_messages
+import ../messages as action_messages
 
 
 type
@@ -29,19 +29,22 @@ const
   G* = 9.81
 
 
+# ---- Component ----
+method init*(self: ref ActionPhysics) =
+  ## This method remembers component's inital position
+  procCall self.as(ref Physics).init()
+
+  let position = self.body.getPosition()
+  self.prevPosition = (position.x, position.y, position.z)
+
+
+# ---- System ----
 method init*(self: ref ActionPhysicsSystem) =
-  ## Sets real world gravity (G) 
+  ## Sets real world gravity (G)
   procCall self.as(ref PhysicsSystem).init()
-  
+
   self.peersEntities = initTable[ref Peer, Entity]()
   self.world.worldSetGravity(0, -G, 0)
-
-method initComponent*(self: ref ActionPhysicsSystem, component: ref ActionPhysics) =
-  ## This method remembers component's inital position
-  procCall self.as(ref PhysicsSystem).initComponent(component)
-
-  let position = component.body.getPosition()
-  component.prevPosition = (position.x, position.y, position.z)
 
 method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
   ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
@@ -56,6 +59,6 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
     ).send(config.systems.network)
 
   # TODO: implement rotation
-    #   pitch: 0.0,  
+    #   pitch: 0.0,
     #   yaw: 0.0,
     # ).send(config.systems.network)

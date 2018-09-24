@@ -56,7 +56,6 @@ method `$`*(self: ref Message): string {.base.} = "Message"
 proc pack*(message: ref Message): string =
   ## General method which selects appropriate pack method from pack table according to real message runtime type.
   result = packTable[message.packId].pack(message)
-  echo &"Packed len: {result.len}"
 
 proc unpack*(data: string): ref Message =
   ## General method which selects appropriate unpack method from pack table according to real message runtime type.
@@ -83,7 +82,7 @@ template register*(MessageType: typedesc) =
 
         stream.pack packId
         stream.pack (ref MessageType)message
-      
+
         result = stream.data,
 
       proc(stream: MsgStream): ref Message {.closure.} =
@@ -132,10 +131,10 @@ when isMainModule:
     messageB.data = "some data string"
     messageB.is_correct = true
 
-    test "Pack/unpack base Message type":    
+    test "Pack/unpack base Message type":
       expect LibraryError:
         packed = pack(message)
-    
+
     test "Pack/unpack Message subtypes":
       message = messageA
       packed = pack(message)
@@ -152,4 +151,3 @@ when isMainModule:
       check:
         packed.len == 23
         unpacked.getData() == "42"
-      

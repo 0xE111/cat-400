@@ -3,9 +3,9 @@ import logging
 import strformat
 import typetraits
 
-import "../../systems"
-import "../../core/messages"
-import "../../config"
+import ../../systems
+import ../../core/messages
+import ../../config
 
 
 type
@@ -35,7 +35,7 @@ method init*(self: ref InputSystem) =
     sdl.quitSubSystem(sdl.INIT_EVENTS)
     logging.fatal(getCurrentExceptionMsg())
     raise
-  
+
   procCall self.as(ref System).init()
 
 method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
@@ -61,7 +61,7 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
 method update*(self: ref InputSystem, dt: float) =
   # process all network events
   var event {.global.} = sdl.Event()
-  
+
   while sdl.pollEvent(event.addr) != 0:
     self.handle(event)
 

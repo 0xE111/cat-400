@@ -9,7 +9,7 @@ import c4/core/entities
 import c4/presets/action/messages as action_messages
 import c4/presets/action/systems/network
 
-import "../messages"
+import ../messages
 
 
 type
@@ -19,7 +19,7 @@ type
 method store*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) =
   if mode == client:
     procCall self.as(ref NetworkSystem).store(message)  # send message
-  
+
   else:
     procCall self.as(ref System).store(message)  # store message
 
@@ -38,7 +38,7 @@ method process*(self: ref SandboxNetworkSystem, message: ref CreateEntityMessage
 method store*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
   if mode == client:  # TODO:r use another way to separate client and server code
     procCall self.as(ref System).store(message)  # store message
-  
+
   else:
     procCall self.as(ref NetworkSystem).store(message)  # send message
 

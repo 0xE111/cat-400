@@ -3,12 +3,12 @@ import strformat
 import logging
 import math
 
-import "../../../config"
-import "../../../systems"
-import "../../../systems/input/sdl" as input
+import ../../../config
+import ../../../systems
+import ../../../systems/input/sdl as input
 
 import physics
-import "../messages"
+import ../messages
 
 
 type
@@ -42,12 +42,12 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
               discard  # yaw == 0
             else:
               discard
-            
+
           moveMessage.send(@[
             # config.systems.video,  # this message is sent directly to video system for client-side movement prediction
             config.systems.network,  # as well as to the server
           ])
-          
+
         else:
           discard
     else:
