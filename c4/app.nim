@@ -1,13 +1,13 @@
 import config
 import logging
-import utils.loop
+import utils/loop
 import strformat
 
 import systems
-import systems.network.enet
-import systems.physics.ode
-import systems.video.horde3d
-import systems.input.sdl
+import systems/network/enet
+import systems/physics/ode
+import systems/video/horde3d
+import systems/input/sdl
 
 
 template initSystem(system: ref System, defaultSystemType: typedesc) =
@@ -18,14 +18,14 @@ template initSystem(system: ref System, defaultSystemType: typedesc) =
 
   if system.isNil:
     system = new(defaultSystemType)
-  
+
   system.init()
   new(SystemReadyMessage).send(system)
 
 
 proc initServer() =
   logging.debug "Initializing server"
-  
+
   initSystem(config.systems.network, NetworkSystem)
   initSystem(config.systems.physics, PhysicsSystem)
 

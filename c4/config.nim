@@ -1,7 +1,7 @@
 ## This is a global config for the framework. You may change any of the settings by direct assignment: ``config.title = "Your game title"``
 
 from logging import Level
-from utils.loading import load
+from utils/loading import load
 
 from systems as systems_module import System
 
@@ -15,7 +15,7 @@ type
 var
   # you don't need to modify following settings explicitly unless you know what you are doing
   logLevel* = logging.Level.lvlWarn
-  mode* = Mode.multi  
+  mode* = Mode.multi
 
   # these are configurable settings
   title* = ""

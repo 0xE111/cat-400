@@ -2,9 +2,9 @@ import deques
 import logging
 import strformat
 
-import core.messages
-import core.entities
-import utils.stringify
+import core/messages
+import core/entities
+import utils/stringify
 
 
 type
