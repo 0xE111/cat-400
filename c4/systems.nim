@@ -19,7 +19,7 @@ method store*(self: ref System, message: ref Message) {.base.} =
   self.messageQueue.addLast(message)
 
 method process*(self: ref System, message: ref Message) {.base.} =
-  discard
+  logging.warn(&"{self[].type.name} has no rule to process stored {message}, ignoring")
 
 method init*(self: ref System) {.base.} =
   self.messageQueue = initDeque[ref Message]()

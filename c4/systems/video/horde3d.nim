@@ -43,6 +43,7 @@ method dispose*(self: ref Video) {.base.} =
 # ---- System ----
 proc updateViewport*(self: ref VideoSystem, width, height: int) =
   ## Updates camera viewport
+  # TODO: no hardcoding
   self.camera.setNodeParamI(horde3d.Camera.ViewportXI, 0)
   self.camera.setNodeParamI(horde3d.Camera.ViewportYI, 0)
   self.camera.setNodeParamI(horde3d.Camera.ViewportWidthI, width)

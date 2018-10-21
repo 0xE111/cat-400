@@ -30,11 +30,6 @@ method process*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) 
 
   message.send(systems.physics)
 
-method process*(self: ref SandboxNetworkSystem, message: ref CreateEntityMessage) =
-  assert mode == client
-  procCall self.as(ref NetworkSystem).process(message)  # generate remote->local entity mapping
-  message.send(systems.video)
-
 method store*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
   if mode == client:  # TODO:r use another way to separate client and server code
     procCall self.as(ref System).store(message)  # store message

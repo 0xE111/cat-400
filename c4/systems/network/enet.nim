@@ -75,7 +75,7 @@ type
   ConnectionClosedMessage* = object of Message
     ## This message is sent to network system when connection with remote peer is closed.
     peer*: ref messages.Peer
-  
+
 
 messages.register(ConnectMessage)
 messages.register(DisconnectMessage)
@@ -110,10 +110,10 @@ method send*(
       if msgsPeer == peer:
         discard enet.peer_send(enetPeer, channelId, packet)
         break
-    
+
   if immediate:
     enet.host_flush(self.host)
- 
+
 method init*(self: ref NetworkSystem) =
   # TODO: make these params configurable
   var
@@ -155,7 +155,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
   case event.`type`
     of EVENT_TYPE_CONNECT:
       # We need to check whether new peer is already connected. If yes then we just close previous connection and open a new one.
-      
+
       # First, disconnect peers with same address as newly connected one
       var peersToDelete: seq[ptr enet.Peer] = @[]
       for peer in self.peersMap.keys():
@@ -163,7 +163,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
           logging.debug &"-x- Closing existing connection: {event.peer[]}"
           self.disconnect(peer)
           peersToDelete.add(peer)
-      
+
       # Second, for each disconnected peer send a ``DisconnectMessage`` to local network system and
       # delete this peer from peer mapping table.
       for peer in peersToDelete:
@@ -185,7 +185,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
         # do not fail if received malformed message
         logging.warn &"Could not unpack packet {event.packet[].toString()} from {event.peer[]}: {exc.msg}"
         return
-      
+
       # include sender info into the message
       if self.peersMap.hasKey(event.peer):
         message.sender = self.peersMap[event.peer]
@@ -212,7 +212,7 @@ method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.ba
     raise newException(LibraryError, "No available peers for initiating an ENet connection")
 
   # further connection success / failure is handled by ``handle`` method
-  
+
 method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.} =
   if not force:
     enet.peer_disconnect(peer, 0)
@@ -244,7 +244,7 @@ method update*(self: ref NetworkSystem, dt: float) =
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     self.handle(event)
-  
+
   procCall self.as(ref System).update(dt)
 
 proc `=destroy`*(self: var NetworkSystem) =
@@ -262,27 +262,27 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
   # TODO: is there a better way to control in/out message restrictions?
-  
+
   if message.isLocal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
     self.send(message, recipient)
     # TODO: group and send bulk?
-  
+
   else:
     logging.warn &"Dropped {message}: external message"
 
 
 method store*(self: ref NetworkSystem, message: ref ConnectMessage) =
   ## ``ConnectMessage`` may be sent only to client's network system in order to connect to server.
-  
+
   # don't send this message over the network, store and process it instead.
   if message.isLocal and mode == client:
     procCall self.as(ref System).store(message)
 
   elif not message.isLocal:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
-  
+
   elif mode == server:
     logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
 
@@ -305,10 +305,10 @@ method store*(self: ref NetworkSystem, message: ref DisconnectMessage) =
 
   if message.isLocal and mode == client:
     procCall self.as(ref System).store(message)
-  
+
   elif not message.isLocal:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
-  
+
   elif mode != client:
     logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
 
@@ -327,7 +327,7 @@ method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
 
   if message.isLocal:
     procCall self.as(ref System).store(message)
-  
+
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
@@ -337,7 +337,7 @@ method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
 
   if message.isLocal:
     procCall self.as(ref System).store(message)
-  
+
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
@@ -372,7 +372,7 @@ method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
 
   if message.isLocal:
     procCall self.as(ref System).store(message)
-  
+
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
@@ -387,20 +387,22 @@ method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
 
 method store*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Server only sends local ``EntityMessage``, client only receives remote ``EntityMessage``.
-  ##
-  ## Entity messages are sent reliably.
+  ## ``CreateEntityMessage`` and ``DeleteEntityMessage`` are sent reliably, others not.
 
   if (mode == server and message.isLocal):
-    # send RELIABLY over network
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
-    self.send(message, recipient, reliable=true)
-  
+    if message of CreateEntityMessage or message of DeleteEntityMessage:
+      self.send(message, recipient, reliable=true)
+    else:
+      self.send(message, recipient)
+
   elif (mode == client and not message.isLocal):
     procCall self.as(ref System).store(message)  # store this message
 
   else:
     logging.warn &"Dropped {message}: should be local server message or remote client one (currently {mode}, local={message.isLocal})"
+
 
 method process*(self: ref NetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
@@ -411,7 +413,7 @@ method process*(self: ref NetworkSystem, message: ref EntityMessage) =
 
   let externalEntity = message.entity
   message.entity = self.entitiesMap[externalEntity]
-  logging.debug &"External entity {externalEntity} is converted to local {message.entity}"
+  logging.debug &"Mapped entity: (external) {externalEntity} -> {message.entity} (local)"
 
 method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.

@@ -58,6 +58,6 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessa
 
   self.skybox.removeNode()
 
-# TODO: this is duplicate, DRY
-method process(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
+method process*(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
+  logging.debug &"Creating video component for {message.entity}"
   message.entity[ref Video] = SandboxVideo.new()

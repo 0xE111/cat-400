@@ -1,6 +1,7 @@
 import tables
 import strformat
 import logging
+import typetraits
 
 import ../../../core/entities
 import ../../../systems
@@ -17,10 +18,18 @@ type
   ActionVideoSystem* = object of VideoSystem
 
 
-method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
-  message.entity[ref Video] = Video.new()
+# method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
+#   message.entity[ref Video] = Video.new()
 
 method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
+  if not message.entity.has(ref Video):
+    logging.warn &"{self[].type.name} received {message}, but has no Video component"
+    # raise newException(LibraryError, "Shit im getting errors")
+    # TODO: When client just connected to server, the server still may broadcast some messages
+    # before syncing world state with client. When these messages reach client, it doesn't have
+    # corresponding components yet, thus won't be able to process these messages and fail.
+    return
+
   var video = message.entity[ref Video]
   let curTransform = video.node.getTransform()
 

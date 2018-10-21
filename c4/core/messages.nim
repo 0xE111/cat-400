@@ -71,7 +71,7 @@ proc unpack*(data: string): ref Message =
 template register*(MessageType: typedesc) =
   let messageId = uint8(packTable.len + 1)
   method packId*(self: ref MessageType): uint8 = messageId
-  method `$`*(self: ref MessageType): string = self.type.name & $self[]
+  method `$`*(self: ref MessageType): string = self[].type.name & $self[]
 
   packTable.add(
     messageId,
