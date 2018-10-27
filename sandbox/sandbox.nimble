@@ -40,7 +40,7 @@ proc copyDir(src, dst: string) =
 
 task collectAssets, "Put all assets into build folder":
   let
-    assetsSrc = "assets"
+    assetsSrc = thisDir() / "assets"
     assetsDst = buildDir / "assets"
 
   if not dirExists(assetsSrc):
