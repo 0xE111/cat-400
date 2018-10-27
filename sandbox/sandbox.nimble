@@ -1,6 +1,7 @@
 from strutils import split
 import distros
 import ospaths
+import strformat
 
 
 # Constants
@@ -17,7 +18,7 @@ license = "MIT"
 
 
 # Dependencies
-requires "nim >= 0.18.1"
+requires "nim >= 0.19.1"
 requires "c4 >= " & version
 
 if detectOs(Linux):
@@ -32,7 +33,7 @@ proc copyDir(src, dst: string) =
   for file in src.listFiles:
     echo dst / file.extractFilename
     file.cpFile(dst / file.extractFilename)
-  
+
   for dir in src.listDirs:
     dir.copyDir(dst / dir.splitPath[1])
 
@@ -41,7 +42,10 @@ task collectAssets, "Put all assets into build folder":
   let
     assetsSrc = "assets"
     assetsDst = buildDir / "assets"
-  
-  if dirExists(assetsSrc):
-    echo "Collecting assets into " & assetsDst
-    copyDir(assetsSrc, assetsDst)
+
+  if not dirExists(assetsSrc):
+    echo &"Assets source dir does not exist: {assetsSrc}"
+    return
+
+  echo &"Collecting assets into {assetsDst}"
+  copyDir(assetsSrc, assetsDst)
