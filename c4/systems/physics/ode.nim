@@ -8,6 +8,7 @@ import ../../core/entities
 import ../../systems
 import ../../wrappers/ode/ode
 import ../../utils/floats
+import ../../utils/stringify
 
 
 const simulationStep = 1 / 30
@@ -46,6 +47,8 @@ method update*(self: ref Physics, dt: float, entity: Entity) {.base.} =
 
 
 # ---- System ----
+strMethod(PhysicsSystem, fields=false)
+
 method init*(self: ref PhysicsSystem) =
   ode.initODE()
   self.world = ode.worldCreate()

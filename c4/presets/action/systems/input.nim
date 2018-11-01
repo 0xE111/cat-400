@@ -6,6 +6,7 @@ import math
 import ../../../config
 import ../../../systems
 import ../../../systems/input/sdl as input
+import ../../../utils/stringify
 
 import physics
 import ../messages
@@ -13,6 +14,9 @@ import ../messages
 
 type
   ActionInputSystem* = object of InputSystem
+
+
+strMethod(ActionInputSystem, fields=false)
 
 
 method handle*(self: ref ActionInputSystem, event: sdl.Event) =

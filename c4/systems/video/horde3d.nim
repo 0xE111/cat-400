@@ -11,6 +11,7 @@ import ../../core/messages
 import ../../systems
 import ../../config
 import ../input/sdl as sdl_input
+import ../../utils/stringify
 
 
 type
@@ -41,6 +42,8 @@ method dispose*(self: ref Video) {.base.} =
 
 
 # ---- System ----
+strMethod(VideoSystem, fields=false)
+
 proc updateViewport*(self: ref VideoSystem, width, height: int) =
   ## Updates camera viewport
   # TODO: no hardcoding
@@ -176,4 +179,5 @@ method transform*(
 
 # ---- handlers ----
 method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
+
   self.updateViewport(message.width, message.height)

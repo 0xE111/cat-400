@@ -10,6 +10,7 @@ import c4/presets/action/systems/video
 import c4/wrappers/horde3d/horde3d
 import c4/wrappers/horde3d/horde3d/helpers
 import c4/presets/action/messages
+import c4/utils/stringify
 
 
 type
@@ -31,6 +32,8 @@ method init*(self: ref SandboxVideo) =
 
 
 # ---- System ----
+strMethod(SandboxVideoSystem, fields=false)
+
 method init*(self: ref SandboxVideoSystem) =
   procCall self.as(ref VideoSystem).init()
   logging.debug "Loading custom video resources"

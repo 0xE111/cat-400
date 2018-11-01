@@ -8,12 +8,16 @@ import c4/systems/network/enet
 import c4/core/entities
 import c4/presets/action/messages as action_messages
 import c4/presets/action/systems/network
+import c4/utils/stringify
 
 import ../messages
 
 
 type
   SandboxNetworkSystem* = object of ActionNetworkSystem
+
+
+strMethod(SandboxNetworkSystem, fields=false)
 
 
 method store*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) =

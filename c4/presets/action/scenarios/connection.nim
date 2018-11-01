@@ -19,7 +19,6 @@ import ../systems/physics
 import ../messages as action_messages
 
 
-# TODO: combine next 2 methods?
 method process*(self: ref ActionNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
   ##
@@ -75,6 +74,6 @@ method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMess
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to remove a corresponding Entity.
 
-  logging.debug &"Received {message}, removing entity"
-  self.peersEntities[message.peer].delete()  # delete Entity # TODO: physics not deleted!
+  logging.debug &"Removing entity"
+  self.peersEntities[message.peer].delete()  # delete Entity
   self.peersEntities.del(message.peer)  # exclude peer's Entity from mapping

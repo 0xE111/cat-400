@@ -84,6 +84,8 @@ messages.register(ConnectionClosedMessage)
 
 
 # ---- methods ----
+strMethod(NetworkSystem, fields=false)
+
 method send*(
   self: ref NetworkSystem,
   message: ref Message,
@@ -294,6 +296,7 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
   assert message.isLocal
   assert mode == client
 
+  logging.debug &"Disconnecting"
   self.disconnect()
 
   logging.debug &"Connecting to {message.address}"

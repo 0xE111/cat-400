@@ -8,6 +8,7 @@ import c4/systems
 import c4/config
 import c4/core/entities
 import c4/wrappers/ode/ode
+import c4/utils/stringify
 
 import ../messages as custom_messages
 
@@ -15,6 +16,9 @@ import ../messages as custom_messages
 type
   SandboxPhysicsSystem* = object of ActionPhysicsSystem
     cubes: seq[Entity]
+
+
+strMethod(SandboxPhysicsSystem, fields=false)
 
 
 method init*(self: ref SandboxPhysicsSystem) =

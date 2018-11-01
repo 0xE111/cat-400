@@ -6,6 +6,7 @@ import typetraits
 import ../../systems
 import ../../core/messages
 import ../../config
+import ../../utils/stringify
 
 
 type
@@ -24,6 +25,8 @@ messages.register(WindowResizeMessage)
 
 
 # ---- workflow methods ----
+strMethod(InputSystem, fields=false)
+
 method init*(self: ref InputSystem) =
   logging.debug("Initializing input system")
 

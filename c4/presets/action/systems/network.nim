@@ -5,12 +5,16 @@ import ../../../config
 import ../../../core/entities
 import ../../../systems
 import ../../../systems/network/enet
+import ../../../utils/stringify
 
 import ../messages
 
 
 type
   ActionNetworkSystem* = object of NetworkSystem
+
+
+strMethod(ActionNetworkSystem, fields=false)
 
 
 method process(self: ref ActionNetworkSystem, message: ref CreateEntityMessage) =

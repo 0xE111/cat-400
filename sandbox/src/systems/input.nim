@@ -6,6 +6,7 @@ import c4/systems
 import c4/systems/network/enet
 import c4/config
 import c4/presets/action/systems/input
+import c4/utils/stringify
 
 import ../messages
 
@@ -13,6 +14,9 @@ import ../messages
 type
   # We inherit input system from ``ActionInputSystem`` cause it already handles common input events, like mouse move and WASD key presses. However, we are not satisfied with default ``ActionInputSystem`` cause we need some additional key handlers, like pressing C, L or other keys.
   SandboxInputSystem* = object of ActionInputSystem
+
+
+strMethod(SandboxInputSystem, fields=false)
 
 
 method handle*(self: ref SandboxInputSystem, event: sdl.Event) =

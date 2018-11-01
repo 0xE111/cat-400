@@ -39,6 +39,8 @@ method init*(self: ref ActionPhysics) =
 
 
 # ---- System ----
+strMethod(ActionPhysicsSystem, fields=false)
+
 method init*(self: ref ActionPhysicsSystem) =
   ## Sets real world gravity (G)
   procCall self.as(ref PhysicsSystem).init()

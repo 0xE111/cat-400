@@ -6,6 +6,7 @@ import typetraits
 import ../../../core/entities
 import ../../../systems
 import ../../../systems/video/horde3d as video
+import ../../../utils/stringify
 
 import ../../../wrappers/horde3d/horde3d
 import ../../../wrappers/horde3d/horde3d/helpers
@@ -17,6 +18,8 @@ import ../messages
 type
   ActionVideoSystem* = object of VideoSystem
 
+
+strMethod(ActionVideoSystem, fields=false)
 
 # method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
 #   message.entity[ref Video] = Video.new()
