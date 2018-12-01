@@ -102,7 +102,8 @@ method send*(
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
 
-  logging.debug &"--> Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
+  let sendSign = if reliable: "==>" else: "-->"
+  logging.debug &"{sendSign} Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -178,6 +179,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       (ref ConnectionOpenedMessage)(peer: newPeer).send(self)
       logging.debug &"--- Connection established: {event.peer[]}"
       logging.debug &"Current # of connections: {self.peersMap.len}"
+
     of EVENT_TYPE_RECEIVE:
       var message: ref Message
 
@@ -197,11 +199,13 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
         logging.warn &"x<- Received {message} from unregistered peer {event.peer[]}, discarding"
 
       enet.packet_destroy(event.packet)
+
     of EVENT_TYPE_DISCONNECT:
       logging.debug &"-x- Connection closed: {event.peer[]}"
       (ref ConnectionClosedMessage)(peer: self.peersMap[event.peer]).send(self)
       self.peersMap.del(event.peer)
       event.peer.peer_reset()
+
     else:
       discard
 
@@ -404,7 +408,8 @@ method store*(self: ref NetworkSystem, message: ref EntityMessage) =
     procCall self.as(ref System).store(message)  # store this message
 
   else:
-    logging.warn &"Dropped {message}: should be local server message or remote client one (currently {mode}, local={message.isLocal})"
+    let local = if message.isLocal: "local" else: "not local"
+    logging.warn &"Dropped {message}: should be local server message or remote client one (currently {local} {mode})"
 
 
 method process*(self: ref NetworkSystem, message: ref EntityMessage) =

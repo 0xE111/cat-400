@@ -45,8 +45,10 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   self.peersEntities[message.peer] = player  # add it to mapping
 
   # send all scene data
+  logging.debug &"Sending all scene data to peer {message.peer[]}"
   for entity, physics in getComponents(ref Physics).pairs():
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
+
     let position = physics.body.getPosition()
     (ref SetPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
 

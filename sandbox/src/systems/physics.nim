@@ -38,7 +38,6 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
   for cube in self.cubes:
     (ref DeleteEntityMessage)(entity: cube).send(config.systems.network)
     cube.delete()
-    # TODO: components are not deleted
 
   self.cubes = @[]
 
