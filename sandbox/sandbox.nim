@@ -6,8 +6,8 @@ import src/systems/input
 import src/systems/video
 import src/systems/network
 
-import src/scenarios
-
+import c4/presets/action/scenarios  # TODO: automatically import this somehow?
+import src/scenarios as sandbox_scenarios
 
 config.title = "Sandbox"
 config.version = "0.1"

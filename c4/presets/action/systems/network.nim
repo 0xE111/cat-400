@@ -17,13 +17,6 @@ type
 strMethod(ActionNetworkSystem, fields=false)
 
 
-method process(self: ref ActionNetworkSystem, message: ref CreateEntityMessage) =
-  ## Sends message to video system
-  assert mode == client
-
-  procCall self.as(ref NetworkSystem).process(message)  # generate remote->local entity mapping
-  message.send(config.systems.video)
-
 method process(self: ref ActionNetworkSystem, message: ref PlayerMoveMessage) =
   ## Sends message to video system
   assert mode == client

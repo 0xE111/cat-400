@@ -43,6 +43,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   player[ref Physics].body.bodySetMass(mass.addr)
 
   self.peersEntities[message.peer] = player  # add it to mapping
+  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(config.systems.network)
 
   # send all scene data
   logging.debug &"Sending all scene data to peer {message.peer[]}"
@@ -54,8 +55,6 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
 
     # TODO: send "rotate" message
 
-  # # send "impersonate" message for playerEntity
-  # (ref ImpersonateMessage)(entity: playerEntity).send(config.systems.network, receiver=message.peer)
 
 method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.

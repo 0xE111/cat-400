@@ -60,7 +60,3 @@ method process*(self: ref SandboxVideoSystem, message: ref ConnectionClosedMessa
   logging.debug "Unloading skybox"
 
   self.skybox.removeNode()
-
-method process*(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
-  logging.debug &"Creating video component for {message.entity}"
-  message.entity[ref Video] = SandboxVideo.new()

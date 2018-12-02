@@ -41,6 +41,7 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
 
   self.cubes = @[]
 
+  # define cubes locations
   let cubeCoords = @[
     (-1.5, 0.5, 10.0), (-0.5, 0.5, 10.0), (0.5, 0.5, 10.0), (1.5, 0.5, 10.0),
     (-1.0, 1.5, 10.0), (0.0, 1.5, 10.0), (1.0, 1.5, 10.0),
@@ -51,12 +52,14 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
   var cube: Entity
 
   for coords in cubeCoords:
+    # create cube at each position and send its coordinates
     cube = newEntity()
     (ref CreateEntityMessage)(entity: cube).send(config.systems.network)
 
     cube[ref Physics] = ActionPhysics.new()
     cube[ref Physics].body.bodySetPosition(coords[0], coords[1], coords[2])
-    (ref SetPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send(config.systems.network)
+    # cube[ref Physics].body.bodySetRotation(!!!)
+    (ref SyncPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send(config.systems.network)
 
     var mass = ode.dMass()
     mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)

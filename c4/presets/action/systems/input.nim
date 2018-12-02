@@ -27,7 +27,10 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
       (ref PlayerRotateMessage)(
         yaw: x.float32,
         pitch: y.float32,
-      ).send(config.systems.video)
+      ).send(@[
+        config.systems.network,
+        # config.systems.video,  # client-side prediction
+      ])
 
     of sdl.KEYDOWN:
       case event.key.keysym.sym
@@ -47,10 +50,9 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
             else:
               discard
 
-          moveMessage.send(@[
-            # config.systems.video,  # this message is sent directly to video system for client-side movement prediction
-            config.systems.network,  # as well as to the server
-          ])
+          raise newException(LibraryError, "Not implemented")
+          # TODO: implement
+          # moveMessage.send(self)
 
         else:
           discard

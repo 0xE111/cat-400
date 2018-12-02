@@ -1,14 +1,14 @@
 import macros
-import ospaths
 import os
 import strutils
+import strformat
 
 # # Unused
 # macro importString*(module, alias: static[string]): untyped =
 #     result = newNimNode(nnkImportStmt).add(
 #       newNimNode(nnkInfix).add(newIdentNode("as")).add(newIdentNode(module)).add(newIdentNode(alias))
 #     )
-  
+
 macro importString*(module: static[string]): untyped =
   result = newNimNode(nnkImportStmt).add(
       newIdentNode(module)
@@ -29,9 +29,12 @@ template load*(module: static[string]): untyped =
       importString(frameworkDir / module)
 
 
-macro importDir*(dir: static[string]): untyped =
-  ## Imports all *.nim files from specific dir
-  result = newNimNode(nnkStmtList)
-  for kind, name in walkDir(dir, relative=true):
-    if kind == pcFile and name.endsWith(".nim"):
-      result.add(newNimNode(nnkImportStmt).add(newIdentNode(dir / name[0..^(".nim".len + 1)])))
+# macro importDir*(dir: static[string]): untyped =
+#   ## Imports all *.nim files from specific dir
+#   # Does not work!
+#   result = newNimNode(nnkStmtList)
+#   echo &"Importing directory \"{dir}\":"
+#   for kind, name in walkDir(dir, relative=true):
+#     if kind == pcFile and name.endsWith(".nim"):
+#       echo &" - {name}"
+#       result.add(newNimNode(nnkImportStmt).add(newIdentNode(dir / name[0..^(".nim".len + 1)])))
