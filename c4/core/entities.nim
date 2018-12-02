@@ -155,6 +155,14 @@ type
 messages.register(CreateEntityMessage)
 messages.register(DeleteEntityMessage)
 
+method isReliable*(self: ref CreateEntityMessage): bool {.inline.} =
+  ## This message type is always sent reliably.
+  true
+
+method isReliable*(self: ref DeleteEntityMessage): bool {.inline.} =
+  ## This message type is always sent reliably.
+  true
+
 
 when isMainModule:
   type

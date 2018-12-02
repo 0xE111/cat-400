@@ -50,7 +50,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
 
     let position = physics.body.getPosition()
-    (ref SetPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
+    (ref SyncPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
 
     # TODO: send "rotate" message
 

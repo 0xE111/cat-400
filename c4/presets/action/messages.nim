@@ -31,3 +31,23 @@ type SetRotationMessage* = object of EntityMessage
   pitch*: float  # Angle (in radians) around X axis.
 
 messages.register(SetRotationMessage)
+
+
+type SyncPositionMessage* = object of SetPositionMessage
+  ## Reliable version of SetPositionMessage
+  discard
+
+messages.register(SyncPositionMessage)
+
+method isReliable*(self: ref SyncPositionMessage): bool {.inline.} =
+  ## Send this message reliable
+  true
+
+
+type SyncRotationMessage* = object of SetRotationMessage
+  ## Reliable version of SetRotationMessage
+  discard
+
+method isReliable*(self: ref SyncRotationMessage): bool {.inline.} =
+  ## Send this message reliable
+  true

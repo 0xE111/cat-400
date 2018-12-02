@@ -37,6 +37,13 @@ proc hash*(self: ref Peer): Hash =
   result = self[].addr.hash
   # result = !$result
 
+method isReliable*(self: ref Message): bool {.base, inline.} =
+  ## Whether this message should be sent reliably over the network.
+  ## - Unreliable messages may be lost, delivery is not guaranteed;
+  ## - Reliable messages may product overhead to network communication.
+  false
+
+
 # ---- msgpack stuff ----
 type
   PackProc = proc(message: ref Message): string {.closure.}

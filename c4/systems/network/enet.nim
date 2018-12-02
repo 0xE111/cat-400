@@ -399,10 +399,7 @@ method store*(self: ref NetworkSystem, message: ref EntityMessage) =
   if (mode == server and message.isLocal):
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
-    if message of CreateEntityMessage or message of DeleteEntityMessage:
-      self.send(message, recipient, reliable=true)
-    else:
-      self.send(message, recipient)
+    self.send(message, recipient, reliable=message.isReliable)
 
   elif (mode == client and not message.isLocal):
     procCall self.as(ref System).store(message)  # store this message
