@@ -1,4 +1,5 @@
 ## Message is a base unit for communication between systems.
+
 import hashes
 import tables
 import streams
@@ -11,8 +12,9 @@ import logging
 
 
 type
-  Peer* = object {.inheritable.}  ## \
+  Peer* = object {.inheritable.}
     ## This is a type for addressing an entity in network connection. ``Peer`` may refer to a server or one of its clients.
+    discard
 
   Message* = object {.inheritable.}
     ## Every message contains a reference to a sender (Peer).
