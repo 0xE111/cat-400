@@ -26,7 +26,7 @@ type
 
 
 const
-  G* = 9.81
+  G* = 0  #9.81
 
 
 # ---- Component ----

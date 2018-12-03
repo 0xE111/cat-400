@@ -17,6 +17,7 @@ import ../messages
 
 type
   ActionVideoSystem* = object of VideoSystem
+    playerNode*: horde3d.Node
 
 
 strMethod(ActionVideoSystem, fields=false)
