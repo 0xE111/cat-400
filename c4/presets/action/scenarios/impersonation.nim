@@ -1,3 +1,6 @@
+import logging
+import strformat
+
 import ../../../config
 import ../../../systems
 import ../../../systems/network/enet
@@ -5,6 +8,8 @@ import ../../../systems/network/enet
 import ../messages
 import ../systems/network
 import ../systems/video
+
+import ../../../wrappers/horde3d/horde3d
 
 
 method process*(self: ref ActionNetworkSystem, message: ref ImpersonationMessage) =
@@ -16,16 +21,12 @@ method process*(self: ref ActionNetworkSystem, message: ref ImpersonationMessage
 
 
 method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) =
-  ## Attach camera to impersonated entity
+  ## Store player's entity in `playerNode`; attach camera to impersonated entity
+  self.playerNode = message.entity
 
+  if not self.camera.setNodeParent(self.playerNode):
+    const msg = "Could not attach camera to player node"
+    logging.error msg
+    raise newException(LibraryError, msg)
 
-# method process(self: ref ActionVideoSystem, message: ref PlayerRotateMessage) =
-#     let curTransform = self.camera.getTransform()
-
-#     self.camera.setNodeTransform(
-#       curTransform.tx, curTransform.ty, curTransform.tz,
-#       (curTransform.rx - (message.pitch / 8).cfloat).max(-85).min(85),  # here we limit camera pitch
-#       curTransform.ry - (message.yaw / 8).cfloat,
-#       curTransform.rz,
-#       curTransform.sx, curTransform.sy, curTransform.sz,
-#     )
+  logging.debug &"Camera attached to player node: {self.playerNode}"
