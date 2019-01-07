@@ -14,7 +14,8 @@ config.version = "0.1"
 config.systems.physics = new(SandboxPhysicsSystem)
 config.systems.input = new(SandboxInputSystem)
 config.systems.video = new(SandboxVideoSystem)
-config.systems.network = new(SandboxNetworkSystem)
+config.systems.network_server = new(SandboxServerNetworkSystem)
+config.systems.network_client = new(SandboxClientNetworkSystem)
 config.settings.video.window.fullscreen = false
 
 

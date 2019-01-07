@@ -19,16 +19,15 @@ import ../systems/physics
 import ../messages as action_messages
 
 
-method process*(self: ref ActionNetworkSystem, message: ref ConnectionOpenedMessage) =
+method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionOpenedMessage) =
+  ## Prepare scene on client side, that's why we send this message to video system.
+  message.send(config.systems.video)
+
+
+method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
-  ##
-  ## Also we need to prepare scene on client side, that's why we send this message to video system as well.
+  message.send(config.systems.physics)
 
-  if mode == server:
-    message.send(config.systems.physics)
-
-  elif mode == client:
-    message.send(config.systems.video)
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding Entity for him.
@@ -56,25 +55,23 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
     # TODO: send "rotate" message
 
 
-method process*(self: ref ActionNetworkSystem, message: ref ConnectionClosedMessage) =
+method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =
+  ## Forward this message to video system in order to unload the scene
+  procCall self.as(ref ClientNetworkSystem).process(message)  # trigger mappings
+  message.send(config.systems.video)
+
+  logging.debug "Flushing local entities"
+  entities.flush()
+
+
+method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.
-  ##
-  ## Also we need to unload scene on client side, that's why we send this message to video system as well.
+  procCall self.as(ref ServerNetworkSystem).process(message)  # trigger mappings
+  message.send(config.systems.physics)
 
-  procCall self.as(ref NetworkSystem).process(message)
-
-  if mode == server:
-    message.send(config.systems.physics)
-
-  elif mode == client:
-    message.send(config.systems.video)
-
-    logging.debug "Flushing local entities"
-    entities.flush()
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to remove a corresponding Entity.
-
   logging.debug &"Removing entity"
   self.peersEntities[message.peer].delete()  # delete Entity
   self.peersEntities.del(message.peer)  # exclude peer's Entity from mapping

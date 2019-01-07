@@ -26,13 +26,15 @@ template initSystem(system: ref System, defaultSystemType: typedesc) =
 proc initServer() =
   logging.debug "Initializing server"
 
-  initSystem(config.systems.network, NetworkSystem)
+  initSystem(config.systems.network_server, ServerNetworkSystem)
+  config.systems.network = config.systems.network_server
   initSystem(config.systems.physics, PhysicsSystem)
 
 proc initClient() =
   logging.debug "Initializing client"
 
-  initSystem(config.systems.network, NetworkSystem)
+  initSystem(config.systems.network_client, ClientNetworkSystem)
+  config.systems.network = config.systems.network_client
   initSystem(config.systems.input, InputSystem)
   initSystem(config.systems.video, VideoSystem)
 

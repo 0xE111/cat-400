@@ -14,32 +14,23 @@ import ../messages
 
 
 type
-  SandboxNetworkSystem* = object of ActionNetworkSystem
+  SandboxClientNetworkSystem* = object of ActionClientNetworkSystem
+  SandboxServerNetworkSystem* = object of ActionServerNetworkSystem
 
 
-strMethod(SandboxNetworkSystem, fields=false)
+strMethod(SandboxClientNetworkSystem, fields=false)
+strMethod(SandboxServerNetworkSystem, fields=false)
 
 
-method store*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) =
-  if mode == client:
-    procCall self.as(ref NetworkSystem).store(message)  # send message
+method store*(self: ref SandboxClientNetworkSystem, message: ref ResetSceneMessage) =
+  procCall self.as(ref NetworkSystem).store(message)  # send message
 
-  else:
-    procCall self.as(ref System).store(message)  # store message
 
-method process*(self: ref SandboxNetworkSystem, message: ref ResetSceneMessage) =
+method store*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessage) =
+  procCall self.as(ref System).store(message)  # store message
+
+
+method process*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessage) =
   # When network receives ``ResetSceneMessage``, it forwards the message to physics system
-  assert mode == server
-  procCall self.as(ref ActionNetworkSystem).process(message)
-
+  procCall self.as(ref ActionServerNetworkSystem).process(message)
   message.send(systems.physics)
-
-method store*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
-  if mode == client:  # TODO:r use another way to separate client and server code
-    procCall self.as(ref System).store(message)  # store message
-
-  else:
-    procCall self.as(ref NetworkSystem).store(message)  # send message
-
-method process*(self: ref SandboxNetworkSystem, message: ref SetPositionMessage) =
-  message.send(systems.video)

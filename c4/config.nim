@@ -24,6 +24,8 @@ var
   # here you may override default systems with your custom ones
   systems* = (
     network: (ref System)(nil),
+    network_server: (ref System)(nil),  # TODO: refactor this
+    network_client: (ref System)(nil),
     input: (ref System)(nil),
     video: (ref System)(nil),
     physics: (ref System)(nil),

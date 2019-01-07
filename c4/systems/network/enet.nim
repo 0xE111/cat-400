@@ -26,6 +26,9 @@ type
     entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
     # TODO: works only on client side, does server need ``entitiesMap`` at all? (probably no, but who knows)
 
+  ClientNetworkSystem* = object of NetworkSystem
+  ServerNetworkSystem* = object of NetworkSystem
+
 
 # ---- helpers ----
 proc `$`*(self: Address): string =
@@ -268,7 +271,6 @@ method store*(self: ref NetworkSystem, message: ref Message) =
   ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
   # TODO: is there a better way to control in/out message restrictions?
-
   if message.isLocal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
@@ -279,26 +281,20 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     logging.warn &"Dropped {message}: external message"
 
 
-method store*(self: ref NetworkSystem, message: ref ConnectMessage) =
+method store*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
   ## ``ConnectMessage`` may be sent only to client's network system in order to connect to server.
+  if message.isLocal:
+    procCall self.as(ref System).store(message)  # store message for further processing
 
-  # don't send this message over the network, store and process it instead.
-  if message.isLocal and mode == client:
-    procCall self.as(ref System).store(message)
-
-  elif not message.isLocal:
+  else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
-  elif mode == server:
-    logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
 
-method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
+method process*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
   ##
   ## As a most common case, peer may connect to only one another peer (client connects to only one server).Thus all existing connections will be closed before establishing new one. However, if it's not your case and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
-
   assert message.isLocal
-  assert mode == client
 
   logging.debug &"Disconnecting"
   self.disconnect()
@@ -307,23 +303,18 @@ method process*(self: ref NetworkSystem, message: ref ConnectMessage) =
   self.connect(message.address)
 
 
-method store*(self: ref NetworkSystem, message: ref DisconnectMessage) =
+method store*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
   ## ``DisconnectMessage`` may be sent only to client's network system in order to disconnect from server.
+  if message.isLocal:
+    procCall self.as(ref System).store(message)  # store message for further processing
 
-  if message.isLocal and mode == client:
-    procCall self.as(ref System).store(message)
-
-  elif not message.isLocal:
+  else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
-  elif mode != client:
-    logging.warn &"Dropped {message}: should be sent on client (currently {mode})"
 
 method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
   ## When receiving ``DisconnectMessage`` from any local system, close all connections.
-
   assert message.isLocal
-  assert mode == client
 
   logging.debug "Disconnecting"
   self.disconnect()
@@ -331,9 +322,8 @@ method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
 
 method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
   ## Don't send this message over the network, store and process it instead.
-
   if message.isLocal:
-    procCall self.as(ref System).store(message)
+    procCall self.as(ref System).store(message)  # store message for further processing
 
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
@@ -341,89 +331,85 @@ method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
 
 method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
   ## Don't send this message over the network, store and process it instead.
-
   if message.isLocal:
-    procCall self.as(ref System).store(message)
+    procCall self.as(ref System).store(message)  # store message for further processing
 
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
-method process*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
+
+method process*(self: ref ClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Remove all entity mappings when client disconnects from external peer.
   assert message.isLocal
-
-  if mode == client:
-    self.entitiesMap = initTable[Entity, Entity]()
+  self.entitiesMap = initTable[Entity, Entity]()
 
 
 method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   ## Don't send this message over the network, store and process it instead.
-
   if message.isLocal:
     procCall self.as(ref System).store(message)
 
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
-method process*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
-  ## Print info message.
 
+method process*(self: ref ServerNetworkSystem, message: ref SystemReadyMessage) =
+  ## Print info message
   assert message.isLocal
 
-  if mode == server:
-    logging.info &"Server listening at localhost:{config.settings.network.port}"
+  logging.info &"Server listening at localhost:{config.settings.network.port}"
 
 
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## Don't send this message over the network, store and process it instead.
-
   if message.isLocal:
-    procCall self.as(ref System).store(message)
+    procCall self.as(ref System).store(message)  # store message for further processing
 
   else:
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
+
 method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
   ## Disconnect from all peers.
-
   assert message.isLocal
 
   self.disconnect()
   logging.debug "Disconnected"
 
 
-method store*(self: ref NetworkSystem, message: ref EntityMessage) =
-  ## Server only sends local ``EntityMessage``, client only receives remote ``EntityMessage``.
-  ## ``CreateEntityMessage`` and ``DeleteEntityMessage`` are sent reliably, others not.
-
-  if (mode == server and message.isLocal):
+method store*(self: ref ServerNetworkSystem, message: ref EntityMessage) =
+  ## Server sends ``EntityMessage``s to client(s).
+  ## Message is sent reliably is ``message.isReliable == true``.
+  if message.isLocal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
     self.send(message, recipient, reliable=message.isReliable)
 
-  elif (mode == client and not message.isLocal):
+  else:
+    procCall self.store(message.as(ref Message))  # drop remote message with warning
+
+
+method store*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
+  ## Client only receives remote ``EntityMessage``s.
+  if not message.isLocal:
     procCall self.as(ref System).store(message)  # store this message
 
   else:
-    let local = if message.isLocal: "local" else: "not local"
-    logging.warn &"Dropped {message}: should be local server message or remote client one (currently {local} {mode})"
+    logging.warn &"Client cannot send {message}, discarding"
 
 
-method process*(self: ref NetworkSystem, message: ref EntityMessage) =
+method process*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
-
-  assert mode == client
   assert(not message.isLocal)
-  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity}")
+  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity} in message {message}")
 
   let externalEntity = message.entity
   message.entity = self.entitiesMap[externalEntity]
   logging.debug &"Mapped entity: (external) {externalEntity} -> {message.entity} (local)"
 
-method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
-  ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
 
-  assert mode == client
+method process*(self: ref ClientNetworkSystem, message: ref CreateEntityMessage) =
+  ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
   assert (not message.isLocal)
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
@@ -433,10 +419,9 @@ method process*(self: ref NetworkSystem, message: ref CreateEntityMessage) =
 
   procCall self.process(message.as(ref EntityMessage))  # map entity
 
-method process*(self: ref NetworkSystem, message: ref DeleteEntityMessage) =
-  ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
 
-  assert mode == client
+method process*(self: ref ClientNetworkSystem, message: ref DeleteEntityMessage) =
+  ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
   assert (not message.isLocal)
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
 

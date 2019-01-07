@@ -12,10 +12,8 @@ import ../systems/video
 import ../../../wrappers/horde3d/horde3d
 
 
-method process*(self: ref ActionNetworkSystem, message: ref ImpersonationMessage) =
+method process*(self: ref ActionClientNetworkSystem, message: ref ImpersonationMessage) =
   ## When server tells client to occupy some entity, send this message to video system
-  assert mode == client
-
   procCall self.as(ref NetworkSystem).process(message)
   message.send(config.systems.video)
 
