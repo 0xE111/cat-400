@@ -278,7 +278,7 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     # TODO: group and send bulk?
 
   else:
-    logging.warn &"Dropped {message}: external message"
+    logging.warn &"Dropped {message}: external message without specific handler"
 
 
 method store*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
@@ -401,7 +401,11 @@ method store*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
 method process*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
   assert(not message.isLocal)
-  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for remote entity {message.entity} in message {message}")
+
+  # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
+  if not self.entitiesMap.hasKey(message.entity):
+    logging.warn &"No local entity found for remote entity {message.entity} in message {message}"
+    return
 
   let externalEntity = message.entity
   message.entity = self.entitiesMap[externalEntity]
