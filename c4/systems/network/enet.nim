@@ -266,7 +266,7 @@ proc `=destroy`*(self: var NetworkSystem) =
 method store*(self: ref NetworkSystem, message: ref Message) =
   ## Network system should send outgoing messages as soon as possible. If we store outgoing messages as usual, they will be processed only after all network i/o done (see ``NetworkSystem.update`` method). Thus we will lose exactly one loop cycle before actually sending the message. To avoid this case, we don't store and process any outgoing messages. Instead, we instantly request enet to send them. When ``NetworkSystem`` is updated, it sends all outgoing messages, receives new ones and then processes all stored messages.
   ##
-  ## Sometimes ``NetworkSystem`` may need to store and process message instead of sending it. For example, ``NetworkSystem`` receives ``SystemReadyMessage`` when all enet internals are initialized. This message should be processed, not sent over the network. To achieve this, we define custom ``store`` method which stores the message (``procCall (ref System)self).store(message)``).
+  ## Sometimes ``NetworkSystem`` may need to store and process message instead of sending it. For example, ``NetworkSystem`` receives ``SystemReadyMessage`` when all enet internals are initialized. This message should be processed, not sent over the network. To achieve this, we define custom ``store`` method which stores the message (``procCall self.as(ref System).store(message)``).
   ##
   ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
@@ -312,7 +312,7 @@ method store*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 
-method process*(self: ref NetworkSystem, message: ref DisconnectMessage) =
+method process*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
   ## When receiving ``DisconnectMessage`` from any local system, close all connections.
   assert message.isLocal
 
@@ -379,7 +379,7 @@ method process*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
 
 method store*(self: ref ServerNetworkSystem, message: ref EntityMessage) =
   ## Server sends ``EntityMessage``s to client(s).
-  ## Message is sent reliably is ``message.isReliable == true``.
+  ## Message is sent reliably if ``message.isReliable == true``.
   if message.isLocal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network

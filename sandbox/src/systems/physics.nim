@@ -24,12 +24,13 @@ strMethod(SandboxPhysicsSystem, fields=false)
 method init*(self: ref SandboxPhysicsSystem) =
   # Disable gravitation for now
   procCall self.as(ref ActionPhysicsSystem).init()
+  self.world.worldSetGravity(0, 0, 0)
 
-  # self.world.worldSetGravity(0, 0, 0)
 
 method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage) =
   # We want to reset our scene when physics system is ready.
   new(ResetSceneMessage).send(self)
+
 
 method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) =
   logging.debug "Resetting scene"
