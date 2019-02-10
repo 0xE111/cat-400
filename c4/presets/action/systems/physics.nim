@@ -10,7 +10,6 @@ import ../../../core/messages
 import ../../../systems/physics/ode as physics_system
 import ../../../systems/network/enet
 import ../../../wrappers/ode/ode
-import ../../../wrappers/ode/ode/helpers
 import ../../../utils/stringify
 
 import ../messages as action_messages
@@ -18,11 +17,12 @@ import ../messages as action_messages
 
 type
   ActionPhysicsSystem* = object of PhysicsSystem
-    peersEntities*: Table[ref Peer, Entity]  ## Table for converting remote Peer to Entity which he has control over
+    impersonationsMap*: Table[ref Peer, Entity]  ## Mapping from remote Peer to an Entity it's controlling
 
   ActionPhysics* = object of Physics
     ## Physics component which additionally stores its previous position. Position update messages are sent only when position really changes.
-    prevPosition: tuple[x, y, z: dReal]
+    prevPosition: array[3, ode.dReal]
+    prevRotation: ode.dQuaternion
 
 
 const
@@ -34,8 +34,8 @@ method init*(self: ref ActionPhysics) =
   ## This method remembers component's inital position
   procCall self.as(ref Physics).init()
 
-  let position = self.body.getPosition()
-  self.prevPosition = (position.x, position.y, position.z)
+  self.prevPosition = self.body.bodyGetPosition()[]
+  self.prevRotation = self.body.bodyGetQuaternion()[]
 
 
 # ---- System ----
@@ -45,22 +45,35 @@ method init*(self: ref ActionPhysicsSystem) =
   ## Sets real world gravity (G)
   procCall self.as(ref PhysicsSystem).init()
 
-  self.peersEntities = initTable[ref Peer, Entity]()
+  self.impersonationsMap = initTable[ref Peer, Entity]()
   self.world.worldSetGravity(0, -G, 0)
 
 method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
   ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
-  let position = self.body.getPosition()
-  if (position.x != self.prevPosition.x) or (position.y != self.prevPosition.y) or (position.z != self.prevPosition.z):
-    self.prevPosition = (position.x, position.y, position.z)
-    (ref SetPositionMessage)(
-      entity: entity,
-      x: position.x,
-      y: position.y,
-      z: position.z,
-    ).send(config.systems.network)
+  let position = self.body.bodyGetPosition()[]
+  for dimension in 0..2:
+    if position[dimension] != self.prevPosition[dimension]:
+      self.prevPosition = position
+      (ref SetPositionMessage)(
+        entity: entity,
+        x: position[0],
+        y: position[1],
+        z: position[2],
+      ).send(config.systems.network)
+      break
 
-  # TODO: implement rotation
-    #   pitch: 0.0,
-    #   yaw: 0.0,
-    # ).send(config.systems.network)
+  let rotation = self.body.bodyGetQuaternion()[]
+  for dimension in 0..3:
+    if rotation[dimension] != self.prevRotation[dimension]:
+      self.prevRotation = rotation
+
+      # TODO
+      # (ref SetRotationMessage)(
+      #   entity: entity,
+      #   pitch: ...,
+      #   yaw: ...,
+      # ).send(config.systems.network)
+      logging.warn &"Rotation conversion not implemented"
+
+      break
+

@@ -99,7 +99,7 @@ type
   dxJointNode* {.bycopy.} = object
   dxJointGroup* {.bycopy.} = object
   dxWorldProcessThreadingManager* {.bycopy.} = object
-  
+
   # TODO: use just `pointer`?
   dWorldID* = ptr dxWorld
   dSpaceID* = ptr dxSpace
@@ -115,7 +115,7 @@ type
     dJointTypeNull, dJointTypeAMotor, dJointTypeLMotor, dJointTypePlane2D,
     dJointTypePR, dJointTypePU, dJointTypePiston, dJointTypeDBall, dJointTypeDHinge,
     dJointTypeTransmission
-  
+
   dVector3* = array[4, dReal]
   dVector4* = array[4, dReal]
   dMatrix3* = array[4 * 3, dReal]
@@ -169,7 +169,7 @@ type
     surface*: dSurfaceParameters
     geom*: dContactGeom
     fdir1*: dVector3
-  
+
   dStopwatch* {.bycopy.} = object
     time*: cdouble
     cc*: array[2, culong]
@@ -180,11 +180,11 @@ type
     I*: dMatrix3
 
   dxThreadingImplementation* {.bycopy.} = object
-  
+
   dThreadingImplementationID* = ptr dxThreadingImplementation
   dmutexindex_t* = cuint
   dxMutexGroup* {.bycopy.} = object
-  
+
   dMutexGroupID* = ptr dxMutexGroup
   dMutexGroupAllocFunction* = proc (impl: dThreadingImplementationID; Mutex_count: dmutexindex_t; Mutex_names_ptr: cstringArray): dMutexGroupID
   dMutexGroupFreeFunction* = proc (impl: dThreadingImplementationID; mutex_group: dMutexGroupID)
@@ -234,7 +234,7 @@ type
     alloc_block*: proc (block_size: csize): pointer
     shrink_block*: proc (block_pointer: pointer; block_current_size: csize; block_smaller_size: csize): pointer
     free_block*: proc (block_pointer: pointer; block_current_size: csize)
-    
+
   dNearCallback* = proc (data: pointer; o1: dGeomID; o2: dGeomID)
 
   dxHeightfieldData* {.bycopy.} = object
@@ -272,7 +272,7 @@ const
   d_ERR_IASSERT* = 1
   d_ERR_UASSERT* = 2
   d_ERR_LCP* = 3
-  
+
   dParamLoStop* = 0
   dParamHiStop* = 1
   dParamVel* = 2
@@ -587,14 +587,14 @@ proc bodySetData*(a2: dBodyID; data: pointer) {.importc: "dBodySetData".}
 proc bodyGetData*(a2: dBodyID): pointer {.importc: "dBodyGetData".}
 proc bodySetPosition*(body: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetPosition".}
 proc bodySetRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodySetRotation".}
-proc bodySetQuaternion*(a2: dBodyID; q: dQuaternion) {.importc: "dBodySetQuaternion".}
+proc bodySetQuaternion*(body: dBodyID; q: dQuaternion) {.importc: "dBodySetQuaternion".}
 proc bodySetLinearVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetLinearVel".}
 proc bodySetAngularVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetAngularVel".}
-proc bodyGetPosition*(a2: dBodyID): ptr array[0..2, ode.dReal] {.importc: "dBodyGetPosition".}
+proc bodyGetPosition*(a2: dBodyID): ptr array[3, ode.dReal] {.importc: "dBodyGetPosition".}
 proc bodyCopyPosition*(body: dBodyID; pos: dVector3) {.importc: "dBodyCopyPosition".}
-proc bodyGetRotation*(a2: dBodyID): ptr dReal {.importc: "dBodyGetRotation".}
+proc bodyGetRotation*(body: dBodyID): ptr array[12, dReal] {.importc: "dBodyGetRotation".}
 proc bodyCopyRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodyCopyRotation".}
-proc bodyGetQuaternion*(a2: dBodyID): ptr dReal {.importc: "dBodyGetQuaternion".}
+proc bodyGetQuaternion*(a2: dBodyID): ptr dQuaternion {.importc: "dBodyGetQuaternion".}
 proc bodyCopyQuaternion*(body: dBodyID; quat: dQuaternion) {.importc: "dBodyCopyQuaternion".}
 proc bodyGetLinearVel*(a2: dBodyID): ptr dReal {.importc: "dBodyGetLinearVel".}
 proc bodyGetAngularVel*(a2: dBodyID): ptr dReal {.importc: "dBodyGetAngularVel".}

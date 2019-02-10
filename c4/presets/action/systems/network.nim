@@ -1,3 +1,7 @@
+import tables
+
+import ../../../core/messages
+import ../../../core/entities
 import ../../../systems/network/enet
 import ../../../utils/stringify
 

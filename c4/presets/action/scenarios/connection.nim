@@ -12,7 +12,6 @@ import ../../../systems/physics/ode as ode_physics
 import ../../../core/entities
 
 import ../../../wrappers/ode/ode
-import ../../../wrappers/ode/ode/helpers
 
 import ../systems/network
 import ../systems/physics
@@ -41,7 +40,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
   player[ref Physics].body.bodySetMass(mass.addr)
 
-  self.peersEntities[message.peer] = player  # add it to mapping
+  self.impersonationsMap[message.peer] = player  # add it to mapping
   (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(config.systems.network)
 
   # send all scene data
@@ -49,8 +48,8 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   for entity, physics in getComponents(ref Physics).pairs():
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
 
-    let position = physics.body.getPosition()
-    (ref SyncPositionMessage)(entity: entity, x: position.x, y: position.y, z: position.z, recipient: message.peer).send(config.systems.network)
+    let position = physics.body.bodyGetPosition()[]
+    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(config.systems.network)
 
     # TODO: send "rotate" message
 
@@ -73,5 +72,5 @@ method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionClos
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to remove a corresponding Entity.
   logging.debug &"Removing entity"
-  self.peersEntities[message.peer].delete()  # delete Entity
-  self.peersEntities.del(message.peer)  # exclude peer's Entity from mapping
+  self.impersonationsMap[message.peer].delete()  # delete Entity
+  self.impersonationsMap.del(message.peer)  # exclude peer's Entity from mapping

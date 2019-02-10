@@ -1,20 +1,22 @@
 import logging
 import strformat
+import tables
 
-# from ../../../core/entities
-# from ../../../messages import EntityMessage
+import ../../../core/messages
+import ../../../core/entities
+import ../../../systems
 import ../../../config
-from ../../../systems import `as`, send
 import ../../../systems/network/enet
+import ../../../systems/physics/ode
+import ../../../wrappers/ode/ode as ode_wrapper
 
 import ../systems/network as action_network
+import ../systems/physics as action_physics
 import ../messages as action_messages
-import ../../../core/messages
-import ../../../systems
 
 
 method store*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
-  ## Allow server to store PlayerRotate message
+  ## Allow server to store ``PlayerRotateMessage``
   if not message.isLocal:
     procCall self.as(ref System).store(message)
 
@@ -26,11 +28,12 @@ method process(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMes
   message.send(config.systems.physics)
 
 
-# method process(self: ref ActionNetworkSystem, message: ref PlayerMoveMessage) =
-#   ## When local network system receives PlayerMoveMessage, send it to server's network
-#   assert mode == server
+method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) =
+  let playerEntity = self.impersonationsMap[message.sender]
 
-#   procCall self.as(ref NetworkSystem).store(message)
-#   # message.send(config.systems.video)
+  var quaternion = playerEntity[ref Physics].body.bodyGetQuaternion()[]
+  logging.debug &"Rotation quaternion [old]: {quaternion}"
+  playerEntity[ref Physics].body.bodySetQuaternion(quaternion)
 
-
+  # quaternion = playerEntity[ref Physics].body.bodyGetQuaternion()[]
+  # logging.debug &"Rotation quaternion [new]: {quaternion}"

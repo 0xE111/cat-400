@@ -23,10 +23,10 @@ type
   NetworkSystem* = object of System
     host: ptr enet.Host  # remember own host
     peersMap: Table[ptr enet.Peer, ref messages.Peer]  # table for converting enet.Peer into messages.Peer
-    entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
-    # TODO: works only on client side, does server need ``entitiesMap`` at all? (probably no, but who knows)
 
   ClientNetworkSystem* = object of NetworkSystem
+    entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
+
   ServerNetworkSystem* = object of NetworkSystem
 
 
@@ -144,9 +144,14 @@ method init*(self: ref NetworkSystem) =
     raise newException(LibraryError, "An error occured while trying to init host. Maybe that port is already in use?")
 
   self.peersMap = initTable[ptr enet.Peer, ref messages.Peer]()
-  self.entitiesMap = initTable[Entity, Entity]()
 
   procCall self.as(ref System).init()
+
+
+method init*(self: ref ClientNetworkSystem) =
+  self.entitiesMap = initTable[Entity, Entity]()
+  procCall self.as(ref NetworkSystem).init()
+
 
 # forward declaration, needed for ``handle`` method
 method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.}
