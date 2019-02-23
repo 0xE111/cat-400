@@ -31,9 +31,18 @@ method process(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMes
 method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) =
   let playerEntity = self.impersonationsMap[message.sender]
 
-  var quaternion = playerEntity[ref Physics].body.bodyGetQuaternion()[]
-  logging.debug &"Rotation quaternion [old]: {quaternion}"
-  playerEntity[ref Physics].body.bodySetQuaternion(quaternion)
+  # get current rotation quaternion
+  let qCurrent = playerEntity[ref Physics].body.bodyGetQuaternion()[]
+  logging.debug &"Current rotation quaternion: {qCurrent}"
 
-  # quaternion = playerEntity[ref Physics].body.bodyGetQuaternion()[]
-  # logging.debug &"Rotation quaternion [new]: {quaternion}"
+  # convert PlayerRotateMessage relative angles to rotation quaternions
+  # TODO: reenable yaw
+  var qY, qX: dQuaternion
+  qFromAxisAndAngle(qY, 0, 1, 0, message.yaw)
+  qFromAxisAndAngle(qX, 1, 0, 0, message.pitch)
+
+  # multiply rotation quaternions and set result as new entity rotation quaternion
+  var qFinal: dQuaternion = qCurrent
+  qFinal.qMultiply0(qX, qFinal)
+  qFinal.qMultiply0(qY, qFinal)
+  playerEntity[ref Physics].body.bodySetQuaternion(qFinal)

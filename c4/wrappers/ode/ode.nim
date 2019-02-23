@@ -592,7 +592,7 @@ proc bodySetLinearVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dB
 proc bodySetAngularVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetAngularVel".}
 proc bodyGetPosition*(a2: dBodyID): ptr array[3, ode.dReal] {.importc: "dBodyGetPosition".}
 proc bodyCopyPosition*(body: dBodyID; pos: dVector3) {.importc: "dBodyCopyPosition".}
-proc bodyGetRotation*(body: dBodyID): ptr array[12, dReal] {.importc: "dBodyGetRotation".}
+proc bodyGetRotation*(body: dBodyID): ptr dMatrix3 {.importc: "dBodyGetRotation".}
 proc bodyCopyRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodyCopyRotation".}
 proc bodyGetQuaternion*(a2: dBodyID): ptr dQuaternion {.importc: "dBodyGetQuaternion".}
 proc bodyCopyQuaternion*(body: dBodyID; quat: dQuaternion) {.importc: "dBodyCopyQuaternion".}

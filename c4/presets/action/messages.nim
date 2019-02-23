@@ -12,7 +12,8 @@ messages.register(PlayerMoveMessage)
 
 type PlayerRotateMessage* = object of Message
   ## Message for defining player's rotation. See ``MoveMessage`` for reference.
-  yaw*, pitch*: float
+  yaw*: float  ## Angle (in radians) around Y axis.
+  pitch*: float  ## Angle (in radians) around X axis.
 messages.register(PlayerRotateMessage)
 
 
@@ -35,7 +36,7 @@ type SyncPositionMessage* = object of SetPositionMessage
 messages.register(SyncPositionMessage)
 
 method isReliable*(self: ref SyncPositionMessage): bool {.inline.} =
-  ## Send this message reliable
+  ## Send this message reliably
   true
 
 
@@ -45,7 +46,7 @@ type SyncRotationMessage* = object of SetRotationMessage
 messages.register(SyncRotationMessage)
 
 method isReliable*(self: ref SyncRotationMessage): bool {.inline.} =
-  ## Send this message reliable
+  ## Send this message reliably
   true
 
 
