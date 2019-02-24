@@ -25,8 +25,7 @@ messages.register(SetPositionMessage)
 
 type SetRotationMessage* = object of EntityMessage
   ## Send this message to client in order to update object's rotation.
-  yaw*: float  ## Angle (in radians) around Y axis.
-  pitch*: float  # Angle (in radians) around X axis.
+  quaternion*: array[4, float]  # rotation quaternion
 messages.register(SetRotationMessage)
 
 

@@ -9,7 +9,7 @@ import ../systems/video
 
 method process(self: ref ActionClientNetworkSystem, message: ref CreateEntityMessage) =
     ## Sends message to video system
-    procCall self.as(ref NetworkSystem).process(message)  # generate remote->local entity mapping
+    procCall self.as(ref ClientNetworkSystem).process(message)  # generate remote->local entity mapping
     message.send(config.systems.video)
 
 
@@ -23,5 +23,5 @@ method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
 
 method process(self: ref ActionClientNetworkSystem, message: ref DeleteEntityMessage) =
     ## Deletes an entity when server asks to do so.
-    procCall self.as(ref ClientNetworkSystem).process(message)  # generate remote->local entity mapping
+    procCall self.as(ref ClientNetworkSystem).process(message)  # update remote->local entity mapping
     message.entity.delete()

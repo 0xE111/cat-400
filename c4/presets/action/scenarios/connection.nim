@@ -40,9 +40,6 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
   player[ref Physics].body.bodySetMass(mass.addr)
 
-  self.impersonationsMap[message.peer] = player  # add it to mapping
-  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(config.systems.network)
-
   # send all scene data
   logging.debug &"Sending all scene data to peer {message.peer[]}"
   for entity, physics in getComponents(ref Physics).pairs():
@@ -52,6 +49,9 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
     (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(config.systems.network)
 
     # TODO: send "rotate" message
+
+  self.impersonationsMap[message.peer] = player  # add it to mapping
+  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(config.systems.network)
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =

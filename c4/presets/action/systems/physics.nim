@@ -66,14 +66,9 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
   for dimension in 0..3:
     if rotation[dimension] != self.prevRotation[dimension]:
       self.prevRotation = rotation
-
-      # TODO
-      # (ref SetRotationMessage)(
-      #   entity: entity,
-      #   pitch: ...,
-      #   yaw: ...,
-      # ).send(config.systems.network)
-      logging.warn &"Rotation conversion not implemented"
-
+      (ref SetRotationMessage)(
+        entity: entity,
+        quaternion: rotation,
+      ).send(config.systems.network)
       break
 
