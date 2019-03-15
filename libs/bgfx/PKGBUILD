@@ -1,0 +1,33 @@
+# Maintainer: ? <?@gmail.com>
+
+pkgname=('bgfx-git')
+pkgver=20190314
+pkgrel=1
+url="bkaradzic.github.io/bgfx"
+arch=('x86_64')
+makedepends=('git')
+# libgl1-mesa-dev x11proto-core-dev libx11-dev')
+source=(git+https://github.com/bkaradzic/bgfx.git
+        git+https://github.com/bkaradzic/bx.git
+        git+https://github.com/bkaradzic/bimg.git)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+pkgver() {
+  cd "$srcdir/bgfx"
+  git log -1 --format="%cd" --date=short --no-show-signature | sed "s|-||g"
+}
+
+build() {
+  cd "$srcdir/bgfx"
+  make linux
+
+  # https://github.com/bkaradzic/bgfx/issues/304
+  # 3rdparty/glsl-optimizer/generateParsers.sh
+  # make tools
+}
+
+package() {
+  install -Dm 644 $srcdir/bgfx/.build/linux64_gcc/bin/libbgfx-shared-libRelease.so $pkgdir/usr/lib/libbgfx.so
+  install -d $pkgdir/usr/include/bgfx
+  install -Dm 755 $srcdir/bgfx/src/*.h $pkgdir/usr/include/bgfx/
+}
