@@ -1,13 +1,14 @@
 import logging
 import strformat
 
+import c4/lib/ode/ode
+
 import c4/systems/physics/ode as ode_physics
 import c4/presets/action/messages
 import c4/presets/action/systems/physics
 import c4/systems
 import c4/config
 import c4/core/entities
-import c4/wrappers/ode/ode
 import c4/utils/stringify
 
 import ../messages as custom_messages

@@ -3,10 +3,11 @@ import strformat
 import math
 import tables
 
+import ../../lib/ode/ode
+
 import ../../config
 import ../../core/entities
 import ../../systems
-import ../../wrappers/ode/ode
 import ../../utils/floats
 import ../../utils/stringify
 

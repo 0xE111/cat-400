@@ -6,7 +6,8 @@ import ospaths
 import sequtils
 import typetraits
 
-import ../../wrappers/horde3d/horde3d
+import ../../lib/horde3d/horde3d
+
 import ../../core/messages
 import ../../systems
 import ../../config

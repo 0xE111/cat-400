@@ -2,6 +2,9 @@ import tables
 import logging
 import strformat
 import typetraits
+import math
+
+import ../../../lib/ode/ode
 
 import ../../../systems
 import ../../../config
@@ -9,7 +12,6 @@ import ../../../core/entities
 import ../../../core/messages
 import ../../../systems/physics/ode as physics_system
 import ../../../systems/network/enet
-import ../../../wrappers/ode/ode
 import ../../../utils/stringify
 
 import ../messages as action_messages

@@ -1,6 +1,9 @@
 import logging
 import strformat
 import tables
+import math
+
+import ../../../lib/ode/ode as ode_wrapper
 
 import ../../../core/messages
 import ../../../core/entities
@@ -8,7 +11,6 @@ import ../../../systems
 import ../../../config
 import ../../../systems/network/enet
 import ../../../systems/physics/ode
-import ../../../wrappers/ode/ode as ode_wrapper
 
 import ../systems/network as action_network
 import ../systems/physics as action_physics

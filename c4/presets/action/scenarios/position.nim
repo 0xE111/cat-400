@@ -1,5 +1,9 @@
 import logging
 import strformat
+import math
+
+import ../../../lib/horde3d/horde3d
+import ../../../lib/horde3d/horde3d/helpers
 
 import ../../../config
 import ../../../core/messages
@@ -11,9 +15,6 @@ import ../systems/video
 import ../systems/input
 import ../systems/network
 import ../messages as action_messages
-
-import ../../../wrappers/horde3d/horde3d
-import ../../../wrappers/horde3d/horde3d/helpers
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref SetPositionMessage) =

@@ -7,11 +7,12 @@ import strformat
 import streams
 import typetraits
 
+import ../../lib/enet/enet
+
 import ../../systems
 import ../../config
 import ../../core/entities
 import ../../core/messages
-import ../../wrappers/enet/enet
 import ../../utils/stringify
 
 

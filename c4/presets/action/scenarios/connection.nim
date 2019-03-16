@@ -3,6 +3,8 @@ import logging
 import tables
 import strformat
 
+import ../../../lib/ode/ode
+
 import ../../../config
 import ../../../utils/loading
 import ../../../core/messages
@@ -10,8 +12,6 @@ import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/physics/ode as ode_physics
 import ../../../core/entities
-
-import ../../../wrappers/ode/ode
 
 import ../systems/network
 import ../systems/physics

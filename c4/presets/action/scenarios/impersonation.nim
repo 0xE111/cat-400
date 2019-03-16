@@ -1,6 +1,8 @@
 import logging
 import strformat
 
+import ../../../lib/horde3d/horde3d as horde3d_wrapper
+
 import ../../../config
 import ../../../core/entities
 import ../../../systems
@@ -10,8 +12,6 @@ import ../../../systems/video/horde3d
 import ../messages
 import ../systems/network
 import ../systems/video
-
-import ../../../wrappers/horde3d/horde3d as horde3d_wrapper
 
 
 
