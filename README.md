@@ -8,9 +8,10 @@
 
 There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately:
 
-* [enet](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/enet)
-* [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/horde3d)
-* [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/wrappers/ode)
+* [enet](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/enet)
+* [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/horde3d)
+* [bgfx](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/bgfx)
+* [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/ode)
 
 ## Brief overview
 

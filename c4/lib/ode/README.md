@@ -9,7 +9,7 @@ Please note that this wrapper is very dirty and was not tested at all.
 Install directly from git subdir:
 
 ```sh
-nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/wrappers/ode@#head"
+nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/lib/ode@#head"
 ```
 
 Please ensure you set the same precision as ODE compiled library you're going to use (`.so` or `.dll`). To set precision, define either `dIDEDOUBLE` (the default) or `dIDESINGLE` for nim compiler.

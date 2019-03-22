@@ -15,12 +15,8 @@ These are Horde3D bindings for nim. Pay attention:
 Install directly from git subdir:
 
 ```sh
-nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/wrappers/horde3d@#head"
+nimble install "https://github.com/c0ntribut0r/cat-400?subdir=c4/lib/horde3d@#head"
 ```
-
-## Helpers
-
-You may also import `horde3d.helpers` in order to get some high-level procs.
 
 ## License
 
