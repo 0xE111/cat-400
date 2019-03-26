@@ -430,7 +430,7 @@ type
 ##
 
 type
-  release_fn_t* = proc (ptr: pointer; userData: pointer) {.cdecl.}
+  release_fn_t* = proc (`ptr`: pointer; userData: pointer) {.cdecl.}
 
 ## *
 ##  GPU info.
@@ -493,7 +493,7 @@ type
     deviceId*: uint16        ## * Selected GPU device id.
     homogeneousDepth*: bool    ## * True when NDC depth is in [-1, 1] range, otherwise its [0, 1].
     originBottomLeft*: bool    ## * True when NDC origin is at bottom left.
-    numGPUs*: uint8_t          ## * Number of enumerated GPUs.
+    numGPUs*: uint8          ## * Number of enumerated GPUs.
     gpu*: array[4, caps_gpu_t] ## * Enumerated GPUs.
     limits*: caps_limits_t ## *
                               ##  Supported texture format capabilities flags:
@@ -557,8 +557,8 @@ type
     width*: uint32           ## * Backbuffer width.
     height*: uint32          ## * Backbuffer height.
     reset*: uint32           ## * Reset parameters.
-    numBackBuffers*: uint8_t   ## * Number of back buffers.
-    maxFrameLatency*: uint8_t  ## * Maximum frame latency.
+    numBackBuffers*: uint8   ## * Number of back buffers.
+    maxFrameLatency*: uint8  ## * Maximum frame latency.
 
   init_limits_t* {.bycopy.} = object
     maxEncoders*: uint16     ## * Maximum number of encoder threads.
@@ -616,7 +616,7 @@ type
 
 type
   memory_t* {.bycopy.} = object
-    data*: ptr uint8_t          ## * Pointer to data.
+    data*: ptr uint8          ## * Pointer to data.
     size*: uint32            ## * Data size.
 
 
@@ -627,7 +627,7 @@ type
 
 type
   transient_index_buffer_t* {.bycopy.} = object
-    data*: ptr uint8_t          ## * Pointer to data.
+    data*: ptr uint8          ## * Pointer to data.
     size*: uint32            ## * Data size.
     startIndex*: uint32      ## * First index.
     handle*: index_buffer_handle_t ## * Index buffer handle.
@@ -640,7 +640,7 @@ type
 
 type
   transient_vertex_buffer_t* {.bycopy.} = object
-    data*: ptr uint8_t          ## * Pointer to data.
+    data*: ptr uint8          ## * Pointer to data.
     size*: uint32            ## * Data size.
     startVertex*: uint32     ## * First vertex.
     stride*: uint16          ## * Vertex stride.
@@ -655,7 +655,7 @@ type
 
 type
   instance_data_buffer_t* {.bycopy.} = object
-    data*: ptr uint8_t          ## * Pointer to data.
+    data*: ptr uint8          ## * Pointer to data.
     size*: uint32            ## * Data size.
     offset*: uint32          ## * Offset in vertex buffer.
     num*: uint32             ## * Number of instances.
@@ -676,8 +676,8 @@ type
     height*: uint16          ## * Texture height.
     depth*: uint16           ## * Texture depth.
     numLayers*: uint16       ## * Number of layers in texture array.
-    numMips*: uint8_t          ## * Number of MIP maps.
-    bitsPerPixel*: uint8_t     ## * Format bits per pixel.
+    numMips*: uint8          ## * Number of MIP maps.
+    bitsPerPixel*: uint8     ## * Format bits per pixel.
     cubeMap*: bool             ## * Texture is cubemap.
 
 
@@ -704,7 +704,7 @@ type
     handle*: texture_handle_t ## * Render target texture handle.
     mip*: uint16             ## * Mip level.
     layer*: uint16           ## * Cubemap side or depth layer/slice.
-    resolve*: uint8_t          ## * Resolve flags. See: `RESOLVE_*`
+    resolve*: uint8          ## * Resolve flags. See: `RESOLVE_*`
 
 
 ## *
@@ -727,8 +727,8 @@ type
   view_stats_t* {.bycopy.} = object
     name*: array[256, char]     ## * View name.
     view*: view_id_t      ## * View id.
-    cpuTimeElapsed*: int64_t   ## * CPU (submit) time elapsed.
-    gpuTimeElapsed*: int64_t   ## * GPU time elapsed.
+    cpuTimeElapsed*: int64   ## * CPU (submit) time elapsed.
+    gpuTimeElapsed*: int64   ## * GPU time elapsed.
 
 
 ## *
@@ -738,8 +738,8 @@ type
 
 type
   encoder_stats_t* {.bycopy.} = object
-    cpuTimeBegin*: int64_t     ## * Encoder thread CPU submit begin time.
-    cpuTimeEnd*: int64_t       ## * Encoder thread CPU submit end time.
+    cpuTimeBegin*: int64     ## * Encoder thread CPU submit begin time.
+    cpuTimeEnd*: int64       ## * Encoder thread CPU submit end time.
 
 
 ## *
@@ -751,15 +751,15 @@ type
 
 type
   stats_t* {.bycopy.} = object
-    cpuTimeFrame*: int64_t     ## * CPU time between two `bgfx::frame` calls.
-    cpuTimeBegin*: int64_t     ## * Render thread CPU submit begin time.
-    cpuTimeEnd*: int64_t       ## * Render thread CPU submit end time.
-    cpuTimerFreq*: int64_t     ## * CPU timer frequency. Timestamps-per-second
-    gpuTimeBegin*: int64_t     ## * GPU frame begin time.
-    gpuTimeEnd*: int64_t       ## * GPU frame end time.
-    gpuTimerFreq*: int64_t     ## * GPU timer frequency.
-    waitRender*: int64_t       ## * Time spent waiting for render backend thread to finish issuing draw commands to underlying graphics API.
-    waitSubmit*: int64_t       ## * Time spent waiting for submit thread to advance to next frame.
+    cpuTimeFrame*: int64     ## * CPU time between two `bgfx::frame` calls.
+    cpuTimeBegin*: int64     ## * Render thread CPU submit begin time.
+    cpuTimeEnd*: int64       ## * Render thread CPU submit end time.
+    cpuTimerFreq*: int64     ## * CPU timer frequency. Timestamps-per-second
+    gpuTimeBegin*: int64     ## * GPU frame begin time.
+    gpuTimeEnd*: int64       ## * GPU frame end time.
+    gpuTimerFreq*: int64     ## * GPU timer frequency.
+    waitRender*: int64       ## * Time spent waiting for render backend thread to finish issuing draw commands to underlying graphics API.
+    waitSubmit*: int64       ## * Time spent waiting for submit thread to advance to next frame.
     numDraw*: uint32         ## * Number of draw calls submitted.
     numCompute*: uint32      ## * Number of compute calls submitted.
     numBlit*: uint32         ## * Number of blit calls submitted.
@@ -775,20 +775,20 @@ type
     numUniforms*: uint16     ## * Number of used uniforms.
     numVertexBuffers*: uint16 ## * Number of used vertex buffers.
     numVertexDecls*: uint16  ## * Number of used vertex declarations.
-    textureMemoryUsed*: int64_t ## * Estimate of texture memory used.
-    rtMemoryUsed*: int64_t     ## * Estimate of render target memory used.
-    transientVbUsed*: int32_t  ## * Amount of transient vertex buffer used.
-    transientIbUsed*: int32_t  ## * Amount of transient index buffer used.
+    textureMemoryUsed*: int64 ## * Estimate of texture memory used.
+    rtMemoryUsed*: int64     ## * Estimate of render target memory used.
+    transientVbUsed*: int32  ## * Amount of transient vertex buffer used.
+    transientIbUsed*: int32  ## * Amount of transient index buffer used.
     numPrims*: array[TOPOLOGY_COUNT, uint32] ## * Number of primitives rendered.
-    gpuMemoryMax*: int64_t     ## * Maximum available GPU memory for application.
-    gpuMemoryUsed*: int64_t    ## * Amount of GPU memory used by the application.
+    gpuMemoryMax*: int64     ## * Maximum available GPU memory for application.
+    gpuMemoryUsed*: int64    ## * Amount of GPU memory used by the application.
     width*: uint16           ## * Backbuffer width in pixels.
     height*: uint16          ## * Backbuffer height in pixels.
     textWidth*: uint16       ## * Debug text width in characters.
     textHeight*: uint16      ## * Debug text height in characters.
     numViews*: uint16        ## * Number of view stats.
     viewStats*: ptr view_stats_t ## * Array of View stats.
-    numEncoders*: uint8_t      ## * Number of encoders used during frame.
+    numEncoders*: uint8      ## * Number of encoders used during frame.
     encoderStats*: ptr encoder_stats_t ## * Array of encoder stats.
 
 
@@ -829,7 +829,7 @@ type
 
 proc attachment_init*(this: ptr attachment_t;
                           handle: texture_handle_t; access: access_t;
-                          layer: uint16; mip: uint16; resolve: uint8_t) {.
+                          layer: uint16; mip: uint16; resolve: uint8) {.
     cdecl, importc: "bgfx_attachment_init", dynlib: lib.}
 ## *
 ##  Start VertexDecl.
@@ -859,7 +859,7 @@ proc vertex_decl_begin*(this: ptr vertex_decl_t;
 ##
 
 proc vertex_decl_add*(this: ptr vertex_decl_t; attrib: attrib_t;
-                          num: uint8_t; type: attrib_type_t;
+                          num: uint8; `type`: attrib_type_t;
                           normalized: bool; asInt: bool): ptr vertex_decl_t {.
     cdecl, importc: "bgfx_vertex_decl_add", dynlib: lib.}
 ## *
@@ -874,7 +874,7 @@ proc vertex_decl_add*(this: ptr vertex_decl_t; attrib: attrib_t;
 ##
 
 proc vertex_decl_decode*(this: ptr vertex_decl_t; attrib: attrib_t;
-                             num: ptr uint8_t; type: ptr attrib_type_t;
+                             num: ptr uint8; `type`: ptr attrib_type_t;
                              normalized: ptr bool; asInt: ptr bool) {.cdecl,
     importc: "bgfx_vertex_decl_decode", dynlib: lib.}
 ## *
@@ -893,7 +893,7 @@ proc vertex_decl_has*(this: ptr vertex_decl_t; attrib: attrib_t): bool {.
 ##
 ##
 
-proc vertex_decl_skip*(this: ptr vertex_decl_t; num: uint8_t): ptr vertex_decl_t {.
+proc vertex_decl_skip*(this: ptr vertex_decl_t; num: uint8): ptr vertex_decl_t {.
     cdecl, importc: "bgfx_vertex_decl_skip", dynlib: lib.}
 ## *
 ##  End VertexDecl.
@@ -1022,7 +1022,7 @@ proc topology_sort_tri_list*(sort: topology_sort_t; dst: pointer;
 ##
 ##
 
-proc get_supported_renderers*(max: uint8_t; enum: ptr renderer_type_t): uint8_t {.
+proc get_supported_renderers*(max: uint8; `enum`: ptr renderer_type_t): uint8 {.
     cdecl, importc: "bgfx_get_supported_renderers", dynlib: lib.}
 ## *
 ##  Returns name of renderer.
@@ -1033,7 +1033,7 @@ proc get_supported_renderers*(max: uint8_t; enum: ptr renderer_type_t): uint8_t 
 ##
 ##
 
-proc get_renderer_name*(type: renderer_type_t): cstring {.cdecl,
+proc get_renderer_name*(`type`: renderer_type_t): cstring {.cdecl,
     importc: "bgfx_get_renderer_name", dynlib: lib.}
 proc init_ctor*(init: ptr init_t) {.cdecl, importc: "bgfx_init_ctor",
     dynlib: lib.}
@@ -1204,7 +1204,7 @@ proc set_debug*(debug: uint32) {.cdecl, importc: "bgfx_set_debug", dynlib: lib.}
 ##
 ##
 
-proc dbg_text_clear*(attr: uint8_t; small: bool) {.cdecl,
+proc dbg_text_clear*(attr: uint8; small: bool) {.cdecl,
     importc: "bgfx_dbg_text_clear", dynlib: lib.}
 ## *
 ##  Print formatted data to internal debug text character-buffer (VGA-compatible text mode).
@@ -1218,7 +1218,7 @@ proc dbg_text_clear*(attr: uint8_t; small: bool) {.cdecl,
 ##
 ##
 
-proc dbg_text_printf*(x: uint16; y: uint16; attr: uint8_t; format: cstring) {.
+proc dbg_text_printf*(x: uint16; y: uint16; attr: uint8; format: cstring) {.
     varargs, cdecl, importc: "bgfx_dbg_text_printf", dynlib: lib.}
 ## *
 ##  Print formatted data from variable argument list to internal debug text character-buffer (VGA-compatible text mode).
@@ -1232,7 +1232,7 @@ proc dbg_text_printf*(x: uint16; y: uint16; attr: uint8_t; format: cstring) {.
 ##
 ##
 
-proc dbg_text_vprintf*(x: uint16; y: uint16; attr: uint8_t;
+proc dbg_text_vprintf*(x: uint16; y: uint16; attr: uint8;
                            format: cstring; argList: va_list) {.cdecl,
     importc: "bgfx_dbg_text_vprintf", dynlib: lib.}
 ## *
@@ -1282,7 +1282,7 @@ proc create_index_buffer*(mem: ptr memory_t; flags: uint16): index_buffer_handle
 ##
 
 proc set_index_buffer_name*(handle: index_buffer_handle_t;
-                                name: cstring; len: int32_t) {.cdecl,
+                                name: cstring; len: int32) {.cdecl,
     importc: "bgfx_set_index_buffer_name", dynlib: lib.}
 ## *
 ##  Destroy static index buffer.
@@ -1327,7 +1327,7 @@ proc create_vertex_buffer*(mem: ptr memory_t;
 ##
 
 proc set_vertex_buffer_name*(handle: vertex_buffer_handle_t;
-                                 name: cstring; len: int32_t) {.cdecl,
+                                 name: cstring; len: int32) {.cdecl,
     importc: "bgfx_set_vertex_buffer_name", dynlib: lib.}
 ## *
 ##  Destroy static vertex buffer.
@@ -1642,7 +1642,7 @@ proc get_shader_uniforms*(handle: shader_handle_t;
 ##
 
 proc set_shader_name*(handle: shader_handle_t; name: cstring;
-                          len: int32_t) {.cdecl, importc: "bgfx_set_shader_name",
+                          len: int32) {.cdecl, importc: "bgfx_set_shader_name",
     dynlib: lib.}
 ## *
 ##  Destroy shader.
@@ -1743,7 +1743,7 @@ proc calc_texture_size*(info: ptr texture_info_t; width: uint16;
 ##
 ##
 
-proc create_texture*(mem: ptr memory_t; flags: uint64; skip: uint8_t;
+proc create_texture*(mem: ptr memory_t; flags: uint64; skip: uint8;
                          info: ptr texture_info_t): texture_handle_t {.
     cdecl, importc: "bgfx_create_texture", dynlib: lib.}
 ## *
@@ -1867,7 +1867,7 @@ proc create_texture_cube*(size: uint16; hasMips: bool; numLayers: uint16;
 ##
 
 proc update_texture_2d*(handle: texture_handle_t; layer: uint16;
-                            mip: uint8_t; x: uint16; y: uint16;
+                            mip: uint8; x: uint16; y: uint16;
                             width: uint16; height: uint16;
                             mem: ptr memory_t; pitch: uint16) {.cdecl,
     importc: "bgfx_update_texture_2d", dynlib: lib.}
@@ -1886,7 +1886,7 @@ proc update_texture_2d*(handle: texture_handle_t; layer: uint16;
 ##
 ##
 
-proc update_texture_3d*(handle: texture_handle_t; mip: uint8_t;
+proc update_texture_3d*(handle: texture_handle_t; mip: uint8;
                             x: uint16; y: uint16; z: uint16;
                             width: uint16; height: uint16; depth: uint16;
                             mem: ptr memory_t) {.cdecl,
@@ -1926,7 +1926,7 @@ proc update_texture_3d*(handle: texture_handle_t; mip: uint8_t;
 ##
 
 proc update_texture_cube*(handle: texture_handle_t; layer: uint16;
-                              side: uint8_t; mip: uint8_t; x: uint16;
+                              side: uint8; mip: uint8; x: uint16;
                               y: uint16; width: uint16; height: uint16;
                               mem: ptr memory_t; pitch: uint16) {.cdecl,
     importc: "bgfx_update_texture_cube", dynlib: lib.}
@@ -1943,7 +1943,7 @@ proc update_texture_cube*(handle: texture_handle_t; layer: uint16;
 ##
 ##
 
-proc read_texture*(handle: texture_handle_t; data: pointer; mip: uint8_t): uint32 {.
+proc read_texture*(handle: texture_handle_t; data: pointer; mip: uint8): uint32 {.
     cdecl, importc: "bgfx_read_texture", dynlib: lib.}
 ## *
 ##  Set texture debug name.
@@ -1956,7 +1956,7 @@ proc read_texture*(handle: texture_handle_t; data: pointer; mip: uint8_t): uint3
 ##
 
 proc set_texture_name*(handle: texture_handle_t; name: cstring;
-                           len: int32_t) {.cdecl,
+                           len: int32) {.cdecl,
     importc: "bgfx_set_texture_name", dynlib: lib.}
 ## *
 ##  Returns texture direct access pointer.
@@ -2038,7 +2038,7 @@ proc create_frame_buffer_scaled*(ratio: backbuffer_ratio_t;
 ##
 ##
 
-proc create_frame_buffer_from_handles*(num: uint8_t;
+proc create_frame_buffer_from_handles*(num: uint8;
     handles: ptr texture_handle_t; destroyTexture: bool): frame_buffer_handle_t {.
     cdecl, importc: "bgfx_create_frame_buffer_from_handles", dynlib: lib.}
 ## *
@@ -2054,7 +2054,7 @@ proc create_frame_buffer_from_handles*(num: uint8_t;
 ##
 ##
 
-proc create_frame_buffer_from_attachment*(num: uint8_t;
+proc create_frame_buffer_from_attachment*(num: uint8;
     attachment: ptr attachment_t; destroyTexture: bool): frame_buffer_handle_t {.
     cdecl, importc: "bgfx_create_frame_buffer_from_attachment", dynlib: lib.}
 ## *
@@ -2089,7 +2089,7 @@ proc create_frame_buffer_from_nwh*(nwh: pointer; width: uint16;
 ##
 
 proc set_frame_buffer_name*(handle: frame_buffer_handle_t;
-                                name: cstring; len: int32_t) {.cdecl,
+                                name: cstring; len: int32) {.cdecl,
     importc: "bgfx_set_frame_buffer_name", dynlib: lib.}
 ## *
 ##  Obtain texture handle of frame buffer attachment.
@@ -2099,7 +2099,7 @@ proc set_frame_buffer_name*(handle: frame_buffer_handle_t;
 ##
 ##
 
-proc get_texture*(handle: frame_buffer_handle_t; attachment: uint8_t): texture_handle_t {.
+proc get_texture*(handle: frame_buffer_handle_t; attachment: uint8): texture_handle_t {.
     cdecl, importc: "bgfx_get_texture", dynlib: lib.}
 ## *
 ##  Destroy frame buffer.
@@ -2143,7 +2143,7 @@ proc destroy_frame_buffer*(handle: frame_buffer_handle_t) {.cdecl,
 ##
 ##
 
-proc create_uniform*(name: cstring; type: uniform_type_t; num: uint16): uniform_handle_t {.
+proc create_uniform*(name: cstring; `type`: uniform_type_t; num: uint16): uniform_handle_t {.
     cdecl, importc: "bgfx_create_uniform", dynlib: lib.}
 ## *
 ##  Retrieve uniform info.
@@ -2183,7 +2183,7 @@ proc create_occlusion_query*(): occlusion_query_handle_t {.cdecl,
 ##
 ##
 
-proc get_result*(handle: occlusion_query_handle_t; result: ptr int32_t): occlusion_query_result_t {.
+proc get_result*(handle: occlusion_query_handle_t; result: ptr int32): occlusion_query_result_t {.
     cdecl, importc: "bgfx_get_result", dynlib: lib.}
 ## *
 ##  Destroy occlusion query.
@@ -2202,7 +2202,7 @@ proc destroy_occlusion_query*(handle: occlusion_query_handle_t) {.cdecl,
 ##
 ##
 
-proc set_palette_color*(index: uint8_t; rgba: array[4, cfloat]) {.cdecl,
+proc set_palette_color*(index: uint8; rgba: array[4, cfloat]) {.cdecl,
     importc: "bgfx_set_palette_color", dynlib: lib.}
 ## *
 ##  Set palette color value.
@@ -2212,7 +2212,7 @@ proc set_palette_color*(index: uint8_t; rgba: array[4, cfloat]) {.cdecl,
 ##
 ##
 
-proc set_palette_color_rgba8*(index: uint8_t; rgba: uint32) {.cdecl,
+proc set_palette_color_rgba8*(index: uint8; rgba: uint32) {.cdecl,
     importc: "bgfx_set_palette_color_rgba8", dynlib: lib.}
 ## *
 ##  Set view name.
@@ -2287,7 +2287,7 @@ proc set_view_scissor*(id: view_id_t; x: uint16; y: uint16;
 ##
 
 proc set_view_clear*(id: view_id_t; flags: uint16; rgba: uint32;
-                         depth: cfloat; stencil: uint8_t) {.cdecl,
+                         depth: cfloat; stencil: uint8) {.cdecl,
     importc: "bgfx_set_view_clear", dynlib: lib.}
 ## *
 ##  Set view clear flags with different clear color for each
@@ -2311,9 +2311,9 @@ proc set_view_clear*(id: view_id_t; flags: uint16; rgba: uint32;
 ##
 
 proc set_view_clear_mrt*(id: view_id_t; flags: uint16; depth: cfloat;
-                             stencil: uint8_t; c0: uint8_t; c1: uint8_t;
-                             c2: uint8_t; c3: uint8_t; c4: uint8_t; c5: uint8_t;
-                             c6: uint8_t; c7: uint8_t) {.cdecl,
+                             stencil: uint8; c0: uint8; c1: uint8;
+                             c2: uint8; c3: uint8; c4: uint8; c5: uint8;
+                             c6: uint8; c7: uint8) {.cdecl,
     importc: "bgfx_set_view_clear_mrt", dynlib: lib.}
 ## *
 ##  Set view sorting mode.
@@ -2584,7 +2584,7 @@ proc encoder_set_transient_index_buffer*(this: ptr encoder_t;
 ##
 ##
 
-proc encoder_set_vertex_buffer*(this: ptr encoder_t; stream: uint8_t;
+proc encoder_set_vertex_buffer*(this: ptr encoder_t; stream: uint8;
                                     handle: vertex_buffer_handle_t;
                                     startVertex: uint32; numVertices: uint32) {.
     cdecl, importc: "bgfx_encoder_set_vertex_buffer", dynlib: lib.}
@@ -2599,7 +2599,7 @@ proc encoder_set_vertex_buffer*(this: ptr encoder_t; stream: uint8_t;
 ##
 
 proc encoder_set_dynamic_vertex_buffer*(this: ptr encoder_t;
-    stream: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+    stream: uint8; handle: dynamic_vertex_buffer_handle_t;
     startVertex: uint32; numVertices: uint32) {.cdecl,
     importc: "bgfx_encoder_set_dynamic_vertex_buffer", dynlib: lib.}
 ## *
@@ -2613,7 +2613,7 @@ proc encoder_set_dynamic_vertex_buffer*(this: ptr encoder_t;
 ##
 
 proc encoder_set_transient_vertex_buffer*(this: ptr encoder_t;
-    stream: uint8_t; tvb: ptr transient_vertex_buffer_t;
+    stream: uint8; tvb: ptr transient_vertex_buffer_t;
     startVertex: uint32; numVertices: uint32) {.cdecl,
     importc: "bgfx_encoder_set_transient_vertex_buffer", dynlib: lib.}
 ## *
@@ -2695,7 +2695,7 @@ proc encoder_set_instance_count*(this: ptr encoder_t;
 ##
 ##
 
-proc encoder_set_texture*(this: ptr encoder_t; stage: uint8_t;
+proc encoder_set_texture*(this: ptr encoder_t; stage: uint8;
                               sampler: uniform_handle_t;
                               handle: texture_handle_t; flags: uint32) {.
     cdecl, importc: "bgfx_encoder_set_texture", dynlib: lib.}
@@ -2770,7 +2770,7 @@ proc encoder_submit_indirect*(this: ptr encoder_t; id: view_id_t;
 ##
 
 proc encoder_set_compute_index_buffer*(this: ptr encoder_t;
-    stage: uint8_t; handle: index_buffer_handle_t; access: access_t) {.
+    stage: uint8; handle: index_buffer_handle_t; access: access_t) {.
     cdecl, importc: "bgfx_encoder_set_compute_index_buffer", dynlib: lib.}
 ## *
 ##  Set compute vertex buffer.
@@ -2782,7 +2782,7 @@ proc encoder_set_compute_index_buffer*(this: ptr encoder_t;
 ##
 
 proc encoder_set_compute_vertex_buffer*(this: ptr encoder_t;
-    stage: uint8_t; handle: vertex_buffer_handle_t; access: access_t) {.
+    stage: uint8; handle: vertex_buffer_handle_t; access: access_t) {.
     cdecl, importc: "bgfx_encoder_set_compute_vertex_buffer", dynlib: lib.}
 ## *
 ##  Set compute dynamic index buffer.
@@ -2794,7 +2794,7 @@ proc encoder_set_compute_vertex_buffer*(this: ptr encoder_t;
 ##
 
 proc encoder_set_compute_dynamic_index_buffer*(this: ptr encoder_t;
-    stage: uint8_t; handle: dynamic_index_buffer_handle_t;
+    stage: uint8; handle: dynamic_index_buffer_handle_t;
     access: access_t) {.cdecl, importc: "bgfx_encoder_set_compute_dynamic_index_buffer",
                             dynlib: lib.}
 ## *
@@ -2807,7 +2807,7 @@ proc encoder_set_compute_dynamic_index_buffer*(this: ptr encoder_t;
 ##
 
 proc encoder_set_compute_dynamic_vertex_buffer*(this: ptr encoder_t;
-    stage: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+    stage: uint8; handle: dynamic_vertex_buffer_handle_t;
     access: access_t) {.cdecl, importc: "bgfx_encoder_set_compute_dynamic_vertex_buffer",
                             dynlib: lib.}
 ## *
@@ -2820,7 +2820,7 @@ proc encoder_set_compute_dynamic_vertex_buffer*(this: ptr encoder_t;
 ##
 
 proc encoder_set_compute_indirect_buffer*(this: ptr encoder_t;
-    stage: uint8_t; handle: indirect_buffer_handle_t; access: access_t) {.
+    stage: uint8; handle: indirect_buffer_handle_t; access: access_t) {.
     cdecl, importc: "bgfx_encoder_set_compute_indirect_buffer", dynlib: lib.}
 ## *
 ##  Set compute image from texture.
@@ -2833,8 +2833,8 @@ proc encoder_set_compute_indirect_buffer*(this: ptr encoder_t;
 ##
 ##
 
-proc encoder_set_image*(this: ptr encoder_t; stage: uint8_t;
-                            handle: texture_handle_t; mip: uint8_t;
+proc encoder_set_image*(this: ptr encoder_t; stage: uint8;
+                            handle: texture_handle_t; mip: uint8;
                             access: access_t; format: texture_format_t) {.
     cdecl, importc: "bgfx_encoder_set_image", dynlib: lib.}
 ## *
@@ -2902,9 +2902,9 @@ proc encoder_discard*(this: ptr encoder_t) {.cdecl,
 ##
 
 proc encoder_blit*(this: ptr encoder_t; id: view_id_t;
-                       dst: texture_handle_t; dstMip: uint8_t;
+                       dst: texture_handle_t; dstMip: uint8;
                        dstX: uint16; dstY: uint16; dstZ: uint16;
-                       src: texture_handle_t; srcMip: uint8_t;
+                       src: texture_handle_t; srcMip: uint8;
                        srcX: uint16; srcY: uint16; srcZ: uint16;
                        width: uint16; height: uint16; depth: uint16) {.cdecl,
     importc: "bgfx_encoder_blit", dynlib: lib.}
@@ -2939,7 +2939,7 @@ proc request_screen_shot*(handle: frame_buffer_handle_t;
 ##
 ##
 
-proc render_frame*(msecs: int32_t): render_frame_t {.cdecl,
+proc render_frame*(msecs: int32): render_frame_t {.cdecl,
     importc: "bgfx_render_frame", dynlib: lib.}
 ## *
 ##  Set platform data.
@@ -2977,7 +2977,7 @@ proc get_internal_data*(): ptr internal_data_t {.cdecl,
 ##
 
 proc override_internal_texture_ptr*(handle: texture_handle_t;
-                                        ptr: uintptr_t): uintptr_t {.cdecl,
+                                        `ptr`: ptr): ptr {.cdecl,
     importc: "bgfx_override_internal_texture_ptr", dynlib: lib.}
 ## *
 ##  Override internal texture by creating new texture. Previously created
@@ -3018,9 +3018,9 @@ proc override_internal_texture_ptr*(handle: texture_handle_t;
 
 proc override_internal_texture*(handle: texture_handle_t;
                                     width: uint16; height: uint16;
-                                    numMips: uint8_t;
+                                    numMips: uint8;
                                     format: texture_format_t;
-                                    flags: uint64): uintptr_t {.cdecl,
+                                    flags: uint64): ptr {.cdecl,
     importc: "bgfx_override_internal_texture", dynlib: lib.}
 ## *
 ##  Sets a debug marker. This allows you to group graphics calls together for easy browsing in
@@ -3205,7 +3205,7 @@ proc set_transient_index_buffer*(tib: ptr transient_index_buffer_t;
 ##
 ##
 
-proc set_vertex_buffer*(stream: uint8_t;
+proc set_vertex_buffer*(stream: uint8;
                             handle: vertex_buffer_handle_t;
                             startVertex: uint32; numVertices: uint32) {.cdecl,
     importc: "bgfx_set_vertex_buffer", dynlib: lib.}
@@ -3219,7 +3219,7 @@ proc set_vertex_buffer*(stream: uint8_t;
 ##
 ##
 
-proc set_dynamic_vertex_buffer*(stream: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+proc set_dynamic_vertex_buffer*(stream: uint8; handle: dynamic_vertex_buffer_handle_t;
                                     startVertex: uint32; numVertices: uint32) {.
     cdecl, importc: "bgfx_set_dynamic_vertex_buffer", dynlib: lib.}
 ## *
@@ -3232,7 +3232,7 @@ proc set_dynamic_vertex_buffer*(stream: uint8_t; handle: dynamic_vertex_buffer_h
 ##
 ##
 
-proc set_transient_vertex_buffer*(stream: uint8_t;
+proc set_transient_vertex_buffer*(stream: uint8;
                                       tvb: ptr transient_vertex_buffer_t;
                                       startVertex: uint32;
                                       numVertices: uint32) {.cdecl,
@@ -3312,7 +3312,7 @@ proc set_instance_count*(numInstances: uint32) {.cdecl,
 ##
 ##
 
-proc set_texture*(stage: uint8_t; sampler: uniform_handle_t;
+proc set_texture*(stage: uint8; sampler: uniform_handle_t;
                       handle: texture_handle_t; flags: uint32) {.cdecl,
     importc: "bgfx_set_texture", dynlib: lib.}
 ## *
@@ -3382,7 +3382,7 @@ proc submit_indirect*(id: view_id_t; program: program_handle_t;
 ##
 ##
 
-proc set_compute_index_buffer*(stage: uint8_t;
+proc set_compute_index_buffer*(stage: uint8;
                                    handle: index_buffer_handle_t;
                                    access: access_t) {.cdecl,
     importc: "bgfx_set_compute_index_buffer", dynlib: lib.}
@@ -3395,7 +3395,7 @@ proc set_compute_index_buffer*(stage: uint8_t;
 ##
 ##
 
-proc set_compute_vertex_buffer*(stage: uint8_t;
+proc set_compute_vertex_buffer*(stage: uint8;
                                     handle: vertex_buffer_handle_t;
                                     access: access_t) {.cdecl,
     importc: "bgfx_set_compute_vertex_buffer", dynlib: lib.}
@@ -3408,7 +3408,7 @@ proc set_compute_vertex_buffer*(stage: uint8_t;
 ##
 ##
 
-proc set_compute_dynamic_index_buffer*(stage: uint8_t;
+proc set_compute_dynamic_index_buffer*(stage: uint8;
     handle: dynamic_index_buffer_handle_t; access: access_t) {.cdecl,
     importc: "bgfx_set_compute_dynamic_index_buffer", dynlib: lib.}
 ## *
@@ -3420,7 +3420,7 @@ proc set_compute_dynamic_index_buffer*(stage: uint8_t;
 ##
 ##
 
-proc set_compute_dynamic_vertex_buffer*(stage: uint8_t;
+proc set_compute_dynamic_vertex_buffer*(stage: uint8;
     handle: dynamic_vertex_buffer_handle_t; access: access_t) {.cdecl,
     importc: "bgfx_set_compute_dynamic_vertex_buffer", dynlib: lib.}
 ## *
@@ -3432,7 +3432,7 @@ proc set_compute_dynamic_vertex_buffer*(stage: uint8_t;
 ##
 ##
 
-proc set_compute_indirect_buffer*(stage: uint8_t;
+proc set_compute_indirect_buffer*(stage: uint8;
                                       handle: indirect_buffer_handle_t;
                                       access: access_t) {.cdecl,
     importc: "bgfx_set_compute_indirect_buffer", dynlib: lib.}
@@ -3447,7 +3447,7 @@ proc set_compute_indirect_buffer*(stage: uint8_t;
 ##
 ##
 
-proc set_image*(stage: uint8_t; handle: texture_handle_t; mip: uint8_t;
+proc set_image*(stage: uint8; handle: texture_handle_t; mip: uint8;
                     access: access_t; format: texture_format_t) {.cdecl,
     importc: "bgfx_set_image", dynlib: lib.}
 ## *
@@ -3484,7 +3484,7 @@ proc dispatch_indirect*(id: view_id_t; program: program_handle_t;
 ##
 ##
 
-proc discard*() {.cdecl, importc: "bgfx_discard", dynlib: lib.}
+proc `discard`*() {.cdecl, importc: "bgfx_discard", dynlib: lib.}
 ## *
 ##  Blit 2D texture region between two 2D textures.
 ##  @attention Destination texture must be created with `TEXTURE_BLIT_DST` flag.
@@ -3512,9 +3512,9 @@ proc discard*() {.cdecl, importc: "bgfx_discard", dynlib: lib.}
 ##
 ##
 
-proc blit*(id: view_id_t; dst: texture_handle_t; dstMip: uint8_t;
+proc blit*(id: view_id_t; dst: texture_handle_t; dstMip: uint8;
                dstX: uint16; dstY: uint16; dstZ: uint16;
-               src: texture_handle_t; srcMip: uint8_t; srcX: uint16;
+               src: texture_handle_t; srcMip: uint8; srcX: uint16;
                srcY: uint16; srcZ: uint16; width: uint16; height: uint16;
                depth: uint16) {.cdecl, importc: "bgfx_blit", dynlib: lib.}
 
@@ -3648,20 +3648,20 @@ type
   interface_vtbl* {.bycopy.} = object
     attachment_init*: proc (this: ptr attachment_t;
                           handle: texture_handle_t; access: access_t;
-                          layer: uint16; mip: uint16; resolve: uint8_t) {.cdecl.}
+                          layer: uint16; mip: uint16; resolve: uint8) {.cdecl.}
     vertex_decl_begin*: proc (this: ptr vertex_decl_t;
                             rendererType: renderer_type_t): ptr vertex_decl_t {.
         cdecl.}
     vertex_decl_add*: proc (this: ptr vertex_decl_t; attrib: attrib_t;
-                          num: uint8_t; type: attrib_type_t;
+                          num: uint8; `type`: attrib_type_t;
                           normalized: bool; asInt: bool): ptr vertex_decl_t {.
         cdecl.}
     vertex_decl_decode*: proc (this: ptr vertex_decl_t; attrib: attrib_t;
-                             num: ptr uint8_t; type: ptr attrib_type_t;
+                             num: ptr uint8; `type`: ptr attrib_type_t;
                              normalized: ptr bool; asInt: ptr bool) {.cdecl.}
     vertex_decl_has*: proc (this: ptr vertex_decl_t; attrib: attrib_t): bool {.
         cdecl.}
-    vertex_decl_skip*: proc (this: ptr vertex_decl_t; num: uint8_t): ptr vertex_decl_t {.
+    vertex_decl_skip*: proc (this: ptr vertex_decl_t; num: uint8): ptr vertex_decl_t {.
         cdecl.}
     vertex_decl_end*: proc (this: ptr vertex_decl_t) {.cdecl.}
     vertex_pack*: proc (input: array[4, cfloat]; inputNormalized: bool;
@@ -3684,9 +3684,9 @@ type
                                  pos: array[3, cfloat]; vertices: pointer;
                                  stride: uint32; indices: pointer;
                                  numIndices: uint32; index32: bool) {.cdecl.}
-    get_supported_renderers*: proc (max: uint8_t; enum: ptr renderer_type_t): uint8_t {.
+    get_supported_renderers*: proc (max: uint8; `enum`: ptr renderer_type_t): uint8 {.
         cdecl.}
-    get_renderer_name*: proc (type: renderer_type_t): cstring {.cdecl.}
+    get_renderer_name*: proc (`type`: renderer_type_t): cstring {.cdecl.}
     init_ctor*: proc (init: ptr init_t) {.cdecl.}
     init*: proc (init: ptr init_t): bool {.cdecl.}
     shutdown*: proc () {.cdecl.}
@@ -3703,23 +3703,23 @@ type
                            releaseFn: release_fn_t; userData: pointer): ptr memory_t {.
         cdecl.}
     set_debug*: proc (debug: uint32) {.cdecl.}
-    dbg_text_clear*: proc (attr: uint8_t; small: bool) {.cdecl.}
-    dbg_text_printf*: proc (x: uint16; y: uint16; attr: uint8_t; format: cstring) {.
+    dbg_text_clear*: proc (attr: uint8; small: bool) {.cdecl.}
+    dbg_text_printf*: proc (x: uint16; y: uint16; attr: uint8; format: cstring) {.
         cdecl, varargs.}
-    dbg_text_vprintf*: proc (x: uint16; y: uint16; attr: uint8_t;
+    dbg_text_vprintf*: proc (x: uint16; y: uint16; attr: uint8;
                            format: cstring; argList: va_list) {.cdecl.}
     dbg_text_image*: proc (x: uint16; y: uint16; width: uint16;
                          height: uint16; data: pointer; pitch: uint16) {.cdecl.}
     create_index_buffer*: proc (mem: ptr memory_t; flags: uint16): index_buffer_handle_t {.
         cdecl.}
     set_index_buffer_name*: proc (handle: index_buffer_handle_t;
-                                name: cstring; len: int32_t) {.cdecl.}
+                                name: cstring; len: int32) {.cdecl.}
     destroy_index_buffer*: proc (handle: index_buffer_handle_t) {.cdecl.}
     create_vertex_buffer*: proc (mem: ptr memory_t;
                                decl: ptr vertex_decl_t; flags: uint16): vertex_buffer_handle_t {.
         cdecl.}
     set_vertex_buffer_name*: proc (handle: vertex_buffer_handle_t;
-                                 name: cstring; len: int32_t) {.cdecl.}
+                                 name: cstring; len: int32) {.cdecl.}
     destroy_vertex_buffer*: proc (handle: vertex_buffer_handle_t) {.cdecl.}
     create_dynamic_index_buffer*: proc (num: uint32; flags: uint16): dynamic_index_buffer_handle_t {.
         cdecl.}
@@ -3767,7 +3767,7 @@ type
                               uniforms: ptr uniform_handle_t; max: uint16): uint16 {.
         cdecl.}
     set_shader_name*: proc (handle: shader_handle_t; name: cstring;
-                          len: int32_t) {.cdecl.}
+                          len: int32) {.cdecl.}
     destroy_shader*: proc (handle: shader_handle_t) {.cdecl.}
     create_program*: proc (vsh: shader_handle_t; fsh: shader_handle_t;
                          destroyShaders: bool): program_handle_t {.cdecl.}
@@ -3781,7 +3781,7 @@ type
                             height: uint16; depth: uint16; cubeMap: bool;
                             hasMips: bool; numLayers: uint16;
                             format: texture_format_t) {.cdecl.}
-    create_texture*: proc (mem: ptr memory_t; flags: uint64; skip: uint8_t;
+    create_texture*: proc (mem: ptr memory_t; flags: uint64; skip: uint8;
                          info: ptr texture_info_t): texture_handle_t {.
         cdecl.}
     create_texture_2d*: proc (width: uint16; height: uint16; hasMips: bool;
@@ -3801,21 +3801,21 @@ type
                               mem: ptr memory_t): texture_handle_t {.
         cdecl.}
     update_texture_2d*: proc (handle: texture_handle_t; layer: uint16;
-                            mip: uint8_t; x: uint16; y: uint16;
+                            mip: uint8; x: uint16; y: uint16;
                             width: uint16; height: uint16;
                             mem: ptr memory_t; pitch: uint16) {.cdecl.}
-    update_texture_3d*: proc (handle: texture_handle_t; mip: uint8_t;
+    update_texture_3d*: proc (handle: texture_handle_t; mip: uint8;
                             x: uint16; y: uint16; z: uint16;
                             width: uint16; height: uint16; depth: uint16;
                             mem: ptr memory_t) {.cdecl.}
     update_texture_cube*: proc (handle: texture_handle_t; layer: uint16;
-                              side: uint8_t; mip: uint8_t; x: uint16;
+                              side: uint8; mip: uint8; x: uint16;
                               y: uint16; width: uint16; height: uint16;
                               mem: ptr memory_t; pitch: uint16) {.cdecl.}
-    read_texture*: proc (handle: texture_handle_t; data: pointer; mip: uint8_t): uint32 {.
+    read_texture*: proc (handle: texture_handle_t; data: pointer; mip: uint8): uint32 {.
         cdecl.}
     set_texture_name*: proc (handle: texture_handle_t; name: cstring;
-                           len: int32_t) {.cdecl.}
+                           len: int32) {.cdecl.}
     get_direct_access_ptr*: proc (handle: texture_handle_t): pointer {.cdecl.}
     destroy_texture*: proc (handle: texture_handle_t) {.cdecl.}
     create_frame_buffer*: proc (width: uint16; height: uint16;
@@ -3826,10 +3826,10 @@ type
                                      format: texture_format_t;
                                      textureFlags: uint64): frame_buffer_handle_t {.
         cdecl.}
-    create_frame_buffer_from_handles*: proc (num: uint8_t;
+    create_frame_buffer_from_handles*: proc (num: uint8;
         handles: ptr texture_handle_t; destroyTexture: bool): frame_buffer_handle_t {.
         cdecl.}
-    create_frame_buffer_from_attachment*: proc (num: uint8_t;
+    create_frame_buffer_from_attachment*: proc (num: uint8;
         attachment: ptr attachment_t; destroyTexture: bool): frame_buffer_handle_t {.
         cdecl.}
     create_frame_buffer_from_nwh*: proc (nwh: pointer; width: uint16;
@@ -3838,21 +3838,21 @@ type
                                        depthFormat: texture_format_t): frame_buffer_handle_t {.
         cdecl.}
     set_frame_buffer_name*: proc (handle: frame_buffer_handle_t;
-                                name: cstring; len: int32_t) {.cdecl.}
-    get_texture*: proc (handle: frame_buffer_handle_t; attachment: uint8_t): texture_handle_t {.
+                                name: cstring; len: int32) {.cdecl.}
+    get_texture*: proc (handle: frame_buffer_handle_t; attachment: uint8): texture_handle_t {.
         cdecl.}
     destroy_frame_buffer*: proc (handle: frame_buffer_handle_t) {.cdecl.}
-    create_uniform*: proc (name: cstring; type: uniform_type_t; num: uint16): uniform_handle_t {.
+    create_uniform*: proc (name: cstring; `type`: uniform_type_t; num: uint16): uniform_handle_t {.
         cdecl.}
     get_uniform_info*: proc (handle: uniform_handle_t;
                            info: ptr uniform_info_t) {.cdecl.}
     destroy_uniform*: proc (handle: uniform_handle_t) {.cdecl.}
     create_occlusion_query*: proc (): occlusion_query_handle_t {.cdecl.}
-    get_result*: proc (handle: occlusion_query_handle_t; result: ptr int32_t): occlusion_query_result_t {.
+    get_result*: proc (handle: occlusion_query_handle_t; result: ptr int32): occlusion_query_result_t {.
         cdecl.}
     destroy_occlusion_query*: proc (handle: occlusion_query_handle_t) {.cdecl.}
-    set_palette_color*: proc (index: uint8_t; rgba: array[4, cfloat]) {.cdecl.}
-    set_palette_color_rgba8*: proc (index: uint8_t; rgba: uint32) {.cdecl.}
+    set_palette_color*: proc (index: uint8; rgba: array[4, cfloat]) {.cdecl.}
+    set_palette_color_rgba8*: proc (index: uint8; rgba: uint32) {.cdecl.}
     set_view_name*: proc (id: view_id_t; name: cstring) {.cdecl.}
     set_view_rect*: proc (id: view_id_t; x: uint16; y: uint16;
                         width: uint16; height: uint16) {.cdecl.}
@@ -3861,11 +3861,11 @@ type
     set_view_scissor*: proc (id: view_id_t; x: uint16; y: uint16;
                            width: uint16; height: uint16) {.cdecl.}
     set_view_clear*: proc (id: view_id_t; flags: uint16; rgba: uint32;
-                         depth: cfloat; stencil: uint8_t) {.cdecl.}
+                         depth: cfloat; stencil: uint8) {.cdecl.}
     set_view_clear_mrt*: proc (id: view_id_t; flags: uint16; depth: cfloat;
-                             stencil: uint8_t; c0: uint8_t; c1: uint8_t;
-                             c2: uint8_t; c3: uint8_t; c4: uint8_t; c5: uint8_t;
-                             c6: uint8_t; c7: uint8_t) {.cdecl.}
+                             stencil: uint8; c0: uint8; c1: uint8;
+                             c2: uint8; c3: uint8; c4: uint8; c5: uint8;
+                             c6: uint8; c7: uint8) {.cdecl.}
     set_view_mode*: proc (id: view_id_t; mode: view_mode_t) {.cdecl.}
     set_view_frame_buffer*: proc (id: view_id_t;
                                 handle: frame_buffer_handle_t) {.cdecl.}
@@ -3907,15 +3907,15 @@ type
     encoder_set_transient_index_buffer*: proc (this: ptr encoder_t;
         tib: ptr transient_index_buffer_t; firstIndex: uint32;
         numIndices: uint32) {.cdecl.}
-    encoder_set_vertex_buffer*: proc (this: ptr encoder_t; stream: uint8_t;
+    encoder_set_vertex_buffer*: proc (this: ptr encoder_t; stream: uint8;
                                     handle: vertex_buffer_handle_t;
                                     startVertex: uint32; numVertices: uint32) {.
         cdecl.}
     encoder_set_dynamic_vertex_buffer*: proc (this: ptr encoder_t;
-        stream: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+        stream: uint8; handle: dynamic_vertex_buffer_handle_t;
         startVertex: uint32; numVertices: uint32) {.cdecl.}
     encoder_set_transient_vertex_buffer*: proc (this: ptr encoder_t;
-        stream: uint8_t; tvb: ptr transient_vertex_buffer_t;
+        stream: uint8; tvb: ptr transient_vertex_buffer_t;
         startVertex: uint32; numVertices: uint32) {.cdecl.}
     encoder_set_vertex_count*: proc (this: ptr encoder_t;
                                    numVertices: uint32) {.cdecl.}
@@ -3930,7 +3930,7 @@ type
         startVertex: uint32; num: uint32) {.cdecl.}
     encoder_set_instance_count*: proc (this: ptr encoder_t;
                                      numInstances: uint32) {.cdecl.}
-    encoder_set_texture*: proc (this: ptr encoder_t; stage: uint8_t;
+    encoder_set_texture*: proc (this: ptr encoder_t; stage: uint8;
                               sampler: uniform_handle_t;
                               handle: texture_handle_t; flags: uint32) {.
         cdecl.}
@@ -3947,22 +3947,22 @@ type
                                   start: uint16; num: uint16;
                                   depth: uint32; preserveState: bool) {.cdecl.}
     encoder_set_compute_index_buffer*: proc (this: ptr encoder_t;
-        stage: uint8_t; handle: index_buffer_handle_t; access: access_t) {.
+        stage: uint8; handle: index_buffer_handle_t; access: access_t) {.
         cdecl.}
     encoder_set_compute_vertex_buffer*: proc (this: ptr encoder_t;
-        stage: uint8_t; handle: vertex_buffer_handle_t;
+        stage: uint8; handle: vertex_buffer_handle_t;
         access: access_t) {.cdecl.}
     encoder_set_compute_dynamic_index_buffer*: proc (this: ptr encoder_t;
-        stage: uint8_t; handle: dynamic_index_buffer_handle_t;
+        stage: uint8; handle: dynamic_index_buffer_handle_t;
         access: access_t) {.cdecl.}
     encoder_set_compute_dynamic_vertex_buffer*: proc (this: ptr encoder_t;
-        stage: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+        stage: uint8; handle: dynamic_vertex_buffer_handle_t;
         access: access_t) {.cdecl.}
     encoder_set_compute_indirect_buffer*: proc (this: ptr encoder_t;
-        stage: uint8_t; handle: indirect_buffer_handle_t;
+        stage: uint8; handle: indirect_buffer_handle_t;
         access: access_t) {.cdecl.}
-    encoder_set_image*: proc (this: ptr encoder_t; stage: uint8_t;
-                            handle: texture_handle_t; mip: uint8_t;
+    encoder_set_image*: proc (this: ptr encoder_t; stage: uint8;
+                            handle: texture_handle_t; mip: uint8;
                             access: access_t; format: texture_format_t) {.
         cdecl.}
     encoder_dispatch*: proc (this: ptr encoder_t; id: view_id_t;
@@ -3974,23 +3974,23 @@ type
                                     num: uint16) {.cdecl.}
     encoder_discard*: proc (this: ptr encoder_t) {.cdecl.}
     encoder_blit*: proc (this: ptr encoder_t; id: view_id_t;
-                       dst: texture_handle_t; dstMip: uint8_t;
+                       dst: texture_handle_t; dstMip: uint8;
                        dstX: uint16; dstY: uint16; dstZ: uint16;
-                       src: texture_handle_t; srcMip: uint8_t;
+                       src: texture_handle_t; srcMip: uint8;
                        srcX: uint16; srcY: uint16; srcZ: uint16;
                        width: uint16; height: uint16; depth: uint16) {.cdecl.}
     request_screen_shot*: proc (handle: frame_buffer_handle_t;
                               filePath: cstring) {.cdecl.}
-    render_frame*: proc (msecs: int32_t): render_frame_t {.cdecl.}
+    render_frame*: proc (msecs: int32): render_frame_t {.cdecl.}
     set_platform_data*: proc (data: ptr platform_data_t) {.cdecl.}
     get_internal_data*: proc (): ptr internal_data_t {.cdecl.}
     override_internal_texture_ptr*: proc (handle: texture_handle_t;
-                                        ptr: uintptr_t): uintptr_t {.cdecl.}
+                                        `ptr`: pointer): pointer {.cdecl.}
     override_internal_texture*: proc (handle: texture_handle_t;
                                     width: uint16; height: uint16;
-                                    numMips: uint8_t;
+                                    numMips: uint8;
                                     format: texture_format_t;
-                                    flags: uint64): uintptr_t {.cdecl.}
+                                    flags: uint64): pointer {.cdecl.}
     set_marker*: proc (marker: cstring) {.cdecl.}
     set_state*: proc (state: uint64; rgba: uint32) {.cdecl.}
     set_condition*: proc (handle: occlusion_query_handle_t; visible: bool) {.
@@ -4013,13 +4013,13 @@ type
     set_transient_index_buffer*: proc (tib: ptr transient_index_buffer_t;
                                      firstIndex: uint32; numIndices: uint32) {.
         cdecl.}
-    set_vertex_buffer*: proc (stream: uint8_t;
+    set_vertex_buffer*: proc (stream: uint8;
                             handle: vertex_buffer_handle_t;
                             startVertex: uint32; numVertices: uint32) {.cdecl.}
-    set_dynamic_vertex_buffer*: proc (stream: uint8_t; handle: dynamic_vertex_buffer_handle_t;
+    set_dynamic_vertex_buffer*: proc (stream: uint8; handle: dynamic_vertex_buffer_handle_t;
                                     startVertex: uint32; numVertices: uint32) {.
         cdecl.}
-    set_transient_vertex_buffer*: proc (stream: uint8_t;
+    set_transient_vertex_buffer*: proc (stream: uint8;
                                       tvb: ptr transient_vertex_buffer_t;
                                       startVertex: uint32;
                                       numVertices: uint32) {.cdecl.}
@@ -4033,7 +4033,7 @@ type
         handle: dynamic_vertex_buffer_handle_t; startVertex: uint32;
         num: uint32) {.cdecl.}
     set_instance_count*: proc (numInstances: uint32) {.cdecl.}
-    set_texture*: proc (stage: uint8_t; sampler: uniform_handle_t;
+    set_texture*: proc (stage: uint8; sampler: uniform_handle_t;
                       handle: texture_handle_t; flags: uint32) {.cdecl.}
     touch*: proc (id: view_id_t) {.cdecl.}
     submit*: proc (id: view_id_t; program: program_handle_t;
@@ -4045,21 +4045,21 @@ type
                           indirectHandle: indirect_buffer_handle_t;
                           start: uint16; num: uint16; depth: uint32;
                           preserveState: bool) {.cdecl.}
-    set_compute_index_buffer*: proc (stage: uint8_t;
+    set_compute_index_buffer*: proc (stage: uint8;
                                    handle: index_buffer_handle_t;
                                    access: access_t) {.cdecl.}
-    set_compute_vertex_buffer*: proc (stage: uint8_t;
+    set_compute_vertex_buffer*: proc (stage: uint8;
                                     handle: vertex_buffer_handle_t;
                                     access: access_t) {.cdecl.}
-    set_compute_dynamic_index_buffer*: proc (stage: uint8_t;
+    set_compute_dynamic_index_buffer*: proc (stage: uint8;
         handle: dynamic_index_buffer_handle_t; access: access_t) {.cdecl.}
-    set_compute_dynamic_vertex_buffer*: proc (stage: uint8_t;
+    set_compute_dynamic_vertex_buffer*: proc (stage: uint8;
         handle: dynamic_vertex_buffer_handle_t; access: access_t) {.
         cdecl.}
-    set_compute_indirect_buffer*: proc (stage: uint8_t;
+    set_compute_indirect_buffer*: proc (stage: uint8;
                                       handle: indirect_buffer_handle_t;
                                       access: access_t) {.cdecl.}
-    set_image*: proc (stage: uint8_t; handle: texture_handle_t; mip: uint8_t;
+    set_image*: proc (stage: uint8; handle: texture_handle_t; mip: uint8;
                     access: access_t; format: texture_format_t) {.cdecl.}
     dispatch*: proc (id: view_id_t; program: program_handle_t;
                    numX: uint32; numY: uint32; numZ: uint32) {.cdecl.}
@@ -4067,9 +4067,9 @@ type
                             indirectHandle: indirect_buffer_handle_t;
                             start: uint16; num: uint16) {.cdecl.}
     `discard`*: proc () {.cdecl.}
-    blit*: proc (id: view_id_t; dst: texture_handle_t; dstMip: uint8_t;
+    blit*: proc (id: view_id_t; dst: texture_handle_t; dstMip: uint8;
                dstX: uint16; dstY: uint16; dstZ: uint16;
-               src: texture_handle_t; srcMip: uint8_t; srcX: uint16;
+               src: texture_handle_t; srcMip: uint8; srcX: uint16;
                srcY: uint16; srcZ: uint16; width: uint16; height: uint16;
                depth: uint16) {.cdecl.}
 
