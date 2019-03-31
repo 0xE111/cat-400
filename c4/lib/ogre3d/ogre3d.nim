@@ -17,7 +17,8 @@ elif defined(macosx):
 else:
   {.link: "/usr/lib/libOgre.so".}
   {.link: "/usr/lib/libOgreMain.so".}
-  {.passC: "-I/usr/include/OGRE".}  # -I/usr/include/OGRE/RTShaderSystem -I/usr/include/OGRE/Bites".}
+  {.link: "/usr/lib/libOgreBites.so".}
+  {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}
 
   const
     pluginsConfig = "/usr/share/OGRE/plugins.cfg"
@@ -28,7 +29,6 @@ type
   StdMap[K, V] {.header: "<map>", importcpp: "std::map".} = object
   String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = object
   # String* {.header: "<string>", importcpp: "std::string", bycopy.} = object
-  RenderWindow* {.header: "OgreRenderWindow.h", importcpp: "Ogre::RenderWindow", bycopy.} = object
   ConfigDialog* {.header: "OgreConfigDialog.h", importcpp: "Ogre::ConfigDialog", bycopy.} = object
   NameValuePairList* = StdMap[String, String]
 
@@ -44,13 +44,94 @@ proc c_str*(value: String): cstring {.importcpp: "#.c_str()".}
 proc initString*(value: cstring): String {.header: "OgrePrerequisites.h", importcpp: "Ogre::String(@)".}
 # proc initNameValuePairList*: NameValuePairList {.headerimportcpp: "NameValuePairList()".}
 
-# {.push header: "OgreVector.h".}
 
-# {.pop.}
+# ---- Colour ----
+{.push header: "OgreColourValue.h".}
+type
+  ColourValue* {.importcpp: "Ogre::ColourValue", bycopy.} = object
+
+proc initColourValue*(red: cfloat = 1.0, green: cfloat = 1.0, blue: cfloat = 1.0, alpha: cfloat = 1.0): ColourValue {.importcpp: "Ogre::ColourValue(@)", constructor.}
+{.pop.}
 
 
+# ---- Entity ----
+{.push header: "OgreEntity.h".}
+type
+  Entity* {.importcpp: "Ogre::Entity", bycopy.} = object
+{.pop.}
+
+
+# ---- MovableObject ----
+{.push header: "OgreMovableObject.h".}
+type
+  MovableObject* {.importcpp: "Ogre::MovableObject", bycopy, inheritable.} = object
+{.pop.}
+
+
+# ---- Light ----
+{.push header: "OgreLight.h".}
+type
+  Light* {.importcpp: "Ogre::Light", bycopy.} = object of MovableObject
+
+{.push importcpp: "#.$1(@)".}
+# TODO @deprecated attach to SceneNode and use SceneNode::setPosition
+proc setPosition*(this: ptr Light, x: Real, y: Real, z: Real)
+{.pop.}
+{.pop.}
+
+
+# ---- SceneNode ----
+{.push header: "OgreSceneNode.h".}
+type
+  SceneNode* {.importcpp: "Ogre::SceneNode", bycopy.} = object
+
+{.push importcpp: "#.$1(@)".}
+# TODO: const Vector3& translate = Vector3::ZERO,
+# const Quaternion& rotate = Quaternion::IDENTITY );
+proc createChildSceneNode*(this: ptr SceneNode): ptr SceneNode
+proc attachObject*(this: ptr SceneNode, obj: ptr Entity)
+{.pop.}
+{.pop.}
+
+
+# ---- Viewport ----
+{.push header: "OgreViewport.h".}
+type
+  Viewport* {.importcpp: "Ogre::Viewport", bycopy.} = object
+
+{.push importcpp: "#.$1(@)".}
+proc setBackgroundColour*(this: ptr Viewport, colour: ColourValue)
+{.pop.}
+{.pop.}
+
+
+# ---- Camera ----
+{.push header: "OgreCamera.h".}
+type
+  Camera* {.importcpp: "Ogre::Camera", bycopy.} = object
+
+{.push importcpp: "#.$1(@)".}
+# TODO: @deprecated attach to SceneNode and use SceneNode::lookAt
+proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
+proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
+proc setAspectRatio*(this: ptr Camera, ratio: Real)
+{.pop.}
+{.pop.}
+
+
+# ---- RenderWindow ----
+{.push header: "OgreRenderWindow.h".}
+type
+  RenderWindow* {.importcpp: "Ogre::RenderWindow", bycopy.} = object
+
+{.push importcpp: "#.$1(@)".}
 # proc newRenderWindow*(): ptr RenderWindow {.header: "OgreRenderWindow.h", importcpp: "new(Ogre::RenderWindow)", constructor.}
+proc addViewport*(this: ptr RenderWindow, cam: ptr Camera, ZOrder: cint = 0, left: cfloat = 0.0, top: cfloat = 0.0, width: cfloat = 1.0, height: cfloat = 1.0): ptr Viewport
+{.pop.}
+{.pop.}
 
+
+# ---- ResourceGroupManager ----
 {.push header: "OgreResourceGroupManager.h".}
 type
   ResourceGroupManager* {.importcpp: "Ogre::ResourceGroupManager", bycopy.} = object
@@ -67,18 +148,7 @@ proc initialiseAllResourceGroups*(this: ptr ResourceGroupManager)
 {.pop.}
 
 
-{.push header: "OgreCamera.h".}
-type
-  Camera* {.importcpp: "Ogre::Camera", bycopy.} = object
-
-{.push importcpp: "#.$1(@)".}
-# TODO: @deprecated attach to SceneNode and use SceneNode::lookAt
-proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
-proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
-{.pop.}
-{.pop.}
-
-
+# ---- SceneManager ----
 {.push header: "OgreSceneManager.h".}
 type
   SceneManager* {.importcpp: "Ogre::SceneManager", bycopy.} = object
@@ -93,10 +163,21 @@ type
 
 {.push importcpp: "#.$1(@)".}
 proc createCamera*(this: ptr SceneManager, name: cstring): ptr Camera
+proc createEntity*(this: ptr SceneManager, meshName: cstring): ptr Entity
+proc getRootSceneNode*(this: ptr SceneManager): ptr SceneNode
+proc setAmbientLight*(this: ptr SceneManager, colour: ColourValue)
+proc createLight*(this: ptr SceneManager, name: cstring): ptr Light
 {.pop.}
 {.pop.}
 
 
+# ---- OgreWindowEventUtilities ----
+{.push header: "OgreWindowEventUtilities.h".}
+proc messagePump() {.importcpp: "OgreBites::WindowEventUtilities::messagePump()".}
+{.pop.}
+
+
+# ---- Root ----
 {.push header: "OgreRoot.h".}
 type
   Root* {.importcpp: "Ogre::Root", bycopy.} = object
@@ -109,6 +190,8 @@ proc restoreConfig*(this: ptr Root): bool
 proc initialise*(this: ptr Root, autoCreateWindow: bool, windowTitle: cstring = "OGRE Render Window", customCapabilitiesConfig: cstring = ""): ptr RenderWindow
 proc createRenderWindow*(this: ptr Root, name: cstring, width: uint, height: uint, fullScreen: bool, miscParams: ptr NameValuePairList = nil): ptr RenderWindow
 proc createSceneManager*(this: ptr Root): ptr SceneManager
+proc renderOneFrame*(this: ptr Root): bool
+proc renderOneFrame*(this: ptr Root, timeSinceLastFrame: Real): bool
 {.pop.}
 {.pop.}
 
@@ -129,7 +212,8 @@ when isMainModule:
       if not root.restoreConfig() and not root.showConfigDialog():
         raise newException(LibraryError, "Could not load config")
 
-    test "Init SDL+Ogre3d":
+    test "SDL+Ogre3d":
+      # ---- SDL initialization ----
       if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
         raise newException(LibraryError, "Could not init SDL video subsystem")
 
@@ -143,7 +227,7 @@ when isMainModule:
       if sdl.setRelativeMouseMode(true) != 0:
         raise newException(LibraryError, "Could not enable relative mouse mode")
 
-      # get native window handle
+      # ---- Getting native window handle ----
       var info: sdl_syswm.SysWMinfo
       sdl.version(info.version)
       assert sdl_syswm.getWindowWMInfo(window, info.addr)
@@ -166,6 +250,7 @@ when isMainModule:
       # echo nativeWindowHandle.toString().c_str()
       # echo ">>>"
 
+      # ---- Initializing OGRE ----
       discard root.initialise(false)
 
       var misc: NameValuePairList
@@ -173,7 +258,7 @@ when isMainModule:
 
       var renderWindow = root.createRenderWindow("Main Render Window", 800, 600, false, misc.addr)
 
-    test "Loading resources":
+      # ---- Loading resources ----
       var resourceManager: ptr ResourceGroupManager = getSingletonPtr()
       resourceManager.addResourceLocation(mediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
 
@@ -186,10 +271,28 @@ when isMainModule:
 
       resourceManager.initialiseAllResourceGroups()
 
-    test "Scene creation":
-      var
-        sceneManager = root.createSceneManager()
-        camera = sceneManager.createCamera("camera")
+      # ---- Creating scene ----
+      var sceneManager = root.createSceneManager()
 
-      camera.setPosition(0.0, 0.0, 80.0)
+      var camera = sceneManager.createCamera("camera")
+      camera.setPosition(0.0, 0.0, 150.0)
       camera.lookAt(0, 0, -300)
+
+      # ---- Creating a viewport ----
+      var viewport = renderWindow.addViewport(camera)
+      viewport.setBackgroundColour(initColourValue(0, 0, 0))
+      camera.setAspectRatio(Real(800/600))
+
+      # ---- Setting up the scene ----
+      var entity = sceneManager.createEntity("ogrehead.mesh")
+      var node = sceneManager.getRootSceneNode().createChildSceneNode()
+      node.attachObject(entity)
+
+      sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
+
+      var light = sceneManager.createLight("MainLight");
+      light.setPosition(20.0, 80.0, 50.0);
+
+      while true:
+        messagePump()
+        discard root.renderOneFrame()
