@@ -219,7 +219,7 @@ when isMainModule:
 
       var window = sdl.createWindow(
         "Ogre3d test", 100, 100, 800, 600,
-        (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE).uint32,  # TODO: do we need WINDOW_OPENGL for other backends?
+        (sdl.WINDOW_SHOWN or sdl.WINDOW_RESIZABLE).uint32,  # seems like WINDOW_OPENGL is not necessary
       )
       if window == nil:
         raise newException(LibraryError, "Could not create SDL window")
