@@ -1,4 +1,4 @@
 nimcache
 docs
 _*
-
+*.log
