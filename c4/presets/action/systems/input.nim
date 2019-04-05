@@ -23,10 +23,11 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
   case event.kind
     of sdl.MOUSEMOTION:
       var x, y: cint
+      let radInPixel = PI / 180 / 2  # 0.5 degree in 1 pixel
       discard sdl.getRelativeMouseState(x.addr, y.addr)
       (ref PlayerRotateMessage)(
-        yaw: x.float32,
-        pitch: y.float32,
+        yaw: -x.float * radInPixel,
+        pitch: -y.float * radInPixel,
       ).send(@[
         config.systems.network,
         # config.systems.video,  # client-side prediction

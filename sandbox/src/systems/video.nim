@@ -21,6 +21,12 @@ type
 # ---- Component ----
 method init*(self: ref SandboxVideo) =
   assert config.systems.video of ref SandboxVideoSystem
+  let video = config.systems.video.as(ref SandboxVideoSystem)
+
+  self.node = video.sceneManager.getRootSceneNode().createChildSceneNode()
+
+  let entity = video.sceneManager.createEntity("ogrehead.mesh")
+  self.node.attachObject(entity)
 
 
 # ---- System ----
@@ -29,11 +35,6 @@ strMethod(SandboxVideoSystem, fields=false)
 method init*(self: ref SandboxVideoSystem) =
   procCall self.as(ref VideoSystem).init()
   logging.debug "Loading custom video resources"
-
-  # ---- Setting up the scene ----
-  var entity = self.sceneManager.createEntity("ogrehead.mesh")
-  var node = self.sceneManager.getRootSceneNode().createChildSceneNode()
-  node.attachObject(entity)
 
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 

@@ -24,7 +24,7 @@ messages.register(SetPositionMessage)
 
 
 type
-  Quaternion* = array[4, float]  # x, y, z, w
+  Quaternion* = array[4, float]  # w, x, y, z
   SetRotationMessage* = object of EntityMessage
     ## Send this message to client in order to update object's rotation.
     quaternion*: Quaternion  # rotation quaternion

@@ -35,13 +35,11 @@ method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) 
 
   # get current rotation quaternion
   let qCurrent = playerEntity[ref Physics].body.bodyGetQuaternion()[]
-  logging.debug &"Current rotation quaternion: {qCurrent}"
 
   # convert PlayerRotateMessage relative angles to rotation quaternions
-  # TODO: reenable yaw
   var qY, qX: dQuaternion
-  qFromAxisAndAngle(qY, 0, 1, 0, message.yaw)
-  qFromAxisAndAngle(qX, 1, 0, 0, message.pitch)
+  qY.qFromAxisAndAngle(0, 1, 0, message.yaw)
+  qX.qFromAxisAndAngle(1, 0, 0, message.pitch)
 
   # multiply rotation quaternions and set result as new entity rotation quaternion
   var qFinal: dQuaternion = qCurrent

@@ -18,7 +18,6 @@ method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
     assert mode == client
 
     raise newException(LibraryError, "Method not implemented")
-    # message.entity[ref Video] = Video.new()
 
 
 method process(self: ref ActionClientNetworkSystem, message: ref DeleteEntityMessage) =

@@ -4,6 +4,7 @@ import logging
 
 import ../../../core/entities
 import ../../../systems
+import ../../../lib/ogre/ogre
 import ../../../systems/video/ogre as video
 import ../../../utils/stringify
 
@@ -13,7 +14,8 @@ import ../messages
 
 type
   ActionVideoSystem* = object of VideoSystem
-    # playerNode*
+    playerNode*: ptr SceneNode
 
 
 strMethod(ActionVideoSystem, fields=false)
+

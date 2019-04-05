@@ -5,7 +5,8 @@ import ../../../config
 import ../../../core/entities
 import ../../../systems
 import ../../../systems/network/enet
-import ../../../systems/video/ogre
+import ../../../systems/video/ogre as ogre_video
+import ../../../lib/ogre/ogre
 
 import ../messages
 import ../systems/network
@@ -21,12 +22,12 @@ method process*(self: ref ActionClientNetworkSystem, message: ref ImpersonationM
 
 method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) =
   ## Store player's entity in `playerNode`; attach camera to impersonated entity
-  discard
-  # self.playerNode = message.entity[ref Video].node
+  self.playerNode = message.entity[ref Video].node
 
-  # if not self.camera.setNodeParent(self.playerNode):
-  #   const msg = "Could not attach camera to player node"
-  #   logging.error msg
-  #   raise newException(LibraryError, msg)
+  self.playerNode.attachObject(self.camera)
+  logging.debug &"Camera attached to player node"
 
-  # logging.debug &"Camera attached to player node: {self.playerNode}"
+  # TODO: move somewhere
+  self.playerNode.setPosition(0, 0, 200)
+  self.playerNode.setDirection(0.0, 0.0, -1.0)
+

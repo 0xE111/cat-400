@@ -69,7 +69,6 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
       self.prevRotation = rotation
       (ref SetRotationMessage)(
         entity: entity,
-        quaternion: [rotation[1], rotation[2], rotation[3], rotation[0]],
+        quaternion: rotation,
       ).send(config.systems.network)
       break
-

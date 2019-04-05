@@ -54,10 +54,12 @@ proc initColourValue*(red: cfloat = 1.0, green: cfloat = 1.0, blue: cfloat = 1.0
 {.pop.}
 
 
-# ---- Entity ----
-{.push header: "OgreEntity.h".}
+# ---- Quaternion ----
+{.push header: "OgreQuaternion.h".}
 type
-  Entity* {.importcpp: "Ogre::Entity", bycopy.} = object
+  Quaternion* {.importcpp: "Ogre::Quaternion", bycopy.} = object
+
+proc initQuaternion*(fW: Real, fX: Real, fY: Real, fZ: Real): Quaternion {.importcpp: "Ogre::Quaternion(@)", constructor.}
 {.pop.}
 
 
@@ -65,6 +67,13 @@ type
 {.push header: "OgreMovableObject.h".}
 type
   MovableObject* {.importcpp: "Ogre::MovableObject", bycopy, inheritable.} = object
+{.pop.}
+
+
+# ---- Entity ----
+{.push header: "OgreEntity.h".}
+type
+  Entity* {.importcpp: "Ogre::Entity", bycopy.} = object of MovableObject
 {.pop.}
 
 
@@ -80,16 +89,48 @@ proc setPosition*(this: ptr Light, x: Real, y: Real, z: Real)
 {.pop.}
 
 
+# ---- Camera ----
+{.push header: "OgreCamera.h".}
+type
+  Camera* {.importcpp: "Ogre::Camera", bycopy.} = object
+
+{.push importcpp: "#.$1(@)".}
+# TODO: @deprecated attach to SceneNode and use SceneNode::lookAt
+proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
+proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
+proc setAspectRatio*(this: ptr Camera, ratio: Real)
+{.pop.}
+{.pop.}
+
+
+# ---- Node ----
+{.push header: "OgreSceneNode.h".}
+type
+  Node* {.importcpp: "Ogre::Node", bycopy, inheritable.} = object
+
+{.push importcpp: "#.$1(@)".}
+proc setOrientation*(this: ptr Node, q: ptr Quaternion)
+proc setOrientation*(this: ptr Node, w: Real, x: Real, y: Real, z: Real)
+{.pop.}
+{.pop.}
+
+
 # ---- SceneNode ----
 {.push header: "OgreSceneNode.h".}
 type
-  SceneNode* {.importcpp: "Ogre::SceneNode", bycopy.} = object
+  SceneNode* {.importcpp: "Ogre::SceneNode", bycopy.} = object of Node
 
 {.push importcpp: "#.$1(@)".}
 # TODO: const Vector3& translate = Vector3::ZERO,
 # const Quaternion& rotate = Quaternion::IDENTITY );
 proc createChildSceneNode*(this: ptr SceneNode): ptr SceneNode
+# TODO: ugly
+proc attachObject*(this: ptr SceneNode, obj: ptr MovableObject)
 proc attachObject*(this: ptr SceneNode, obj: ptr Entity)
+proc attachObject*(this: ptr SceneNode, obj: ptr Camera)
+
+proc setPosition*(this: ptr SceneNode, x: Real, y: Real, z: Real)
+proc setDirection*(this: ptr SceneNode, x: Real, y: Real, z: Real)
 {.pop.}
 {.pop.}
 
@@ -101,20 +142,6 @@ type
 
 {.push importcpp: "#.$1(@)".}
 proc setBackgroundColour*(this: ptr Viewport, colour: ColourValue)
-{.pop.}
-{.pop.}
-
-
-# ---- Camera ----
-{.push header: "OgreCamera.h".}
-type
-  Camera* {.importcpp: "Ogre::Camera", bycopy.} = object
-
-{.push importcpp: "#.$1(@)".}
-# TODO: @deprecated attach to SceneNode and use SceneNode::lookAt
-proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
-proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
-proc setAspectRatio*(this: ptr Camera, ratio: Real)
 {.pop.}
 {.pop.}
 
