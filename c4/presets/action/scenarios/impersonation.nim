@@ -1,13 +1,11 @@
 import logging
 import strformat
 
-import ../../../lib/horde3d/horde3d as horde3d_wrapper
-
 import ../../../config
 import ../../../core/entities
 import ../../../systems
 import ../../../systems/network/enet
-import ../../../systems/video/horde3d
+import ../../../systems/video/ogre
 
 import ../messages
 import ../systems/network
@@ -23,11 +21,12 @@ method process*(self: ref ActionClientNetworkSystem, message: ref ImpersonationM
 
 method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) =
   ## Store player's entity in `playerNode`; attach camera to impersonated entity
-  self.playerNode = message.entity[ref Video].node
+  discard
+  # self.playerNode = message.entity[ref Video].node
 
-  if not self.camera.setNodeParent(self.playerNode):
-    const msg = "Could not attach camera to player node"
-    logging.error msg
-    raise newException(LibraryError, msg)
+  # if not self.camera.setNodeParent(self.playerNode):
+  #   const msg = "Could not attach camera to player node"
+  #   logging.error msg
+  #   raise newException(LibraryError, msg)
 
-  logging.debug &"Camera attached to player node: {self.playerNode}"
+  # logging.debug &"Camera attached to player node: {self.playerNode}"

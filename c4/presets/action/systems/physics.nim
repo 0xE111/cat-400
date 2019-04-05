@@ -1,7 +1,6 @@
 import tables
 import logging
 import strformat
-import typetraits
 import math
 
 import ../../../lib/ode/ode
@@ -70,7 +69,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
       self.prevRotation = rotation
       (ref SetRotationMessage)(
         entity: entity,
-        quaternion: rotation,
+        quaternion: [rotation[1], rotation[2], rotation[3], rotation[0]],
       ).send(config.systems.network)
       break
 

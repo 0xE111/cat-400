@@ -130,15 +130,7 @@ method init*(self: ref VideoSystem) =
 method update*(self: ref VideoSystem, dt: float) =
   procCall self.as(ref System).update(dt)
 
-  # if config.logLevel <= lvlDebug:
-  #   horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
-
-  # discard bgfx.frame(false)
-  # # self.model.UpdateModel(ModelUpdateFlags.Geometry)
-  # self.camera.render()
-  # self.window.glSwapWindow()
-  # horde3d.finalizeFrame()  # TODO: is this needed?
-  # horde3d.clearOverlays()
+  raise newException(LibraryError, "Not implemented")
 
 proc `=destroy`*(self: var VideoSystem) =
   bgfx.shutdown()

@@ -2,14 +2,13 @@ import logging
 import strformat
 import math
 
-import ../../../lib/horde3d/horde3d
-import ../../../lib/horde3d/horde3d/helpers
+import ../../../lib/ogre/ogre
 
 import ../../../config
 import ../../../core/messages
 import ../../../core/entities
 import ../../../systems as c4_systems
-import ../../../systems/video/horde3d as horde3d_video
+import ../../../systems/video/ogre as ogre_video
 import ../../../systems/network/enet as enet_network
 import ../systems/video
 import ../systems/input

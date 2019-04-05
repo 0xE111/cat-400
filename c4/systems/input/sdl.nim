@@ -1,7 +1,6 @@
 import sdl2/sdl
 import logging
 import strformat
-import typetraits
 
 import ../../systems
 import ../../core/messages

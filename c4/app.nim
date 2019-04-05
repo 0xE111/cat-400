@@ -6,7 +6,7 @@ import strformat
 import systems
 import systems/network/enet
 import systems/physics/ode
-import systems/video/horde3d
+import systems/video/ogre
 import systems/input/sdl
 
 

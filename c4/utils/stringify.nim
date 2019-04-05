@@ -1,7 +1,4 @@
-import typetraits
 import strformat
-
-export typetraits.name
 
 
 template strMethod*(T: typedesc, fields: bool = true) =
@@ -9,4 +6,4 @@ template strMethod*(T: typedesc, fields: bool = true) =
   ##
   ## Args:
   ##   fields - whether to output fields of T
-  method `$`*(self: ref T): string = T.name & (if fields: " " & $self[] else: "")
+  method `$`*(self: ref T): string = $(T) & (if fields: " " & $self[] else: "")

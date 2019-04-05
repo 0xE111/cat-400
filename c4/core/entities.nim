@@ -26,7 +26,6 @@
 
 import tables
 import strformat
-import typetraits
 import logging
 
 import messages
@@ -95,9 +94,9 @@ proc getComponents*(T: typedesc): ref Table[Entity, T] =
   #   table = newTable[Entity, t]()
   #   if destructors.isNil:  # this line may be called even earlier than `var` declarations of this file
   #     destructors = @[]  # thus we need to init whatever we need
-  #   destructors.add(proc(entity: Entity) {.closure.} = echo "Destroyed " & t.name & " for entity " & $entity)
+  #   destructors.add(proc(entity: Entity) {.closure.} = echo "Destroyed " & $t & " for entity " & $entity)
   #   # destructors.add(proc(entity: Entity) {.closure.} = discard getComponents(t); echo "OK")
-  #   echo "Table just initialized for type " & $t.name
+  #   echo "Table just initialized for type " & $t
   # return table
 
 proc delete*(entity: Entity) =

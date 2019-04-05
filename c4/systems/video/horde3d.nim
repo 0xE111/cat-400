@@ -1,10 +1,9 @@
-import sdl2.sdl
+import sdl2/sdl
 import logging
 import strformat
 import os
 import ospaths
 import sequtils
-import typetraits
 
 import ../../lib/horde3d/horde3d
 

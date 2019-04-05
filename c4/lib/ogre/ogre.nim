@@ -21,8 +21,8 @@ else:
   {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}
 
   const
-    pluginsConfig = "/usr/share/OGRE/plugins.cfg"
-    mediaDir = "/usr/share/OGRE/Media"
+    pluginsConfig* = "/usr/share/OGRE/plugins.cfg"
+    mediaDir* = "/usr/share/OGRE/Media"
 
 
 type
@@ -185,7 +185,7 @@ type
 proc newRoot*(pluginFileName: cstring = pluginsConfig, configFileName: cstring = "ogre.cfg", logFileName: cstring = "ogre.log"): ptr Root {.importcpp: "new Ogre::Root(@)", constructor.}
 
 {.push importcpp: "#.$1(@)".}
-proc showConfigDialog(this: ptr Root, dialog: ptr ConfigDialog = nil): bool
+proc showConfigDialog*(this: ptr Root, dialog: ptr ConfigDialog = nil): bool
 proc restoreConfig*(this: ptr Root): bool
 proc initialise*(this: ptr Root, autoCreateWindow: bool, windowTitle: cstring = "OGRE Render Window", customCapabilitiesConfig: cstring = ""): ptr RenderWindow
 proc createRenderWindow*(this: ptr Root, name: cstring, width: uint, height: uint, fullScreen: bool, miscParams: ptr NameValuePairList = nil): ptr RenderWindow

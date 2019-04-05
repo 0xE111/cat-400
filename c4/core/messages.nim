@@ -6,7 +6,6 @@ import streams
 import strformat
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
-import typetraits
 import unittest
 import logging
 
@@ -80,7 +79,7 @@ proc unpack*(data: string): ref Message =
 template register*(MessageType: typedesc) =
   let messageId = uint8(packTable.len + 1)
   method packId*(self: ref MessageType): uint8 = messageId
-  method `$`*(self: ref MessageType): string = self[].type.name & $self[]
+  method `$`*(self: ref MessageType): string = $(self[].type) & $self[]
 
   packTable.add(
     messageId,
@@ -102,7 +101,7 @@ template register*(MessageType: typedesc) =
     )
   )
 
-  # echo "Registered " & MessageType.name
+  # echo "Registered " & $MessageType
 
 
 when isMainModule:

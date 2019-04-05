@@ -5,7 +5,6 @@ import logging
 import tables
 import strformat
 import streams
-import typetraits
 
 import ../../lib/enet/enet
 
