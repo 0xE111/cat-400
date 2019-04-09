@@ -23,7 +23,7 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
   case event.kind
     of sdl.MOUSEMOTION:
       var x, y: cint
-      let radInPixel = PI / 180 / 2  # 0.5 degree in 1 pixel
+      let radInPixel = PI / 180 / 4  # 0.25 degree in 1 pixel
       discard sdl.getRelativeMouseState(x.addr, y.addr)
       (ref PlayerRotateMessage)(
         yaw: -x.float * radInPixel,

@@ -142,12 +142,13 @@ method init*(self: ref VideoSystem) =
   # ---- Creating scene ----
   self.sceneManager = self.root.createSceneManager()
 
+  # ---- Camera ----
   self.camera = self.sceneManager.createCamera("camera")
+  self.camera.setAspectRatio(Real(window.width/window.height))
 
-  # ---- Creating a viewport ----
+  # ---- Viewport ----
   self.viewport = self.renderWindow.addViewport(self.camera)
   self.viewport.setBackgroundColour(initColourValue(0, 0, 0))
-  self.camera.setAspectRatio(Real(window.width/window.height))
 
   logging.debug "Ogre initialized"
 
