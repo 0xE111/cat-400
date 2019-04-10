@@ -27,7 +27,3 @@ method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) 
   self.playerNode.attachObject(self.camera)
   logging.debug &"Camera attached to player node"
 
-  # TODO: move somewhere
-  self.playerNode.setPosition(0, 0, 200)
-  self.playerNode.setDirection(0.0, 0.0, -1.0)
-

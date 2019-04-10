@@ -45,10 +45,12 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
 
   # define cubes locations
   let cubeCoords = @[
-    (0.0, 0.0, -60.0),
+    (0.0, 0.0, -300.0),
     (-300.0, 0.0, 0.0),
-    (0.0, 0.0, 6000.0),
-    (900.0, 0.0, 0.0),
+    (0.0, 0.0, 300.0),
+    (300.0, 0.0, 0.0),
+    (0.0, 300.0, 0.0),
+    (0.0, -300.0, 0.0),
   ]
 
   var cube: Entity

@@ -41,19 +41,17 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
 
           case event.key.keysym.sym
             of K_w:
-              moveMessage.yaw = PI / 2
+              moveMessage.yaw = 0
             of K_s:
-              moveMessage.yaw = 3 * PI / 2
-            of K_a:
               moveMessage.yaw = PI
+            of K_a:
+              moveMessage.yaw = PI / 2
             of K_d:
-              discard  # yaw == 0
+              moveMessage.yaw = -PI / 2
             else:
               discard
 
-          raise newException(LibraryError, "Not implemented")
-          # TODO: implement
-          # moveMessage.send(self)
+          moveMessage.send(config.systems.network)
 
         else:
           discard

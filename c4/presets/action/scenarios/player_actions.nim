@@ -19,14 +19,11 @@ import ../messages as action_messages
 
 method store*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
   ## Allow server to store ``PlayerRotateMessage``
-  if not message.isLocal:
-    procCall self.as(ref System).store(message)
-
-  else:
-    logging.warn &"{self} cannot send {message}, discarding"
+  assert not message.isLocal
+  procCall self.as(ref System).store(message)
 
 
-method process(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
+method process*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
   message.send(config.systems.physics)
 
 
@@ -53,25 +50,33 @@ proc eulFromQ(q: dQuaternion): tuple[z, y, x: float] =
   eulFromR(m)
 
 
+proc getPitchYaw(q: dQuaternion): tuple[yaw: float, pitch: float] =
+  ## Convert quaternion as only yaw and pitch rotations
+
+  # rotation in Euler angles
+  let eul = q.eulFromQ()
+
+  # get current yaw & pitch (as if it was without roll)
+  let
+    flip: bool = not(abs(eul.z) <= 0.001)
+
+  result.yaw = if not flip: eul.y else: PI - eul.y
+  result.pitch = if not flip: eul.x else: eul.x + (if eul.x < 0: PI else: -PI)
+
+
 method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) =
   let playerEntity = self.impersonationsMap[message.sender]
 
   # get current rotation quaternion
   let qCurrent = playerEntity[ref Physics].body.bodyGetQuaternion()[]
 
-  # current rotation in Euler angles
-  let eulCurrent = qCurrent.eulFromQ()
-
-  # get current yaw & pitch (as if it was without roll)
-  let
-    flip: bool = not(abs(eulCurrent.z) <= 0.001)
-    currentYaw = if not flip: eulCurrent.y else: PI - eulCurrent.y
-    currentPitch = if not flip: eulCurrent.x else: eulCurrent.x + (if eulCurrent.x < 0: PI else: -PI)
+  # get current yaw and pitch
+  let current = qCurrent.getPitchYaw()
 
   # calculate combined pitch and yaw
   let
-    yaw = currentYaw + message.yaw
-    pitch = max(min(currentPitch + message.pitch, PI/2 * 0.99), -PI/2 * 0.99)
+    yaw = current.yaw + message.yaw
+    pitch = max(min(current.pitch + message.pitch, PI/2 * 0.99), -PI/2 * 0.99)
 
   # convert PlayerRotateMessage relative angles to rotation quaternions
   var qYaw, qPitch: dQuaternion
@@ -83,3 +88,59 @@ method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) 
   qFinal.qMultiply0(qYaw, qPitch)
 
   playerEntity[ref Physics].body.bodySetQuaternion(qFinal)
+
+
+method store*(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
+  ## Allow server to store ``PlayerMoveMessage``
+  assert not message.isLocal
+  procCall self.as(ref System).store(message)
+
+
+method process(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
+  message.send(config.systems.physics)
+
+
+# proc apply*(vector: (float, float, float), q: dQuaternion): (float, float, float) =
+#   result[0] = vector[0] * (1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]) +
+#               vector[1] * 2 * (q[1] * q[2] + q[0] * q[3]) +
+#               vector[2] * 2 * (q[1] * q[3] - q[0] * q[2])
+
+#   result[1] = vector[0] * 2 * (q[1] * q[2] - q[0] * q[3]) +
+#               vector[1] * (1 - 2 * q[1] * q[1] - 2 * q[3] * q[3]) +
+#               vector[2] * 2 * (q[2] * q[3] + q[0] * q[1])
+
+#   result[2] = vector[0] * 2 * (q[1] * q[3] + q[0] * q[2]) +
+#               vector[1] * 2 * (q[2] * q[3] - q[0] * q[1]) +
+#               vector[2] * (1 - 2 * q[1] * q[1] - 2 * q[2] * q[2])
+
+
+method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =
+  let playerEntity = self.impersonationsMap[message.sender]
+
+  # get current position
+  let position = playerEntity[ref Physics].body.bodyGetPosition()[]
+
+  let angles = playerEntity[ref Physics].body.bodyGetQuaternion()[].getPitchYaw()
+
+  let
+    yaw = angles.yaw + message.yaw
+    pitch = angles.pitch
+
+  let
+    x = cos(pitch) * -sin(yaw)
+    y = sin(pitch)
+    z = cos(pitch) * -cos(yaw)
+
+  # # calculate selected direction as a result of yaw on (0, 0, -1) vector
+  # let selectedDirection = (-sin(message.yaw) , 0.0, -cos(message.yaw))
+
+  # # rotate selected direction using body's rotation quaternion
+  # let direction = selectedDirection.apply(playerEntity[ref Physics].body.bodyGetQuaternion()[])
+
+  # echo &"<<<<< Direction: {direction}"
+
+  playerEntity[ref Physics].body.bodySetPosition(
+    position[0] + x * 5,
+    position[1] + y * 5,
+    position[2] + z * 5,
+  )
