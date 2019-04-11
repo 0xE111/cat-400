@@ -4,15 +4,6 @@
 
 ![Teaser](https://cat400.io/media/Screenshot_2019-04-11_12-09-20.jpg)
 
-## Wrappers
-
-There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately:
-
-* [enet](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/enet)
-* [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/horde3d)
-* [bgfx](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/bgfx)
-* [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/ode)
-
 ## Brief overview
 
 "Cat 400" is a cross-platform framework designed to provide nice experience in game development. Written in nim language, it benefits from the language's elegance and expressiveness, as well as compilation to fast native code.
@@ -29,4 +20,13 @@ Key features:
 
 ## Docs
 
-* [Introduction](https://cat400.io/introduction/)
+* [Introduction](https://cat400.io/blog/introduction/)
+
+## Wrappers
+
+There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately:
+
+* [enet](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/enet)
+* [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/horde3d)
+* [bgfx](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/bgfx)
+* [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/ode)
