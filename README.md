@@ -2,7 +2,7 @@
 
 "Cat-400" (c4) is a game framework for Nim programming language.
 
-![Teaser](https://github.com/c0ntribut0r/cat-400/raw/master/teaser.jpg)
+![Teaser](https://cat400.io/media/Screenshot_2019-04-11_12-09-20.jpg)
 
 ## Wrappers
 
@@ -15,7 +15,9 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 
 ## Brief overview
 
-C4 is more educational project rather then professional software, however if you like it you may use it and make contributions.
+"Cat 400" is a cross-platform framework designed to provide nice experience in game development. Written in nim language, it benefits from the language's elegance and expressiveness, as well as compilation to fast native code.
+
+Officially supported platforms are Linux, Mac OS and Windows. Support for other platforms may be added later or implemented by independent contributors.
 
 Key features:
 - client-server architecture by default (even for single-player games) with network support
