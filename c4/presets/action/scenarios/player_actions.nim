@@ -100,47 +100,25 @@ method process(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessa
   message.send(config.systems.physics)
 
 
-# proc apply*(vector: (float, float, float), q: dQuaternion): (float, float, float) =
-#   result[0] = vector[0] * (1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]) +
-#               vector[1] * 2 * (q[1] * q[2] + q[0] * q[3]) +
-#               vector[2] * 2 * (q[1] * q[3] - q[0] * q[2])
-
-#   result[1] = vector[0] * 2 * (q[1] * q[2] - q[0] * q[3]) +
-#               vector[1] * (1 - 2 * q[1] * q[1] - 2 * q[3] * q[3]) +
-#               vector[2] * 2 * (q[2] * q[3] + q[0] * q[1])
-
-#   result[2] = vector[0] * 2 * (q[1] * q[3] + q[0] * q[2]) +
-#               vector[1] * 2 * (q[2] * q[3] - q[0] * q[1]) +
-#               vector[2] * (1 - 2 * q[1] * q[1] - 2 * q[2] * q[2])
-
-
 method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =
   let playerEntity = self.impersonationsMap[message.sender]
 
   # get current position
   let position = playerEntity[ref Physics].body.bodyGetPosition()[]
 
-  let angles = playerEntity[ref Physics].body.bodyGetQuaternion()[].getPitchYaw()
+  # calculate selected direction as a result of yaw on (0, 0, -1) vector
+  let direction: array[3, float] = [-sin(message.yaw) , 0.0, -cos(message.yaw)]
 
-  let
-    yaw = angles.yaw + message.yaw
-    pitch = angles.pitch
-
-  let
-    x = cos(pitch) * -sin(yaw)
-    y = sin(pitch)
-    z = cos(pitch) * -cos(yaw)
-
-  # # calculate selected direction as a result of yaw on (0, 0, -1) vector
-  # let selectedDirection = (-sin(message.yaw) , 0.0, -cos(message.yaw))
-
-  # # rotate selected direction using body's rotation quaternion
-  # let direction = selectedDirection.apply(playerEntity[ref Physics].body.bodyGetQuaternion()[])
-
-  # echo &"<<<<< Direction: {direction}"
+  # get current rotation matrix and apply it to selected direction
+  let rotation = playerEntity[ref Physics].body.bodyGetRotation()[]
+  let finalDirection: array[3, float] = [
+    rotation[0] * direction[0] + rotation[1] * direction[1] + rotation[2] * direction[2],
+    rotation[4] * direction[0] + rotation[5] * direction[1] + rotation[6] * direction[2],
+    rotation[8] * direction[0] + rotation[9] * direction[1] + rotation[10] * direction[2],
+  ]
 
   playerEntity[ref Physics].body.bodySetPosition(
-    position[0] + x * 5,
-    position[1] + y * 5,
-    position[2] + z * 5,
+    position[0] + finalDirection[0] * 5,
+    position[1] + finalDirection[1] * 5,
+    position[2] + finalDirection[2] * 5,
   )
