@@ -22,7 +22,7 @@ method store*(self: ref System, message: ref Message) {.base.} =
   self.messageQueue.addLast(message)
 
 method process*(self: ref System, message: ref Message) {.base.} =
-  logging.warn &"{self} has no rule to process stored {message}, ignoring"
+  logging.warn &"{$(self)} has no rule to process stored {$(message)}, ignoring"
 
 method init*(self: ref System) {.base.} =
   self.messageQueue = initDeque[ref Message]()
@@ -33,14 +33,14 @@ method update*(self: ref System, dt: float) {.base.} =
     var message: ref Message
     while self.messageQueue.len > 0:
       message = self.messageQueue.popFirst()
-      logging.debug &"{self} processing {message}"
+      logging.debug &"{$(self)} processing {$(message)}"
       self.process(message)  # may create new messages during work
 
 
 # ---- Message procs ----
 proc send*(self: ref Message, system: ref System) =
   if not system.isNil:
-    logging.debug &"Sending {self} to {system}"
+    logging.debug &"Sending {$(self)} to {$(system)}"
     system.store(self)
 
 proc send*(self: ref Message, systems: seq[ref System]) =

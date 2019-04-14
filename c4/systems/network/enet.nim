@@ -57,19 +57,22 @@ proc toString(packet: enet.Packet): string =
   result = newString(packet.dataLength)
   copyMem(result.cstring, packet.data, packet.dataLength)
 
+proc getPort*(self: ref NetworkSystem): Port =
+  self.port
+
 # ---- messages ----
 type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
     ##
-    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(config.systems.network)``
+    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(systems["network"])``
 
     address*: Address  # Address to connect to (server's address)
 
   DisconnectMessage* = object of Message
     ## Send this message to network system in order to disconnect from server.
     ##
-    ## Example: ``new(DisconnectMessage).send(config.systems.network)``
+    ## Example: ``new(DisconnectMessage).send(systems["network"])``
 
   ConnectionOpenedMessage* = object of Message
     ## This message is sent to network system when new connection with remote peer is established.
@@ -106,7 +109,7 @@ method send*(
     )
 
   let sendSign = if reliable: "==>" else: "-->"
-  logging.debug &"{sendSign} Network: sending {message} (packed as \"{data.stringify}\", len={data.len})"
+  logging.debug &"{sendSign} Network: sending {$(message)} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer == nil:  # broadcast
     enet.host_broadcast(self.host, channelId, packet)
@@ -171,7 +174,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       var peersToDelete: seq[ptr enet.Peer] = @[]
       for peer in self.peersMap.keys():
         if peer.address == event.peer.address:
-          logging.debug &"-x- Closing existing connection: {event.peer[]}"
+          logging.debug &"-x- Closing existing connection: {$(event.peer[])}"
           self.disconnect(peer)
           peersToDelete.add(peer)
 
@@ -185,7 +188,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       let newPeer = new(messages.Peer)
       self.peersMap[event.peer] = newPeer
       (ref ConnectionOpenedMessage)(peer: newPeer).send(self)
-      logging.debug &"--- Connection established: {event.peer[]}"
+      logging.debug &"--- Connection established: {$(event.peer[])}"
       logging.debug &"Current # of connections: {self.peersMap.len}"
 
     of EVENT_TYPE_RECEIVE:
@@ -195,21 +198,21 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
         message = event.packet[].toString().unpack()
       except Exception as exc:
         # do not fail if received malformed message
-        logging.warn &"Could not unpack packet {event.packet[].toString()} from {event.peer[]}: {exc.msg}"
+        logging.warn &"Could not unpack packet {event.packet[].toString()} from {$(event.peer[])}: {exc.msg}"
         return
 
       # include sender info into the message
       if self.peersMap.hasKey(event.peer):
         message.sender = self.peersMap[event.peer]
-        logging.debug &"<-- Received {message} from peer {message.sender[]}"
+        logging.debug &"<-- Received {$(message)} from peer {$(message.sender[])}"
         self.store(message)  # TODO: event.channelID data is missing in message
       else:
-        logging.warn &"x<- Received {message} from unregistered peer {event.peer[]}, discarding"
+        logging.warn &"x<- Received {$(message)} from unregistered peer {$(event.peer[])}, discarding"
 
       enet.packet_destroy(event.packet)
 
     of EVENT_TYPE_DISCONNECT:
-      logging.debug &"-x- Connection closed: {event.peer[]}"
+      logging.debug &"-x- Connection closed: {$(event.peer[])}"
       (ref ConnectionClosedMessage)(peer: self.peersMap[event.peer]).send(self)
       self.peersMap.del(event.peer)
       event.peer.peer_reset()
@@ -240,7 +243,7 @@ method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, 
 
   if not force:
     logging.warn "Soft disconnection from {peer[]} failed"
-  logging.debug &"-x- Force disconnected from {peer[]}"
+  logging.debug &"-x- Force disconnected from {$(peer[])}"
   self.peersMap.del(peer)
   peer.peer_reset()
 
@@ -283,7 +286,7 @@ method store*(self: ref NetworkSystem, message: ref Message) =
     # TODO: group and send bulk?
 
   else:
-    logging.warn &"Dropped {message}: external message without specific handler"
+    logging.warn &"Dropped {$(message)}: external message without specific handler"
 
 
 method store*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
@@ -304,7 +307,7 @@ method process*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
   logging.debug &"Disconnecting"
   self.disconnect()
 
-  logging.debug &"Connecting to {message.address}"
+  logging.debug &"Connecting to {$(message.address)}"
   self.connect(message.address)
 
 
@@ -362,7 +365,7 @@ method process*(self: ref ServerNetworkSystem, message: ref SystemReadyMessage) 
   ## Print info message
   assert message.isLocal
 
-  logging.info &"Server listening at localhost:{config.settings.network.port}"
+  logging.info &"Server listening at localhost:{self.port}"
 
 
 method store*(self: ref NetworkSystem, message: ref SystemQuitMessage) =
@@ -400,7 +403,7 @@ method store*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
     procCall self.as(ref System).store(message)  # store this message
 
   else:
-    logging.warn &"Client cannot send {message}, discarding"
+    logging.warn &"Client cannot send {$(message)}, discarding"
 
 
 method process*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
@@ -409,7 +412,7 @@ method process*(self: ref ClientNetworkSystem, message: ref EntityMessage) =
 
   # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
   if not self.entitiesMap.hasKey(message.entity):
-    logging.warn &"No local entity found for remote entity {message.entity} in message {message}"
+    logging.warn &"No local entity found for remote entity {message.entity} in message {$(message)}"
     return
 
   let externalEntity = message.entity

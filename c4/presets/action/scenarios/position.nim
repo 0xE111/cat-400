@@ -24,7 +24,7 @@ method process*(self: ref ActionClientNetworkSystem, message: ref SetPositionMes
 
 method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
   if not message.entity.has(ref Video):
-    logging.warn &"{self} received {message}, but has no Video component"
+    logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     # raise newException(LibraryError, "Shit im getting errors")
     # TODO: When client just connected to server, the server still may broadcast some messages
     # before syncing world state with client. When these messages reach client, it doesn't have
@@ -42,7 +42,7 @@ method process*(self: ref ActionClientNetworkSystem, message: ref SetRotationMes
 
 method process*(self: ref ActionVideoSystem, message: ref SetRotationMessage) =
   if not message.entity.has(ref Video):
-    logging.warn &"{self} received {message}, but has no Video component"
+    logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     return
 
   message.entity[ref Video].node.setOrientation(

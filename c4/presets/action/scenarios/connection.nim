@@ -41,7 +41,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   player[ref Physics].body.bodySetMass(mass.addr)
 
   # send all scene data
-  logging.debug &"Sending all scene data to peer {message.peer[]}"
+  logging.debug &"Sending all scene data to peer {$(message.peer[])}"
   for entity, physics in getComponents(ref Physics).pairs():
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(systems["network"])
 
