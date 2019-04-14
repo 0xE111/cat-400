@@ -7,6 +7,7 @@ const buildDir = thisDir().parentDir.parentDir / "build"
 switch("nimcache", buildDir / "nimcache")
 switch("out", buildDir / "sandbox")
 switch("debugger", "native")
+switch("multimethods", "on")
 
 when defined(windows):
   switch("d", "SDL_VIDEO_DRIVER_WINDOWS")

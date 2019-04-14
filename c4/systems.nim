@@ -1,22 +1,19 @@
 import deques
 import logging
 import strformat
-import utils/stringify
 
 import core/messages
 import core/entities
-import utils/stringify
 
 
 type
-  MessageQueue* = Deque[ref Message]
-
-  System* = object {.inheritable.}
-    messageQueue: MessageQueue
+  System* {.inheritable.} = object
+    messageQueue: Deque[ref Message]
 
 
 # ---- System procs ----
-strMethod(System, fields=false)
+method `$`*(self: ref System): string {.base.} = $(self)
+
 
 method store*(self: ref System, message: ref Message) {.base.} =
   self.messageQueue.addLast(message)

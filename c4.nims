@@ -7,3 +7,5 @@ elif defined(linux):
 
 elif defined(macosx):
   switch("d", "SDL_VIDEO_DRIVER_COCOA")
+
+switch("multimethods", "on")

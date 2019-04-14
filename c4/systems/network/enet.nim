@@ -21,6 +21,13 @@ type
   Address* = tuple[host: Host, port: Port]
 
   NetworkSystem* = object of System
+    # TODO: use initialization at declaration when available
+    numConnections: csize
+    numChannels: csize
+    inBandwidth: uint16
+    outBandwidth: uint16
+
+    port: Port
     host: ptr enet.Host  # remember own host
     peersMap: Table[ptr enet.Peer, ref messages.Peer]  # table for converting enet.Peer into messages.Peer
 
@@ -90,7 +97,6 @@ messages.register(ConnectionClosedMessage)
 
 
 # ---- methods ----
-strMethod(NetworkSystem, fields=false)
 
 method send*(
   self: ref NetworkSystem,
@@ -124,12 +130,13 @@ method send*(
     enet.host_flush(self.host)
 
 method init*(self: ref NetworkSystem) =
+
   # TODO: make these params configurable
-  var
-    numConnections = 32
-    numChannels = 1
-    inBandwidth = 0
-    outBandwidth = 0
+  self.numConnections = 32
+  self.numChannels = 1
+  self.inBandwidth = 0
+  self.outBandwidth = 0
+  self.port = 11477'u16
 
   if enet.initialize() != 0:
     let err = "An error occurred during initialization"
@@ -139,12 +146,12 @@ method init*(self: ref NetworkSystem) =
   # set up address - nil for client, HOST_ANY+port for server
   var addressPtr: ptr enet.Address = nil
   if mode == server:
-    var address = enet.Address(host: enet.HOST_ANY, port: config.settings.network.port)
+    var address = enet.Address(host: enet.HOST_ANY, port: self.port)
     addressPtr = address.addr
 
-  self.host = enet.host_create(addressPtr, numConnections.csize, numChannels.csize, inBandwidth.uint16, outBandwidth.uint16)
+  self.host = enet.host_create(addressPtr, self.numConnections, self.numChannels, self.inBandwidth, self.outBandwidth)
   if self.host == nil:
-    raise newException(LibraryError, "An error occured while trying to init host. Maybe that port is already in use?")
+    raise newException(LibraryError, "An error occured while trying to init host. Maybe port {self.port} is already in use?")
 
   self.peersMap = initTable[ptr enet.Peer, ref messages.Peer]()
 

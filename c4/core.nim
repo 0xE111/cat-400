@@ -37,7 +37,6 @@ proc run*() =
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
-            echo config.version
             echo "C4 " & frameworkVersion
             echo "Nim " & NimVersion
             echo "Compiled @ " & CompileDate & " " & CompileTime

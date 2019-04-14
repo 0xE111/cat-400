@@ -23,6 +23,12 @@ type
 
   VideoSystem* = object of System
     window*: sdl.Window
+    windowConfig*: tuple[
+      title: string,
+      x, y: int,
+      width, height: int,
+      fullscreen: bool,
+    ]
 
     root*: ptr ogre.Root
     resourceManager*: ptr ResourceGroupManager
@@ -52,7 +58,15 @@ method init*(self: ref VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
-  let window = config.settings.video.window  # just an alias
+  # initialization
+  self.windowConfig = (
+    title: "Cat 400",
+    x: 200,
+    y: 400,
+    width: 800,
+    height: 600,
+    fullscreen: false,
+  )
 
   try:
     if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
@@ -63,12 +77,12 @@ method init*(self: ref VideoSystem) =
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
 
     self.window = sdl.createWindow(
-      &"{config.title} v{config.version}",
-      window.x,
-      window.y,
-      window.width,
-      window.height,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      self.windowConfig.title,
+      self.windowConfig.x,
+      self.windowConfig.y,
+      self.windowConfig.width,
+      self.windowConfig.height,
+      (sdl.WINDOW_SHOWN or sdl.WINDOW_RESIZABLE or (if self.windowConfig.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
@@ -124,7 +138,7 @@ method init*(self: ref VideoSystem) =
   var params: NameValuePairList
   params[initString("externalWindowHandle")] = nativeWindowHandle.toString()
 
-  self.renderWindow = self.root.createRenderWindow("Main Render Window", window.width.uint, window.height.uint, false, params.addr)
+  self.renderWindow = self.root.createRenderWindow("Main Render Window", self.windowConfig.width.uint, self.windowConfig.height.uint, false, params.addr)
 
   # ---- Loading resources ----
   self.resourceManager = getSingletonPtr()
@@ -144,7 +158,7 @@ method init*(self: ref VideoSystem) =
 
   # ---- Camera ----
   self.camera = self.sceneManager.createCamera("camera")
-  self.camera.setAspectRatio(Real(window.width/window.height))
+  self.camera.setAspectRatio(Real(self.windowConfig.width / self.windowConfig.height))
 
   # ---- Viewport ----
   self.viewport = self.renderWindow.addViewport(self.camera)
