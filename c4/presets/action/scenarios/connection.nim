@@ -8,7 +8,7 @@ import ../../../lib/ode/ode
 import ../../../config
 import ../../../utils/loading
 import ../../../core/messages
-import ../../../systems
+import ../../../systems as systems_module
 import ../../../systems/network/enet
 import ../../../systems/physics/ode as ode_physics
 import ../../../core/entities
@@ -20,12 +20,12 @@ import ../messages as action_messages
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## Prepare scene on client side, that's why we send this message to video system.
-  message.send(config.systems.video)
+  message.send(systems["video"])
 
 
 method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
-  message.send(config.systems.physics)
+  message.send(systems["physics"])
 
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMessage) =
@@ -43,21 +43,21 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   # send all scene data
   logging.debug &"Sending all scene data to peer {message.peer[]}"
   for entity, physics in getComponents(ref Physics).pairs():
-    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(config.systems.network)
+    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(systems["network"])
 
     let position = physics.body.bodyGetPosition()[]
-    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(config.systems.network)
+    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(systems["network"])
 
     # TODO: send "rotate" message
 
   self.impersonationsMap[message.peer] = player  # add it to mapping
-  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(config.systems.network)
+  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(systems["network"])
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Forward this message to video system in order to unload the scene
   procCall self.as(ref ClientNetworkSystem).process(message)  # trigger mappings
-  message.send(config.systems.video)
+  message.send(systems["video"])
 
   logging.debug "Flushing local entities"
   entities.flush()
@@ -66,7 +66,7 @@ method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClos
 method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.
   procCall self.as(ref ServerNetworkSystem).process(message)  # trigger mappings
-  message.send(config.systems.physics)
+  message.send(systems["physics"])
 
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =

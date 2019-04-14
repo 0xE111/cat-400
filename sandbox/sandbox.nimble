@@ -24,7 +24,7 @@ requires "c4 >= " & version
 if detectOs(Linux):
   foreignDep "sdl"
   foreignDep "enet"
-  foreignDep "horde3d"
+  foreignDep "ogre"
   foreignDep "ode"
 
 proc copyDir(src, dst: string) =

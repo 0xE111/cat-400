@@ -1,9 +1,9 @@
 ## This is a global config for the framework. You may change any of the settings by direct assignment: ``config.title = "Your game title"``
 
-from logging import Level
-from utils/loading import load
+import logging
+import tables
 
-from systems as systems_module import System
+import systems as systems_module
 
 
 type
@@ -22,14 +22,11 @@ var
   version* = "0.0"
 
   # here you may override default systems with your custom ones
-  systems* = (
-    network: (ref System)(nil),
-    network_server: (ref System)(nil),  # TODO: refactor this
-    network_client: (ref System)(nil),
-    input: (ref System)(nil),
-    video: (ref System)(nil),
-    physics: (ref System)(nil),
-  )
+  serverSystems* = initOrderedTable[string, ref System]()
+  clientSystems* = initOrderedTable[string, ref System]()
+
+  # do not modify this
+  systems* = initOrderedTable[string, ref System]()
 
   # here are parameters for systems initialization
   settings* = (
@@ -38,10 +35,10 @@ var
     ),
     video: (
       window: (
-        x: 400,
+        x: 200,
         y: 400,
-        width: 600,
-        height: 400,
+        width: 800,
+        height: 600,
         fullscreen: false,
       ),
     ),

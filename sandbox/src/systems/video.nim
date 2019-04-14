@@ -1,9 +1,10 @@
 import logging
 import strformat
+import tables
 
 import c4/config
 import c4/core/entities
-import c4/systems
+import c4/systems as systems_module
 import c4/systems/network/enet
 import c4/systems/video/ogre as ogre_video
 import c4/lib/ogre/ogre
@@ -20,12 +21,12 @@ type
 
 # ---- Component ----
 method init*(self: ref SandboxVideo) =
-  assert config.systems.video of ref SandboxVideoSystem
-  let video = config.systems.video.as(ref SandboxVideoSystem)
+  assert systems["video"] of ref SandboxVideoSystem
+  let videoSystem = systems["video"].as(ref SandboxVideoSystem)
 
-  self.node = video.sceneManager.getRootSceneNode().createChildSceneNode()
+  self.node = videoSystem.sceneManager.getRootSceneNode().createChildSceneNode()
 
-  let entity = video.sceneManager.createEntity("ogrehead.mesh")
+  let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
   self.node.attachObject(entity)
 
 

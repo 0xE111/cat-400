@@ -1,13 +1,14 @@
 import logging
 import strformat
 import math
+import tables
 
 import ../../../lib/ogre/ogre
 
 import ../../../config
 import ../../../core/messages
 import ../../../core/entities
-import ../../../systems as c4_systems
+import ../../../systems as systems_module
 import ../../../systems/video/ogre as ogre_video
 import ../../../systems/network/enet as enet_network
 import ../systems/video
@@ -18,7 +19,7 @@ import ../messages as action_messages
 
 method process*(self: ref ActionClientNetworkSystem, message: ref SetPositionMessage) =
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems.video)
+  message.send(systems["video"])
 
 
 method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
@@ -36,7 +37,7 @@ method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
 method process*(self: ref ActionClientNetworkSystem, message: ref SetRotationMessage) =
   ## Forward the message to video system
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems.video)
+  message.send(systems["video"])
 
 
 method process*(self: ref ActionVideoSystem, message: ref SetRotationMessage) =

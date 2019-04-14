@@ -1,8 +1,8 @@
 from parseopt import nil
 import logging
-from ospaths import joinPath
 from osproc import startProcess, running, kill, ProcessOption
-from os import getAppDir, getAppFilename, commandLineParams, sleep
+from os import getAppDir, getAppFilename, commandLineParams, sleep, joinPath
+import tables
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
@@ -13,7 +13,7 @@ import app
 
 
 # TODO: use `finalizer` kw for every `new()` call
-const 
+const
   frameworkVersion = staticRead("version.txt")
 
   logLevels = logging.Level.mapIt(($it)[3..^1].toLowerAscii).join("|")
@@ -22,8 +22,9 @@ const
     -v, --version - print version
     -l, --loglevel=[{logLevels}] - specify log level
     -h, --help - print help
-    -m, --mode=[{modes}] - launch server/client/both 
+    -m, --mode=[{modes}] - launch server/client/both
   """
+
 
 proc run*() =
   ## Handles CLI args, sets up logging and runs client / server / overseer process.
@@ -76,7 +77,7 @@ proc run*() =
 
     while serverProcess.running and clientProcess.running:
       sleep(1000)
-    
+
     logging.debug "Client or server not running -> shutting down"
     if clientProcess.running:
       logging.debug "Terminating client process"

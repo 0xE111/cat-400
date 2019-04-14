@@ -5,7 +5,7 @@ import math
 
 import ../../../lib/ode/ode
 
-import ../../../systems
+import ../../../systems as systems_module
 import ../../../config
 import ../../../core/entities
 import ../../../core/messages
@@ -60,7 +60,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
         x: position[0],
         y: position[1],
         z: position[2],
-      ).send(config.systems.network)
+      ).send(systems["network"])
       break
 
   let rotation = self.body.bodyGetQuaternion()[]
@@ -70,5 +70,5 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
       (ref SetRotationMessage)(
         entity: entity,
         quaternion: rotation,
-      ).send(config.systems.network)
+      ).send(systems["network"])
       break

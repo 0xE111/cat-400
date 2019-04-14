@@ -2,9 +2,10 @@ import sdl2.sdl
 import strformat
 import logging
 import math
+import tables
 
 import ../../../config
-import ../../../systems
+import ../../../systems as systems_module
 import ../../../systems/input/sdl as input
 import ../../../utils/stringify
 
@@ -29,8 +30,8 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
         yaw: -x.float * radInPixel,
         pitch: -y.float * radInPixel,
       ).send(@[
-        config.systems.network,
-        # config.systems.video,  # client-side prediction
+        systems["network"],
+        # systems["video"],  # client-side prediction
       ])
 
     of sdl.KEYDOWN:
@@ -51,7 +52,7 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
             else:
               discard
 
-          moveMessage.send(config.systems.network)
+          moveMessage.send(systems["network"])
 
         else:
           discard

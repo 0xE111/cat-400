@@ -3,13 +3,13 @@ import strformat
 import math
 import tables
 
-import ../../lib/ode/ode
-
 import ../../config
 import ../../core/entities
 import ../../systems
 import ../../utils/floats
 import ../../utils/stringify
+
+import ../../lib/ode/ode
 
 
 const simulationStep = 1 / 30
@@ -26,11 +26,11 @@ type
 
 # ---- Component ----
 method init*(self: ref Physics) {.base.} =
-  assert config.systems.physics of ref PhysicsSystem
+  assert systems["physics"] of ref PhysicsSystem
 
   logging.debug &"Physics system: initializing component"
 
-  self.body = config.systems.physics.as(ref PhysicsSystem).world.bodyCreate()
+  self.body = systems["physics"].as(ref PhysicsSystem).world.bodyCreate()
   self.body.bodySetPosition(0.0, 0.0, 0.0)
 
   # logging.debug &"Initializing mass"

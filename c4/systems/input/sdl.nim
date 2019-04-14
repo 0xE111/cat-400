@@ -1,8 +1,9 @@
 import sdl2/sdl
 import logging
 import strformat
+import tables
 
-import ../../systems
+import ../../systems as systems_module
 import ../../core/messages
 import ../../config
 import ../../utils/stringify
@@ -45,8 +46,8 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   case event.kind
     of sdl.QUIT:
       new(SystemQuitMessage).send(@[
-        config.systems.video,
-        config.systems.network,
+        systems["video"],
+        systems["network"],
       ])
     of sdl.WINDOWEVENT:
       case event.window.event
@@ -54,7 +55,7 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
           (ref WindowResizeMessage)(
             width: event.window.data1,
             height: event.window.data2,
-          ).send(config.systems.video)
+          ).send(systems["video"])
         else:
           discard
     else:
