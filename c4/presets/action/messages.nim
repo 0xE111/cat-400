@@ -55,3 +55,6 @@ type ImpersonationMessage* = object of EntityMessage
   ## A signal for client to occupy selected entity
   discard
 messages.register(ImpersonationMessage)
+
+method isReliable*(self: ref ImpersonationMessage): bool {.inline.} =
+  true

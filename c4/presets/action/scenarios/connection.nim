@@ -40,18 +40,33 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
   player[ref Physics].body.bodySetMass(mass.addr)
 
-  # send all scene data
+  # send new entity to all peers
+  (ref CreateEntityMessage)(entity: player).send(systems["network"])
+
+  let position = player[ref Physics].body.bodyGetPosition()[]
+  (ref SyncPositionMessage)(entity: player, x: position[0], y: position[1], z: position[2]).send(systems["network"])
+
+  let rotation = player[ref Physics].body.bodyGetQuaternion()[]
+  (ref SyncRotationMessage)(entity: player, quaternion: rotation).send(systems["network"])
+
+  # send impersonation message to new peer
+  self.impersonationsMap[message.peer] = player  # add it to mapping
+  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(systems["network"])
+
+  # send all scene data to new peer
   logging.debug &"Sending all scene data to peer {$(message.peer[])}"
   for entity, physics in getComponents(ref Physics).pairs():
+    if entity == player:
+      # player entity was already broadcasted
+      continue
+
     (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(systems["network"])
 
     let position = physics.body.bodyGetPosition()[]
     (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(systems["network"])
 
-    # TODO: send "rotate" message
-
-  self.impersonationsMap[message.peer] = player  # add it to mapping
-  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(systems["network"])
+    let rotation = physics.body.bodyGetQuaternion()[]
+    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send(systems["network"])
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =
