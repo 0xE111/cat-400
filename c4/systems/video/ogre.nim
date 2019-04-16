@@ -1,15 +1,15 @@
 import logging
 import strformat
 import os
-import ospaths
 import sequtils
+import tables
 
 import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 
 import ../../core/messages
-import ../../systems
+import ../../systems as systems_module
 import ../../config
 import ../input/sdl as sdl_input
 import ../../utils/stringify
@@ -44,10 +44,13 @@ type
 
 # ---- Component ----
 method init*(self: ref Video) {.base.} =
-  raise newException(LibraryError, "Not implemented")
+  assert systems["video"] of ref VideoSystem
+
+  let videoSystem = systems["video"].as(ref VideoSystem)
+  self.node = videoSystem.sceneManager.getRootSceneNode().createChildSceneNode()
 
 method dispose*(self: ref Video) {.base.} =
-  raise newException(LibraryError, "Not implemented")
+  self.node.destroy()
 
 
 # ---- System ----

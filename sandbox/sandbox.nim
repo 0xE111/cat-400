@@ -2,7 +2,6 @@ import tables
 
 import c4/config
 import c4/core
-import c4/systems as systems_module
 
 import src/systems/physics
 import src/systems/input

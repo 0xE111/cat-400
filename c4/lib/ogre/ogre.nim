@@ -120,6 +120,8 @@ proc setOrientation*(this: ptr Node, w: Real, x: Real, y: Real, z: Real)
 type
   SceneNode* {.importcpp: "Ogre::SceneNode", bycopy.} = object of Node
 
+proc destroy*(this: ptr SceneNode) {.importcpp: "#.~SceneNode()".}
+
 {.push importcpp: "#.$1(@)".}
 # TODO: const Vector3& translate = Vector3::ZERO,
 # const Quaternion& rotate = Quaternion::IDENTITY );

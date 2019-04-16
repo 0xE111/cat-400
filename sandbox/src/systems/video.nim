@@ -21,11 +21,8 @@ type
 
 # ---- Component ----
 method init*(self: ref SandboxVideo) =
-  assert systems["video"] of ref SandboxVideoSystem
+  procCall self.as(ref Video).init()
   let videoSystem = systems["video"].as(ref SandboxVideoSystem)
-
-  self.node = videoSystem.sceneManager.getRootSceneNode().createChildSceneNode()
-
   let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
   self.node.attachObject(entity)
 
