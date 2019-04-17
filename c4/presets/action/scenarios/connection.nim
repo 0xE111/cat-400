@@ -87,5 +87,9 @@ method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionClos
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to remove a corresponding Entity.
   logging.debug &"Removing entity"
-  self.impersonationsMap[message.peer].delete()  # delete Entity
+  let entity = self.impersonationsMap[message.peer]
+
+  entity.delete()  # delete Entity
+  (ref DeleteEntityMessage)(entity: entity).send(systems["network"])
+
   self.impersonationsMap.del(message.peer)  # exclude peer's Entity from mapping
