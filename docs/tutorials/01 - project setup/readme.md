@@ -77,4 +77,4 @@ If you inspect the folder with executable, you will find separate `.log` files f
 Sources
 -------
 
-You will find sources for this and other tutorials in `src` folder.
+You will find sources for this and other tutorials in [src](src/) folder.
