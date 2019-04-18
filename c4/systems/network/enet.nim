@@ -195,7 +195,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       let newPeer = new(messages.Peer)
       self.peersMap[event.peer] = newPeer
       (ref ConnectionOpenedMessage)(peer: newPeer).send(self)
-      logging.debug &"--- Connection established: {$(event.peer[])}"
+      logging.info &"--- Connection established: {$(event.peer[])}"
       logging.debug &"Current # of connections: {self.peersMap.len}"
 
     of EVENT_TYPE_RECEIVE:
@@ -219,7 +219,7 @@ method handle*(self: ref NetworkSystem, event: enet.Event) {.base.} =
       enet.packet_destroy(event.packet)
 
     of EVENT_TYPE_DISCONNECT:
-      logging.debug &"-x- Connection closed: {$(event.peer[])}"
+      logging.info &"-x- Connection closed: {$(event.peer[])}"
       (ref ConnectionClosedMessage)(peer: self.peersMap[event.peer]).send(self)
       self.peersMap.del(event.peer)
       event.peer.peer_reset()
@@ -232,7 +232,7 @@ method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.ba
   discard enet.address_set_host(enetAddress.addr, address.host.cstring)
   enetAddress.port = address.port
 
-  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize, 0.uint32) == nil:
+  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize, 0.uint32).isNil:
     raise newException(LibraryError, "No available peers for initiating an ENet connection")
 
   # further connection success / failure is handled by ``handle`` method
