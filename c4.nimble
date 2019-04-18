@@ -60,6 +60,7 @@ proc dirGenDocs(src, dst: string) =
       dirGenDocs(dir, dst)
 
 task genDocs, "Generate doc files":
-  const docsDir = "docs"
+  const docsDir = "docs" / "ref"
   docsDir.rmDir()
   dirGenDocs("c4", docsDir)
+  echo &"Generated documetation at {docsDir}"
