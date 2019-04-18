@@ -20,7 +20,7 @@ Key features:
 
 ## Docs
 
-* [Introduction](https://cat400.io/blog/introduction/)
+Visit [docs](docs/) folder.
 
 ## Wrappers
 
