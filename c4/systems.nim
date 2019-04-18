@@ -12,7 +12,7 @@ type
 
 
 # ---- System procs ----
-method `$`*(self: ref System): string {.base.} = $(self)
+method `$`*(self: ref System): string {.base.} = "System"
 
 
 method store*(self: ref System, message: ref Message) {.base.} =
@@ -22,10 +22,13 @@ method process*(self: ref System, message: ref Message) {.base.} =
   logging.warn &"{$(self)} has no rule to process stored {$(message)}, ignoring"
 
 method init*(self: ref System) {.base.} =
+  ## Before running game loop, each system is initialized by automatically calling ``init`` method. Use it to initialize internal structures of your custom systems.
+  ## Don't forget to call base method ``procCall self.as(ref System).init()`` which will initialize message queue.
   self.messageQueue = initDeque[ref Message]()
 
 method update*(self: ref System, dt: float) {.base.} =
-  # process all messages
+  ## Perform update in each game loop step. Overwrite this in order to update your custom system.
+  ## Don't forget to call ``procCall self.as(ref System).update(dt)`` which will process all messages in message queue.
   if self.messageQueue.len > 0:
     var message: ref Message
     while self.messageQueue.len > 0:

@@ -2,6 +2,7 @@
 
 import logging
 import tables
+export tables
 import strformat
 
 import systems as systems_module
