@@ -235,4 +235,4 @@ Now compile the project:
 ...
 ```
 
-Awesome! We just set up systems that communicate by sending messages and reacting on them. While it may seem a bit complicated, it's definitely worth it because your systems are truly independent, your code is not tangled and you now have a lot of opportunities like sending messages over network or saveing them in order to reproduce ("playback") user inputs.
+Awesome! We just set up systems that communicate by sending messages and reacting on them. While it may seem a bit complicated, it's definitely worth it because your systems are truly independent, your code is not tangled and you now have a lot of opportunities like sending messages over network or saving them in order to reproduce ("playback") user inputs.
