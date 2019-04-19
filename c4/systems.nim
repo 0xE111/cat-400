@@ -12,8 +12,8 @@ type
 
 
 # ---- System procs ----
-method `$`*(self: ref System): string {.base.} = "System"
-
+method `$`*(self: ref System): string {.base.} =
+  "System"
 
 method store*(self: ref System, message: ref Message) {.base.} =
   self.messageQueue.addLast(message)

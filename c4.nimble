@@ -18,7 +18,7 @@ description = "Game framework"
 license = staticRead("LICENSE").splitLines()[0]
 
 # Dirs
-skipDirs = @["sandbox"]
+skipDirs = @["docs", "sandbox"]
 
 # Dependencies
 requires "nim >= 0.18.1"

@@ -79,6 +79,8 @@ type FpsSystem* = object of System
   # with custom field
   worstFps: int
 
+method `$`*(self: ref FpsSystem): string =
+  "FpsSystem"
 
 method init(self: ref FpsSystem) =
   # don't forget to call this, or internal system's structures won't be initialized
@@ -103,6 +105,8 @@ method update(self: ref FpsSystem, dt: float) =
 ```
 
 Here we create a `FpsSystem` which is subclass of `System`. All it does is display current fps and store worst result in internal field.
+
+> It is a good idea to define a `$` method on each system, because system names are used in many debug messages.
 
 Now let's register this system and run the framework:
 

@@ -16,6 +16,7 @@ type
     discard
 
   Message* = object {.inheritable.}
+    ## Message is an object with minimal required information to describe some event or command.
     ## Every message contains a reference to a sender (Peer).
     ## Network system should populate the `peer` field when receiving Message from remote machine.
     ## You need to call `core.messages.register` so that msgpack4nim knows how to (de)serialize your custom message.

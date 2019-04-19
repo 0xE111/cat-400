@@ -10,6 +10,9 @@ type FpsSystem* = object of System
   worstFps: int
 
 
+method `$`*(self: ref FpsSystem): string =
+  "FpsSystem"
+
 method init(self: ref FpsSystem) =
   # don't forget to call this, or internal system's structures won't be initialized
   procCall self.as(ref System).init()
