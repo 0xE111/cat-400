@@ -20,6 +20,9 @@ license = "MIT"
 # Dependencies
 requires "nim >= 0.19.1"
 requires "c4 >= " & version
+requires "sdl2_nim >= 2.0.8"
+when defined(linux):
+  requires "x11 >= 1.1"
 
 if detectOs(Linux):
   foreignDep "sdl"
