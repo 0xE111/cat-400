@@ -1,14 +1,9 @@
-### Expected behaviour:
-What should happen?
 
-### Real behaviour:
-What happens?
+- What should happen?
+- What happens?
 
-*Nim version:* <version>
+-----
 
-*Framework version:* <version>
-
-*Log file contents:*
 ```
-Paste here if applicable, see it near application executable
+Paste here log file contents if applicable, see *.log files near application executable
 ```
