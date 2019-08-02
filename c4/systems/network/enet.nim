@@ -145,13 +145,14 @@ method init*(self: ref NetworkSystem) =
 
   # set up address - nil for client, HOST_ANY+port for server
   var addressPtr: ptr enet.Address = nil
+  
+  var serverAddress = enet.Address(host: enet.HOST_ANY, port: self.port)
   if mode == server:
-    var address = enet.Address(host: enet.HOST_ANY, port: self.port)
-    addressPtr = address.addr
+    addressPtr = serverAddress.addr
 
   self.host = enet.host_create(addressPtr, self.numConnections, self.numChannels, self.inBandwidth, self.outBandwidth)
   if self.host == nil:
-    raise newException(LibraryError, "An error occured while trying to init host. Maybe port {self.port} is already in use?")
+    raise newException(LibraryError, &"An error occured while trying to init host. Maybe port {self.port} is already in use?")
 
   self.peersMap = initTable[ptr enet.Peer, ref messages.Peer]()
 
