@@ -31,9 +31,9 @@ const
 
 
 # ---- Component ----
-method init*(self: ref ActionPhysics) =
+method attach*(self: ref ActionPhysics) =
   ## This method remembers component's inital position
-  procCall self.as(ref Physics).init()
+  procCall self.as(ref Physics).attach()
 
   self.prevPosition = self.body.bodyGetPosition()[]
   self.prevRotation = self.body.bodyGetQuaternion()[]

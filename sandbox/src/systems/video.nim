@@ -20,8 +20,8 @@ type
 
 
 # ---- Component ----
-method init*(self: ref SandboxVideo) =
-  procCall self.as(ref Video).init()
+method attach*(self: ref SandboxVideo) =
+  procCall self.as(ref Video).attach()
   let videoSystem = systems["video"].as(ref SandboxVideoSystem)
   let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
   self.node.attachObject(entity)

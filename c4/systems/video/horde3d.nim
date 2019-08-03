@@ -33,10 +33,10 @@ let assetsDir = getAppDir() / "assets" / "video"
 
 
 # ---- Component ----
-method init*(self: ref Video) {.base.} =
+method attach*(self: ref Video) {.base.} =
   raise newException(LibraryError, "Not implemented")
 
-method dispose*(self: ref Video) {.base.} =
+method detach*(self: ref Video) {.base.} =
   logging.debug "Destroying video component"
   self.node.removeNode()
 

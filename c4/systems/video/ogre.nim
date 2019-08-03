@@ -43,13 +43,13 @@ type
 
 
 # ---- Component ----
-method init*(self: ref Video) {.base.} =
+method attach*(self: ref Video) {.base.} =
   assert systems["video"] of ref VideoSystem
 
   let videoSystem = systems["video"].as(ref VideoSystem)
   self.node = videoSystem.sceneManager.getRootSceneNode().createChildSceneNode()
 
-method dispose*(self: ref Video) {.base.} =
+method detach*(self: ref Video) {.base.} =
   self.node.destroy()
 
 

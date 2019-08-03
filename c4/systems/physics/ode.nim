@@ -25,7 +25,7 @@ type
 
 
 # ---- Component ----
-method init*(self: ref Physics) {.base.} =
+method attach*(self: ref Physics) {.base.} =
   assert systems["physics"] of ref PhysicsSystem
 
   logging.debug &"Physics system: initializing component"
@@ -39,7 +39,7 @@ method init*(self: ref Physics) {.base.} =
   # mass.addr.massSetBoxTotal(1.0, 1.0, 1.0, 1.0)
   # component.body.bodySetMass(mass.addr)
 
-method dispose*(self: ref Physics) {.base.} =
+method detach*(self: ref Physics) {.base.} =
   logging.debug &"Physics system: destroying component"
   self.body.bodyDestroy()
 

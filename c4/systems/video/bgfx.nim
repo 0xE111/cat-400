@@ -137,5 +137,5 @@ proc `=destroy`*(self: var VideoSystem) =
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   logging.debug "Video system unloaded"
 
-method init*(self: ref Video) {.base.} =
+method attach*(self: ref Video) {.base.} =
   raise newException(LibraryError, &"{self.type}.init() not implemented")
