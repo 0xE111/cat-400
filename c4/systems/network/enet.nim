@@ -154,15 +154,7 @@ method init*(self: ref NetworkSystem) =
   if self.host == nil:
     raise newException(LibraryError, &"An error occured while trying to init host. Maybe port {self.port} is already in use?")
 
-  self.peersMap = initTable[ptr enet.Peer, ref messages.Peer]()
-
   procCall self.as(ref System).init()
-
-
-method init*(self: ref ClientNetworkSystem) =
-  self.entitiesMap = initTable[Entity, Entity]()
-  procCall self.as(ref NetworkSystem).init()
-
 
 # forward declaration, needed for ``handle`` method
 method disconnect*(self: ref NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.base.}
@@ -357,8 +349,7 @@ method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
 method process*(self: ref ClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Remove all entity mappings when client disconnects from external peer.
   assert message.isLocal
-  self.entitiesMap = initTable[Entity, Entity]()
-
+  self.entitiesMap.clear()
 
 method store*(self: ref NetworkSystem, message: ref SystemReadyMessage) =
   ## Don't send this message over the network, store and process it instead.

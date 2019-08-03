@@ -45,8 +45,6 @@ strMethod(ActionPhysicsSystem, fields=false)
 method init*(self: ref ActionPhysicsSystem) =
   ## Sets real world gravity (G)
   procCall self.as(ref PhysicsSystem).init()
-
-  self.impersonationsMap = initTable[ref Peer, Entity]()
   self.world.worldSetGravity(0, -G, 0)
 
 method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
