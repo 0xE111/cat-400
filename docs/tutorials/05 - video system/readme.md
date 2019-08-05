@@ -5,6 +5,14 @@ While you can create your own systems for every aspect of your game, `C4` comes 
 
 This tutorial will cover built-in video system.
 
+Is 2D supported?
+----------------
+
+Yes and no.
+`C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even [4D](https://www.youtube.com/watch?v=0t4aKJuKP0Q) game.
+
+However, currently only 3D video backend is included. If you want 2D you should write your own backend (which is rather easy if you follow this tutorial) or search for third-party one.
+
 C / Horde3d
 -----------
 
