@@ -100,7 +100,7 @@ To check whether some entity has a specific component, use `has(entity, <compone
 ```nim
 proc printHealth(self: Entity) =
   if self.has(Health):
-    echo &"Entity {self} health: {player[Health].value}"
+    echo &"Entity {self} health: {self[Health].value}"
   
   else:
     echo &"Entity {self} has no <Health> component!"

@@ -17,7 +17,7 @@ let chest = newEntity()
 
 proc printHealth(self: Entity) =
   if self.has(Health):
-    echo &"Entity {self} health: {player[Health].value}"
+    echo &"Entity {self} health: {self[Health].value}"
 
   else:
     echo &"Entity {self} has no <Health> component!"
