@@ -6,7 +6,7 @@
 
 "Cat 400" is a cross-platform framework designed to provide nice experience in game development. Written in nim language, it benefits from the language's elegance and expressiveness, as well as compilation to fast native code.
 
-Officially supported platforms are Linux, Mac OS and Windows. Support for other platforms may be added later or implemented by independent contributors.
+Core of "Cat 400" is platform-independent and may be run on every target platform supported by nim. However, default systems (which are optional) have external dependencies, and their officially supported platforms are Linux, Mac OS and Windows. Support for other platforms may be added later or implemented by independent contributors.
 
 Key features:
 - client-server architecture by default (even for single-player games) with network support
@@ -26,6 +26,12 @@ However, currently only 3D video backend is included by default. If you want 2D 
 * wait till default 2D backend appears;
 * search for third-party backend;
 * write your own one.
+
+## GUI / Game Engine
+
+`Cat 400` is not a game engine (and will never be), and everything is quite low-level - there's no gui and every aspect of game is done within source code. No level editor, too.
+
+Feel free to create high-level tools on top of `Cat 400` and share them with community of you have such an opportunity.
 
 ## Documentation
 
