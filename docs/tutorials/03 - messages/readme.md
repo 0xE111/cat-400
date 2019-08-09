@@ -143,11 +143,22 @@ method process(self: ref PingerSystem, message: ref PongMessage) =
   (ref PingMessage)(cnt: message.cnt + 1).send(systems["ponger"])
 ```
 
-That's it! The only problem is that we use `method` here, which means that we need enable `--multimethods:on` compiler switch. You can call it like `nim c --multimethods:on ...`, but `ping_pong.nims` is a better place:
+That's it! The only problem is that we use `method` here, which means that we need enable `--multimethods:on` compiler switch. You can call it like `nim c --multimethods:on ...`, but `ping_pong.nims` is a better place.
 
 ```nim
 # ping_pong.nims
 switch("multimethods", "on")
+```
+
+However, there's a better way to define `ping_pong.nims`. Some `C4` modules requre additional compiler configuration / switches, and in such cases module will have a `.nims` file with same name. This way you don't need to know all configuration flags required by a specific module - instead you just import module's configuration file into you main `<project>.nims` file, and that's it!
+
+By default `C4` heavily relies on multimethods, so they are switched on in [default configuration file](../../../c4/core.nims). So let's just include default config file:
+
+```nim
+# ping_pong.nims
+include "c4/core.nims"  # include this in every C4 project
+
+# here you can put your own project-specific settings
 ```
 
 It's up to you to create `systems/ponger.nim` which should be absolutely symmetrical to `systems/pinger.nim` defined above.

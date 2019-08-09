@@ -36,7 +36,7 @@ Let's see how it works. Understanding it will help you using other backends or e
 Basic setup
 -----------
 
-Before doing customization, let's ensure that we can compile & run video system as-is.
+Before understanding video system, let's ensure that we can compile & run it.
 
 First, you need to ensure that all required libraries are installed in your system. Ogre video backend requires:
 * SDL 2.*
