@@ -8,9 +8,11 @@ from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
 from sequtils import mapIt
 
-import config
-import app
+import systems as systems_module
+import utils/loop
 
+
+type Mode = enum client, server, multi
 
 # TODO: use `finalizer` kw for every `new()` call
 const
@@ -25,11 +27,17 @@ const
     -m, --mode=[{modes}] - launch server/client/both
   """
 
+var systems* = initOrderedTable[string, ref System]()  ## variable which stores all active systems for current process (mode)
 
-proc run*() =
+proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]()) =
   ## Handles CLI args, sets up logging and runs client / server / overseer process.
   ##
   ## Run this in your main module.
+
+  # default values
+  var
+    logLevel = logging.Level.lvlWarn
+    mode = Mode.multi
 
   # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
@@ -42,12 +50,12 @@ proc run*() =
             echo "Compiled @ " & CompileDate & " " & CompileTime
             return
           of "loglevel", "l":
-            config.logLevel = parseEnum[logging.Level](&"lvl{value}")
+            logLevel = parseEnum[logging.Level](&"lvl{value}")
           of "help", "h":
             echo help
             return
           of "mode", "m":
-            config.mode = parseEnum[Mode](value)
+            mode = parseEnum[Mode](value)
           else:
             echo "Unknown option: " & key & "=" & value
             return
@@ -57,11 +65,12 @@ proc run*() =
   let
     logFile = joinPath(getAppDir(), &"{mode}.log")
     logFmtStr = &"[$datetime] {mode} $levelname: "
-  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=config.logLevel, fmtStr=logFmtStr))
-  logging.addHandler(logging.newConsoleLogger(levelThreshold=config.logLevel, fmtStr=logFmtStr))
+  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=logLevel, fmtStr=logFmtStr))
+  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & frameworkVersion)
 
-  if config.mode == Mode.multi:
+  # this part of code handles spawning & maintaining client & server subprocesses
+  if mode == Mode.multi:
     let
       serverProcess = startProcess(
         command=getAppFilename(),
@@ -87,4 +96,31 @@ proc run*() =
 
     return
 
-  app.run()
+  ## this part of code initializes systems and runs game loop
+  logging.debug &"Starting {mode} process"
+
+  systems = if mode == Mode.server: serverSystems else: clientSystems
+  try:
+    for systemName, system in systems.pairs:
+      logging.debug &"Initializing {systemName}"
+      system.init()
+      new(SystemReadyMessage).send(system)
+
+    logging.debug "Starting main loop"
+
+    runLoop(
+      updatesPerSecond = 60,
+      fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
+        for system in systems.values():
+          system.update(dt)
+        true  # TODO: how to quit?
+    )
+
+  except Exception as exc:
+    # log any exception from client/server before dying
+    logging.fatal &"Exception: {exc.msg}\n{exc.getStackTrace()}"
+    raise
+
+  # TODO: GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
+
+  logging.debug "Finishing process"

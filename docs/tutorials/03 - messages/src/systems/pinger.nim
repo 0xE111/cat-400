@@ -1,5 +1,5 @@
 # systems/pinger.nim
-import c4/config
+import c4/core
 import c4/systems as systems_module
 
 

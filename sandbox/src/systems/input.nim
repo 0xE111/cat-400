@@ -3,9 +3,9 @@ import sdl2/sdl
 import strformat
 import tables
 
+import c4/core
 import c4/systems as systems_module
 import c4/systems/network/enet
-import c4/config
 import c4/presets/action/systems/input
 import c4/utils/stringify
 

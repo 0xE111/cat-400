@@ -8,9 +8,9 @@ import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 
+import ../../core
 import ../../core/messages
 import ../../systems as systems_module
-import ../../config
 import ../input/sdl as sdl_input
 import ../../utils/stringify
 
@@ -174,7 +174,7 @@ method init*(self: ref VideoSystem) =
 method update*(self: ref VideoSystem, dt: float) =
   procCall self.as(ref System).update(dt)
 
-  # if config.logLevel <= lvlDebug:
+  # if logLevel <= lvlDebug:
   #   show stats?
 
   # messagePump()

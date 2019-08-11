@@ -1,14 +1,13 @@
 import logging
-import strformat
 import tables
 
 import c4/lib/ode/ode
 
+import c4/core
 import c4/systems/physics/ode as ode_physics
 import c4/presets/action/messages
 import c4/presets/action/systems/physics
 import c4/systems as systems_module
-import c4/config
 import c4/core/entities
 import c4/utils/stringify
 
@@ -79,7 +78,7 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
   #     x: position[][0],
   #     y: position[][1],
   #     z: position[][2],
-  #   ).send(config.systems.network)
+  #   ).send(systems["network"])
 
   #   # TODO: add RotateMessage
 

@@ -5,8 +5,7 @@ import strformat
 
 import ../../../lib/ode/ode
 
-import ../../../config
-import ../../../utils/loading
+import ../../../core
 import ../../../core/messages
 import ../../../systems as systems_module
 import ../../../systems/network/enet

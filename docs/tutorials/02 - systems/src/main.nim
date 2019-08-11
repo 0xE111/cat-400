@@ -1,11 +1,13 @@
 # main.nim
+import tables
+
 import c4/core
-import c4/config
+import c4/systems
 
 import systems/fps
 
 
-config.serverSystems["fps"] = FpsSystem.new()
-
 when isMainModule:
-  core.run()
+  core.run(
+    serverSystems={"fps": FpsSystem.new().as(ref System)}.toOrderedTable(),
+  )

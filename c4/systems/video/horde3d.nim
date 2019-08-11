@@ -2,14 +2,11 @@ import sdl2/sdl
 import logging
 import strformat
 import os
-import ospaths
 import sequtils
 
 import ../../lib/horde3d/horde3d
 
-import ../../core/messages
 import ../../systems
-import ../../config
 import ../input/sdl as sdl_input
 import ../../utils/stringify
 
@@ -77,8 +74,6 @@ method init*(self: ref VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
-  let window = config.settings.video.window  # just an alias
-
   try:
     if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
       raise newException(LibraryError, "Could not init SDL video subsystem")
@@ -88,12 +83,12 @@ method init*(self: ref VideoSystem) =
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
 
     self.window = sdl.createWindow(
-      &"{config.title} v{config.version}",
-      window.x,
-      window.y,
-      window.width,
-      window.height,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      &"TODO: title",
+      100,  # window.x,
+      100,  # window.y,
+      800,  # window.width,
+      600,  # window.height,
+      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or sdl.WINDOW_FULLSCREEN_DESKTOP).uint32,
     )
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
@@ -135,7 +130,7 @@ method init*(self: ref VideoSystem) =
 
     # setting up camera
     self.camera = horde3d.RootNode.addCameraNode("camera", self.pipelineResource)
-    self.updateViewport(window.width, window.height)
+    self.updateViewport(800, 600)
 
   except LibraryError:
     horde3d.release()
@@ -149,8 +144,8 @@ method init*(self: ref VideoSystem) =
 method update*(self: ref VideoSystem, dt: float) =
   procCall self.as(ref System).update(dt)
 
-  if config.logLevel <= lvlDebug:
-    horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
+  # if logLevel <= lvlDebug:
+  horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
 
   # self.model.UpdateModel(ModelUpdateFlags.Geometry)
   self.camera.render()

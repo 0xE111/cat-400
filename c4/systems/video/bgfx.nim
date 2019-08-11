@@ -1,11 +1,9 @@
-from os import getAppDir, `/`
 import logging
 import sdl2/sdl, sdl2/sdl_syswm
 from strformat import `&`
 
 import ../../lib/bgfx/bgfx
 
-from ../../config import settings
 from ../../systems import System, `as`, init, update
 from ../../utils/stringify import strMethod
 
@@ -26,8 +24,6 @@ method init*(self: ref VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
-  let window = settings.video.window  # just an alias
-
   try:
     if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
       raise newException(LibraryError, "Could not init SDL video subsystem")
@@ -37,12 +33,12 @@ method init*(self: ref VideoSystem) =
     #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
 
     self.window = sdl.createWindow(
-      &"{config.title} v{config.version}",
-      window.x,
-      window.y,
-      window.width,
-      window.height,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or (if window.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      &"Title",
+      100,  # window.x,
+      100,  # window.y,
+      800,  # window.width,
+      600,  # window.height,
+      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or sdl.WINDOW_FULLSCREEN_DESKTOP).uint32,
     )
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
@@ -138,4 +134,4 @@ proc `=destroy`*(self: var VideoSystem) =
   logging.debug "Video system unloaded"
 
 method attach*(self: ref Video) {.base.} =
-  raise newException(LibraryError, &"{self.type}.init() not implemented")
+  raise newException(LibraryError, &"{$self.type}.init() not implemented")

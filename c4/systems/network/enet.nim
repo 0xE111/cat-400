@@ -9,7 +9,6 @@ import streams
 import ../../lib/enet/enet
 
 import ../../systems
-import ../../config
 import ../../core/entities
 import ../../core/messages
 import ../../utils/stringify
@@ -147,7 +146,7 @@ method init*(self: ref NetworkSystem) =
   var addressPtr: ptr enet.Address = nil
   
   var serverAddress = enet.Address(host: enet.HOST_ANY, port: self.port)
-  if mode == server:
+  if self of ServerNetworkSystem:
     addressPtr = serverAddress.addr
 
   self.host = enet.host_create(addressPtr, self.numConnections, self.numChannels, self.inBandwidth, self.outBandwidth)

@@ -1,10 +1,8 @@
-import sdl2.sdl
-import strformat
-import logging
+import sdl2/sdl
 import math
 import tables
 
-import ../../../config
+import ../../../core
 import ../../../systems as systems_module
 import ../../../systems/input/sdl as input
 import ../../../utils/stringify

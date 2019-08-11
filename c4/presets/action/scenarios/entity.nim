@@ -1,7 +1,7 @@
 import tables
 
+import ../../../core
 import ../../../core/entities
-import ../../../config
 import ../../../systems as systems_module
 import ../../../systems/network/enet
 
@@ -17,8 +17,6 @@ method process(self: ref ActionClientNetworkSystem, message: ref CreateEntityMes
 
 method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =
     ## Here we should create an entity. This is app-specific action, so developer should redefine it.
-    assert mode == client
-
     raise newException(LibraryError, "Method not implemented")
 
 

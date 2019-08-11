@@ -1,11 +1,13 @@
 import tables
 
-import c4/config
 import c4/core
+import c4/systems
 
 import systems/video
 
-config.clientSystems.add("video", CustomVideoSystem.new())
-
 when isMainModule:
-  core.run()
+  core.run(
+    clientSystems={
+      "video": CustomVideoSystem.new().as(ref System),
+    }.toOrderedTable(),
+  )

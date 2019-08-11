@@ -1,13 +1,17 @@
 # ping_pong.nim
+import tables
+
 import c4/core
-import c4/config
+import c4/systems
 
 import systems/pinger
 import systems/ponger
 
 
-config.serverSystems["pinger"] = PingerSystem.new()
-config.serverSystems["ponger"] = PongerSystem.new()
-
 when isMainModule:
-  core.run()
+  core.run(
+    serverSystems={
+      "pinger": PingerSystem.new().as(ref System),
+      "ponger": PongerSystem.new().as(ref System),
+    }.toOrderedTable(),
+  )

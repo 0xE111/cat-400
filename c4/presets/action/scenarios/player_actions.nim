@@ -5,10 +5,10 @@ import math
 
 import ../../../lib/ode/ode as ode_wrapper
 
+import ../../../core
 import ../../../core/messages
 import ../../../core/entities
 import ../../../systems as systems_module
-import ../../../config
 import ../../../systems/network/enet
 import ../../../systems/physics/ode
 

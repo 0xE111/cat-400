@@ -3,9 +3,9 @@ import logging
 import strformat
 import tables
 
+import ../../core
 import ../../systems as systems_module
 import ../../core/messages
-import ../../config
 import ../../utils/stringify
 
 

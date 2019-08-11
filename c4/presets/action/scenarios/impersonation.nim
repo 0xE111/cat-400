@@ -2,7 +2,7 @@ import logging
 import strformat
 import tables
 
-import ../../../config
+import ../../../core
 import ../../../core/entities
 import ../../../systems as systems_module
 import ../../../systems/network/enet

@@ -5,7 +5,7 @@ import tables
 
 import ../../../lib/ogre/ogre
 
-import ../../../config
+import ../../../core
 import ../../../core/messages
 import ../../../core/entities
 import ../../../systems as systems_module

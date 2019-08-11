@@ -3,7 +3,7 @@ import strformat
 import math
 import tables
 
-import ../../config
+import ../../core
 import ../../core/entities
 import ../../systems
 import ../../utils/floats
