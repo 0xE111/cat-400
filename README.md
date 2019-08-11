@@ -31,7 +31,7 @@ However, currently only 3D video backend is included by default. If you want 2D 
 
 `Cat 400` is not a game engine (and will never be), and everything is quite low-level - there's no gui and every aspect of game is done within source code. No level editor, too.
 
-Feel free to create high-level tools on top of `Cat 400` and share them with community of you have such an opportunity.
+Feel free to create high-level tools on top of `Cat 400` and share them with community if you have such an opportunity.
 
 ## Documentation
 
