@@ -3,7 +3,6 @@ import strformat
 import math
 import tables
 
-import ../../core
 import ../../core/entities
 import ../../systems
 import ../../utils/floats
@@ -26,11 +25,11 @@ type
 
 # ---- Component ----
 method attach*(self: ref Physics) {.base.} =
-  assert systems["physics"] of ref PhysicsSystem
+  assert systems.get("physics") of ref PhysicsSystem
 
   logging.debug &"Physics system: initializing component"
 
-  self.body = systems["physics"].as(ref PhysicsSystem).world.bodyCreate()
+  self.body = systems.get("physics").as(ref PhysicsSystem).world.bodyCreate()
   self.body.bodySetPosition(0.0, 0.0, 0.0)
 
   # logging.debug &"Initializing mass"

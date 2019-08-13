@@ -3,8 +3,7 @@ import logging
 import strformat
 import tables
 
-import ../../core
-import ../../systems as systems_module
+import ../../systems
 import ../../core/messages
 import ../../utils/stringify
 
@@ -46,8 +45,8 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
   case event.kind
     of sdl.QUIT:
       new(SystemQuitMessage).send(@[
-        systems["video"],
-        systems["network"],
+        systems.get("video"),
+        systems.get("network"),
       ])
     of sdl.WINDOWEVENT:
       case event.window.event
@@ -55,7 +54,7 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
           (ref WindowResizeMessage)(
             width: event.window.data1,
             height: event.window.data2,
-          ).send(systems["video"])
+          ).send(systems.get("video"))
         else:
           discard
     else:

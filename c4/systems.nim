@@ -1,15 +1,18 @@
 import deques
 import logging
 import strformat
+import tables
+export tables.`[]`
 
 import core/messages
-import core/entities
 
 
 type
   System* {.inheritable.} = object
     messageQueue: Deque[ref Message]
 
+var systemsMap* = initOrderedTable[string, ref System]()  ## variable which stores all active systems for current process (mode)
+template get*(name: string): ref System = systemsMap[name]  ## Use this to retrieve system by name (i.e. ``systems.get("network")``)
 
 # ---- System procs ----
 method `$`*(self: ref System): string {.base.} =

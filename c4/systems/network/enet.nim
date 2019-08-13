@@ -71,14 +71,14 @@ type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
     ##
-    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(systems["network"])``
+    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(systems.get("network"))``
 
     address*: Address  # Address to connect to (server's address)
 
   DisconnectMessage* = object of Message
     ## Send this message to network system in order to disconnect from server.
     ##
-    ## Example: ``new(DisconnectMessage).send(systems["network"])``
+    ## Example: ``new(DisconnectMessage).send(systems.get("network"))``
 
   ConnectionOpenedMessage* = object of Message
     ## This message is sent to network system when new connection with remote peer is established.

@@ -2,8 +2,7 @@ import logging
 import strformat
 import tables
 
-import c4/core
-import c4/systems as systems_module
+import c4/systems
 import c4/utils/loading
 import c4/systems/network/enet
 import c4/core/entities
@@ -34,4 +33,4 @@ method store*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessa
 method process*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessage) =
   # When network receives ``ResetSceneMessage``, it forwards the message to physics system
   procCall self.as(ref ActionServerNetworkSystem).process(message)
-  message.send(systems["physics"])
+  message.send(systems.get("physics"))

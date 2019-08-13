@@ -5,10 +5,9 @@ import math
 
 import ../../../lib/ode/ode as ode_wrapper
 
-import ../../../core
 import ../../../core/messages
 import ../../../core/entities
-import ../../../systems as systems_module
+import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/physics/ode
 
@@ -24,7 +23,7 @@ method store*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMess
 
 
 method process*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
-  message.send(systems["physics"])
+  message.send(systems.get("physics"))
 
 
 proc eulFromR(r: dMatrix3): tuple[z, y, x: float] =
@@ -97,7 +96,7 @@ method store*(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessag
 
 
 method process(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
-  message.send(systems["physics"])
+  message.send(systems.get("physics"))
 
 
 method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =

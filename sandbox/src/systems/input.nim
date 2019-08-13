@@ -3,8 +3,7 @@ import sdl2/sdl
 import strformat
 import tables
 
-import c4/core
-import c4/systems as systems_module
+import c4/systems
 import c4/systems/network/enet
 import c4/presets/action/systems/input
 import c4/utils/stringify
@@ -27,17 +26,17 @@ method handle*(self: ref SandboxInputSystem, event: sdl.Event) =
       case event.key.keysym.sym
         of K_c:
           # When player presses "C" key, we want to establish connection to remote server. We create new ``ConnectMessage`` (which is already predefined in Enet networking system), set server address and send this message to network system. Default Enet networking system knows that it should connect to the server when receiving this kind of message.
-          let connectMsg = (ref ConnectMessage)(address: ("localhost", systems["network"].as(ref NetworkSystem).getPort()))
-          connectMsg.send(systems["network"])
+          let connectMsg = (ref ConnectMessage)(address: ("localhost", systems.get("network").as(ref NetworkSystem).getPort()))
+          connectMsg.send(systems.get("network"))
 
         of K_q:
           # When player presses "Q" key, we want to disconnect from server. We create new ``DisconnectMessage`` (which is already predefined in Enet networking system), and sent this message to network system. Default Enet networking system knows that it should disconnect from the server when receiving this kind of message.
           let disconnectMsg = new(DisconnectMessage)
-          disconnectMsg.send(systems["network"])
+          disconnectMsg.send(systems.get("network"))
 
         of K_r:
           # When player presses "R" key, we want server to reset the scene. We defined custom ``ResetSceneMessage`` and send it over the network.
-          new(ResetSceneMessage).send(systems["network"])
+          new(ResetSceneMessage).send(systems.get("network"))
 
         else:
           discard

@@ -5,9 +5,8 @@ import strformat
 
 import ../../../lib/ode/ode
 
-import ../../../core
 import ../../../core/messages
-import ../../../systems as systems_module
+import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/physics/ode as ode_physics
 import ../../../core/entities
@@ -19,12 +18,12 @@ import ../messages as action_messages
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## Prepare scene on client side, that's why we send this message to video system.
-  message.send(systems["video"])
+  message.send(systems.get("video"))
 
 
 method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionOpenedMessage) =
   ## When new peer connects, we want to create a corresponding entity, thus we forward this message to physics system.
-  message.send(systems["physics"])
+  message.send(systems.get("physics"))
 
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMessage) =
@@ -40,17 +39,17 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   player[ref Physics].body.bodySetMass(mass.addr)
 
   # send new entity to all peers
-  (ref CreateEntityMessage)(entity: player).send(systems["network"])
+  (ref CreateEntityMessage)(entity: player).send(systems.get("network"))
 
   let position = player[ref Physics].body.bodyGetPosition()[]
-  (ref SyncPositionMessage)(entity: player, x: position[0], y: position[1], z: position[2]).send(systems["network"])
+  (ref SyncPositionMessage)(entity: player, x: position[0], y: position[1], z: position[2]).send(systems.get("network"))
 
   let rotation = player[ref Physics].body.bodyGetQuaternion()[]
-  (ref SyncRotationMessage)(entity: player, quaternion: rotation).send(systems["network"])
+  (ref SyncRotationMessage)(entity: player, quaternion: rotation).send(systems.get("network"))
 
   # send impersonation message to new peer
   self.impersonationsMap[message.peer] = player  # add it to mapping
-  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(systems["network"])
+  (ref ImpersonationMessage)(entity: player, recipient: message.peer).send(systems.get("network"))
 
   # send all scene data to new peer
   logging.debug &"Sending all scene data to peer {$(message.peer[])}"
@@ -59,19 +58,19 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
       # player entity was already broadcasted
       continue
 
-    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(systems["network"])
+    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send(systems.get("network"))
 
     let position = physics.body.bodyGetPosition()[]
-    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(systems["network"])
+    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send(systems.get("network"))
 
     let rotation = physics.body.bodyGetQuaternion()[]
-    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send(systems["network"])
+    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send(systems.get("network"))
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Forward this message to video system in order to unload the scene
   procCall self.as(ref ClientNetworkSystem).process(message)  # trigger mappings
-  message.send(systems["video"])
+  message.send(systems.get("video"))
 
   logging.debug "Flushing local entities"
   entities.flush()
@@ -80,7 +79,7 @@ method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClos
 method process*(self: ref ActionServerNetworkSystem, message: ref ConnectionClosedMessage) =
   ## When peer disconnects, we want to delete corresponding entity, thus we forward this message to physics system.
   procCall self.as(ref ServerNetworkSystem).process(message)  # trigger mappings
-  message.send(systems["physics"])
+  message.send(systems.get("physics"))
 
 
 method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMessage) =
@@ -89,6 +88,6 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionClosedMess
   let entity = self.impersonationsMap[message.peer]
 
   entity.delete()  # delete Entity
-  (ref DeleteEntityMessage)(entity: entity).send(systems["network"])
+  (ref DeleteEntityMessage)(entity: entity).send(systems.get("network"))
 
   self.impersonationsMap.del(message.peer)  # exclude peer's Entity from mapping

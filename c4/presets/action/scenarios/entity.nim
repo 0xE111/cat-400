@@ -1,8 +1,7 @@
 import tables
 
-import ../../../core
 import ../../../core/entities
-import ../../../systems as systems_module
+import ../../../systems
 import ../../../systems/network/enet
 
 import ../systems/network
@@ -12,7 +11,7 @@ import ../systems/video
 method process(self: ref ActionClientNetworkSystem, message: ref CreateEntityMessage) =
     ## Sends message to video system
     procCall self.as(ref ClientNetworkSystem).process(message)  # generate remote->local entity mapping
-    message.send(systems["video"])
+    message.send(systems.get("video"))
 
 
 method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =

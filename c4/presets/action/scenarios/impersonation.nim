@@ -2,9 +2,8 @@ import logging
 import strformat
 import tables
 
-import ../../../core
 import ../../../core/entities
-import ../../../systems as systems_module
+import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/video/ogre as ogre_video
 import ../../../lib/ogre/ogre
@@ -17,7 +16,7 @@ import ../systems/video
 method process*(self: ref ActionClientNetworkSystem, message: ref ImpersonationMessage) =
   ## When server tells client to occupy some entity, send this message to video system
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems["video"])
+  message.send(systems.get("video"))
 
 
 method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) =

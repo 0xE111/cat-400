@@ -3,11 +3,10 @@ import tables
 
 import c4/lib/ode/ode
 
-import c4/core
 import c4/systems/physics/ode as ode_physics
 import c4/presets/action/messages
 import c4/presets/action/systems/physics
-import c4/systems as systems_module
+import c4/systems
 import c4/core/entities
 import c4/utils/stringify
 
@@ -38,7 +37,7 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
 
   # first, delete all existing cubes
   for cube in self.cubes:
-    (ref DeleteEntityMessage)(entity: cube).send(systems["network"])
+    (ref DeleteEntityMessage)(entity: cube).send(systems.get("network"))
     cube.delete()
 
   self.cubes = @[]
@@ -58,12 +57,12 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
   for coords in cubeCoords:
     # create cube at each position and send its coordinates
     cube = newEntity()
-    (ref CreateEntityMessage)(entity: cube).send(systems["network"])
+    (ref CreateEntityMessage)(entity: cube).send(systems.get("network"))
 
     cube[ref Physics] = ActionPhysics.new()
     cube[ref Physics].body.bodySetPosition(coords[0], coords[1], coords[2])
     # cube[ref Physics].body.bodySetRotation(!!!)
-    (ref SyncPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send(systems["network"])
+    (ref SyncPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send(systems.get("network"))
 
     var mass = ode.dMass()
     mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
@@ -78,7 +77,7 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
   #     x: position[][0],
   #     y: position[][1],
   #     z: position[][2],
-  #   ).send(systems["network"])
+  #   ).send(systems.get("network"))
 
   #   # TODO: add RotateMessage
 

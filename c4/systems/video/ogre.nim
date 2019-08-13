@@ -8,9 +8,8 @@ import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 
-import ../../core
 import ../../core/messages
-import ../../systems as systems_module
+import ../../systems
 import ../input/sdl as sdl_input
 import ../../utils/stringify
 
@@ -44,9 +43,9 @@ type
 
 # ---- Component ----
 method attach*(self: ref Video) {.base.} =
-  assert systems["video"] of ref VideoSystem
+  assert systems.get("video") of ref VideoSystem
 
-  let videoSystem = systems["video"].as(ref VideoSystem)
+  let videoSystem = systems.get("video").as(ref VideoSystem)
   self.node = videoSystem.sceneManager.getRootSceneNode().createChildSceneNode()
 
 method detach*(self: ref Video) {.base.} =

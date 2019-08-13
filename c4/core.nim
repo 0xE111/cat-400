@@ -8,7 +8,7 @@ from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
 from sequtils import mapIt
 
-import systems as systems_module
+import systems
 import utils/loop
 
 
@@ -26,8 +26,6 @@ const
     -h, --help - print help
     -m, --mode=[{modes}] - launch server/client/both
   """
-
-var systems* = initOrderedTable[string, ref System]()  ## variable which stores all active systems for current process (mode)
 
 proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]()) =
   ## Handles CLI args, sets up logging and runs client / server / overseer process.
@@ -99,9 +97,9 @@ proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]())
   ## this part of code initializes systems and runs game loop
   logging.debug &"Starting {mode} process"
 
-  systems = if mode == Mode.server: serverSystems else: clientSystems
+  systemsMap = if mode == Mode.server: serverSystems else: clientSystems
   try:
-    for systemName, system in systems.pairs:
+    for systemName, system in systemsMap.pairs:
       logging.debug &"Initializing {systemName}"
       system.init()
       new(SystemReadyMessage).send(system)
@@ -111,7 +109,7 @@ proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]())
     runLoop(
       updatesPerSecond = 60,
       fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
-        for system in systems.values():
+        for system in systemsMap.values():
           system.update(dt)
         true  # TODO: how to quit?
     )
