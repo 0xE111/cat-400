@@ -6,7 +6,7 @@ Messages
 
 ---------------
 
-It's great that systems are decoupled, but there should be something that would allow them to work together. Since systems know nothing about each other (except systems' names and existence), we cannot just write `systems["video"].draw("cube")` and `systems["physics"].setPosition(cube, 0, 0, 0)`. Instead, we can send  a `Message` from one system to another.
+It's great that systems are decoupled, but there should be something that would allow them to work together. Since systems know nothing about each other (except systems' names and existence), we cannot just write `systems.get("video").draw("cube")` and `systems.get("physics").setPosition(cube, 0, 0, 0)`. Instead, we can send  a `Message` from one system to another.
 
 `Message` is just an object with minimal required information to describe some event or command. One could create custom messages by subclassing `Message` class or its subclasses.
 
@@ -73,7 +73,7 @@ First, define all messages that we will use:
 # messages.nim
 import strformat
 
-import c4/core/messages
+import c4/messages
 
 
 type
@@ -99,9 +99,7 @@ Now we gonna define our systems. `PingerSystem` will send `Ping` messages to `Po
 
 ```nim
 # systems/pinger.nim
-import c4/config  # contains `systems` definition
-import c4/systems as systems_module
-
+import c4/systems
 
 import ../messages
 
@@ -140,8 +138,10 @@ Here's how we do that:
 # ...
 
 method process(self: ref PingerSystem, message: ref PongMessage) =
-  (ref PingMessage)(cnt: message.cnt + 1).send(systems["ponger"])
+  (ref PingMessage)(cnt: message.cnt + 1).send(systems.get("ponger"))
 ```
+
+`(ref PingMessage)(cnt: message.cnt + 1)` is a creation of new `ref PingMessage` with field `cnt` increased by `1`. Also note that we can retrieve any system using `systems.get(<system_name>)`.
 
 That's it! The only problem is that we use `method` here, which means that we need enable `--multimethods:on` compiler switch. You can call it like `nim c --multimethods:on ...`, but `ping_pong.nims` is a better place.
 
@@ -150,13 +150,13 @@ That's it! The only problem is that we use `method` here, which means that we ne
 switch("multimethods", "on")
 ```
 
-However, there's a better way to define `ping_pong.nims`. Some `C4` modules requre additional compiler configuration / switches, and in such cases module will have a `.nims` file with same name. This way you don't need to know all configuration flags required by a specific module - instead you just import module's configuration file into you main `<project>.nims` file, and that's it!
+However, there's even a better way to define `ping_pong.nims`. Some `C4` modules requre additional compiler configuration / switches, and in such cases module will have a `.nims` file with same name. This way you don't need to know all configuration flags required by a specific module - instead you just import module's configuration file into you main `<project>.nims` file, and that's it!
 
-By default `C4` heavily relies on multimethods, so they are switched on in [default configuration file](../../../c4/core.nims). So let's just include default config file:
+By default `C4` heavily relies on multimethods, so they are switched on in [default configuration file](../../../c4.nims). So let's just include default config file:
 
 ```nim
 # ping_pong.nims
-include "c4/core.nims"  # include this in every C4 project
+include "c4.nims"  # include this in every C4 project
 
 # here you can put your own project-specific settings
 ```
@@ -166,22 +166,27 @@ It's up to you to create `systems/ponger.nim` which should be absolutely symmetr
 Registerning systems
 --------------------
 
-Now we need to register our systems in `c4`:
+Now we need to run our systems in `c4`:
 
 ```nim
 # ping_pong.nim
+import tables
+
 import c4/core
-import c4/config
+import c4/systems
 
 import systems/pinger
 import systems/ponger
 
 
-config.serverSystems["pinger"] = PingerSystem.new()
-config.serverSystems["ponger"] = PongerSystem.new()
-
 when isMainModule:
-  core.run()
+  core.run(
+    serverSystems={
+      "pinger": PingerSystem.new().as(ref System),
+      "ponger": PongerSystem.new().as(ref System),
+    }.toOrderedTable(),
+  )
+
 ```
 
 Now compile & run the project.
@@ -223,7 +228,7 @@ We know that by the time when `PongerSystem` receives `SystemReadyMessage`, all 
 
 method process(self: ref PongerSystem, message: ref SystemReadyMessage) =
   # send first message
-  (ref PongMessage)(cnt: 0).send(systems["pinger"])
+  (ref PongMessage)(cnt: 0).send(systems.get("pinger"))
 ```
 
 Now compile the project:

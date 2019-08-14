@@ -9,5 +9,7 @@ import systems/fps
 
 when isMainModule:
   core.run(
-    serverSystems={"fps": FpsSystem.new().as(ref System)}.toOrderedTable(),
+    serverSystems={
+      "fps": FpsSystem.new().as(ref System),
+    }.toOrderedTable(),
   )

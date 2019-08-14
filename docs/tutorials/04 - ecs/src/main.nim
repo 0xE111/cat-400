@@ -1,5 +1,5 @@
 import strformat
-import c4/core/entities
+import c4/entities
 
 # 
 type Health = object

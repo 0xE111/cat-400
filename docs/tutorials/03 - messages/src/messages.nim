@@ -1,7 +1,7 @@
 # messages.nim
 import strformat
 
-import c4/core/messages
+import c4/messages
 
 
 type

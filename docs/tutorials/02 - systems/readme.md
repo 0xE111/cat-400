@@ -39,12 +39,12 @@ var
   fps: int
 ```
 
-It's totally fine to mix everything in single file when you're creating a small game, but it all becomes too tangled when you are working on a big project. "Divide and rule" is one of core concepts of `Cat 400`, and `system` is a good example of it.
+It's totally fine to mix everything in single file when you're creating a small game, but it all becomes too tangled when you are working on a big project. "Divide and rule" is one of core concepts of `Cat 400`, and `System` is a good example of it.
 
 How systems work
 ----------------
 
-Each system is a subclass of `core.systems.System` class. There are 2 methods that may (and should be) overwritten:
+Each system is a subclass of `c4.systems.System` class. There are 2 methods that may (and should be) overwritten:
 
 ```nim
 method init*(self: ref System) {.base.}
@@ -108,48 +108,52 @@ Here we create a `FpsSystem` which is subclass of `System`. All it does is displ
 
 > It is a good idea to define a `$` method on each system, because system names are used in many debug messages.
 
-Now let's register this system and run the framework:
+Now let's run the framework. In order to do this, we need to call `core.run` proc, passing `OrderedTable[string, ref System]` of client and server systems. In this tutorial we gonna run our `FpsSystem` on server process:
 
 ```nim
 # main.nim
+import tables
+
 import c4/core
-# config provides a variable for registering systems
-import c4/config
+import c4/systems
 
 # import our newly created system
 import systems/fps
 
-# register this system on server instance;
-# pay attention that we don't call ``init()``;
-config.serverSystems["fps"] = FpsSystem.new()
-
+# pay attention that we don't call ``FpsSystem.init()``
 when isMainModule:
-  core.run()
+  core.run(
+    serverSystems={
+      "fps": FpsSystem.new().as(ref System),
+    }.toOrderedTable(),
+  )
 ```
 
-When we write `config.serverSystems["fps"]`, we ask `Cat 400` to register the system under `fps` name. It's fine for this example project, but in real projects you should use something more meaningful, like `video` or `network`. Names are used to discover systems. There's no restrictions on how much and which systems you have.
+When we write `serverSystems={"fps": FpsSystem.new().as(ref System)}.toOrderedTable()`, we ask `Cat 400` to register the `FpsSystem` system under `fps` name. Names are used to discover systems: later, we can send reach this system by name, i.e. call `systems.get("fps")` and get the instance of `FpsSystem`.
+
+It's fine to call system `"fps"` for this example project, but in real projects you should use something more meaningful, like `"video"` or `"network"`. There's no restrictions on how much and which systems you have.
 
 Now compile and run the code:
 
 ```
 > nim c -r main.nim -l=debug
 ...
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 29
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
-[2019-04-19T00:42:05] server DEBUG: FPS: 30
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
+[2019-04-19T00:42:05] server DEBUG: FPS: 60
 ```
 
-Our system is successfully running at 30 fps. Congratulations!
+Our system is successfully running at 60 fps. Congratulations!

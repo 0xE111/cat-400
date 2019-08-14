@@ -98,9 +98,11 @@ proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]())
   logging.debug &"Starting {mode} process"
 
   systemsMap = if mode == Mode.server: serverSystems else: clientSystems
+  logging.debug &"Registered systems: {systemsMap}"
+
   try:
     for systemName, system in systemsMap.pairs:
-      logging.debug &"Initializing {systemName}"
+      logging.debug &"Initializing '{systemName}' system"
       system.init()
       new(SystemReadyMessage).send(system)
 

@@ -21,7 +21,7 @@ To create new entity, call ``newEntity()``. Entity ID will be the smallest unuse
 
 ```nim
 # /tmp/test.nim
-import c4/core/entities
+import c4/entities
 
 let player = newEntity()
 echo "Player ID = " & $player  # -32768
@@ -58,7 +58,7 @@ Now we gonna create `Health` component for our game:
 ```nim
 # main.nim
 import strformat
-import c4/core/entities
+import c4/entities
 
 type Health = object
   value: uint8

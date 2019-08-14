@@ -1,6 +1,6 @@
-import ospaths
+import os
 
-include "c4/core.nims"
+include "c4.nims"
 include "c4/systems/video/ogre.nims"
 
 const buildDir = thisDir().parentDir.parentDir / "build"
