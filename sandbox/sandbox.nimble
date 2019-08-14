@@ -24,11 +24,15 @@ requires "sdl2_nim >= 2.0.8"
 when defined(linux):
   requires "x11 >= 1.1"
 
-if detectOs(Linux):
-  foreignDep "sdl"
-  foreignDep "enet"
-  foreignDep "ogre"
-  foreignDep "ode"
+when defined(nimdistros):
+  import distros
+
+  if detectOs(ArchLinux):
+    foreignDep "sdl"
+    foreignDep "enet"
+    foreignDep "ogre"
+    foreignDep "ode"
+
 
 proc copyDir(src, dst: string) =
   mkDir(dst)
