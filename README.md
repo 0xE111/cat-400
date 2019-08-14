@@ -1,6 +1,6 @@
-# Cat-400
+# Cat 400
 
-"Cat-400" (c4) is a game framework for Nim programming language.
+"Cat 400" (c4) is a game framework for Nim programming language.
 
 ## Brief overview
 
