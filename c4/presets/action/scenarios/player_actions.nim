@@ -5,8 +5,8 @@ import math
 
 import ../../../lib/ode/ode as ode_wrapper
 
-import ../../../core/messages
-import ../../../core/entities
+import ../../../messages
+import ../../../entities
 import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/physics/ode

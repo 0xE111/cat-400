@@ -1,4 +1,4 @@
-import c4/core/messages
+import c4/messages
 import c4/utils/stringify
 
 

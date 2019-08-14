@@ -5,8 +5,8 @@ import tables
 
 import ../../../lib/ogre/ogre
 
-import ../../../core/messages
-import ../../../core/entities
+import ../../../messages
+import ../../../entities
 import ../../../systems
 import ../../../systems/video/ogre as ogre_video
 import ../../../systems/network/enet as enet_network

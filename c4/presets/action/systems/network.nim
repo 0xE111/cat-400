@@ -1,7 +1,7 @@
 import tables
 
-import ../../../core/messages
-import ../../../core/entities
+import ../../../messages
+import ../../../entities
 import ../../../systems/network/enet
 import ../../../utils/stringify
 

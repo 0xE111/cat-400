@@ -5,11 +5,11 @@ import strformat
 
 import ../../../lib/ode/ode
 
-import ../../../core/messages
+import ../../../messages
 import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/physics/ode as ode_physics
-import ../../../core/entities
+import ../../../entities
 
 import ../systems/network
 import ../systems/physics

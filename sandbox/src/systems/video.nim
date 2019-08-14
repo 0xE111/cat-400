@@ -2,7 +2,7 @@ import logging
 import strformat
 import tables
 
-import c4/core/entities
+import c4/entities
 import c4/systems
 import c4/systems/network/enet
 import c4/systems/video/ogre as ogre_video

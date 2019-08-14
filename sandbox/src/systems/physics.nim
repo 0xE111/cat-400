@@ -7,7 +7,7 @@ import c4/systems/physics/ode as ode_physics
 import c4/presets/action/messages
 import c4/presets/action/systems/physics
 import c4/systems
-import c4/core/entities
+import c4/entities
 import c4/utils/stringify
 
 import ../messages as custom_messages

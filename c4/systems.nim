@@ -4,7 +4,7 @@ import strformat
 import tables
 export tables.`[]`
 
-import core/messages
+import messages
 
 
 type

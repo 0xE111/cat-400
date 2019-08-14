@@ -9,8 +9,8 @@ import streams
 import ../../lib/enet/enet
 
 import ../../systems
-import ../../core/entities
-import ../../core/messages
+import ../../entities
+import ../../messages
 import ../../utils/stringify
 
 

@@ -2,7 +2,7 @@ import logging
 import strformat
 import tables
 
-import ../../../core/entities
+import ../../../entities
 import ../../../systems
 import ../../../systems/network/enet
 import ../../../systems/video/ogre as ogre_video

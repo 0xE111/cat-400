@@ -1,5 +1,5 @@
-import ../../core/messages
-import ../../core/entities
+import ../../messages
+import ../../entities
 import ../../utils/stringify
 
 

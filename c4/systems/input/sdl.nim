@@ -4,7 +4,7 @@ import strformat
 import tables
 
 import ../../systems
-import ../../core/messages
+import ../../messages
 import ../../utils/stringify
 
 

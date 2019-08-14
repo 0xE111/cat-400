@@ -6,8 +6,8 @@ import math
 import ../../../lib/ode/ode
 
 import ../../../systems
-import ../../../core/entities
-import ../../../core/messages
+import ../../../entities
+import ../../../messages
 import ../../../systems/physics/ode as physics_system
 import ../../../systems/network/enet
 import ../../../utils/stringify

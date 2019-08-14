@@ -8,7 +8,7 @@ import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 
-import ../../core/messages
+import ../../messages
 import ../../systems
 import ../input/sdl as sdl_input
 import ../../utils/stringify

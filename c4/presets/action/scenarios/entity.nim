@@ -1,6 +1,6 @@
 import tables
 
-import ../../../core/entities
+import ../../../entities
 import ../../../systems
 import ../../../systems/network/enet
 
