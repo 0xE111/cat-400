@@ -120,13 +120,13 @@ method init*(self: ref VideoSystem) =
   sdl.version(info.version)
   assert sdl_syswm.getWindowWMInfo(self.window, info.addr)
 
-  when defined(SDL_VIDEO_DRIVER_WINDOWS):
+  when defined(windows):
     var nativeWindowHandle = info.info.win.window
 
-  elif defined(SDL_VIDEO_DRIVER_X11):
+  elif defined(linux):
     var nativeWindowHandle = info.info.x11.window  # culong
 
-  elif defined(SDL_VIDEO_DRIVER_COCOA):
+  elif defined(macosx):
     var nativeWindowHandle = info.info.cocoa.window
 
   else:
@@ -144,16 +144,6 @@ method init*(self: ref VideoSystem) =
 
   # ---- Loading resources ----
   self.resourceManager = getSingletonPtr()
-  self.resourceManager.addResourceLocation(mediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
-
-  self.resourceManager.addResourceLocation(mediaDir, "FileSystem", resGroup="General")
-  self.resourceManager.addResourceLocation(mediaDir / "models", "FileSystem", resGroup="General")
-  self.resourceManager.addResourceLocation(mediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
-  self.resourceManager.addResourceLocation(mediaDir / "materials" / "textures", "FileSystem", resGroup="General")
-
-  # Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-
-  self.resourceManager.initialiseAllResourceGroups()
 
   # ---- Creating scene ----
   self.sceneManager = self.root.createSceneManager()

@@ -92,3 +92,99 @@ nim cpp -r main.nim -l=debug
 ```
 
 If you don't see a black window, [open an issue](../../../issues/new).
+
+### Customization
+
+> Source code for custom setup is available at [src/02-custom](src/02-custom) folder.
+
+#### Define custom video system
+
+Since we want to display _something_, we have to extend default `VideoSystem`:
+
+```nim
+# systems/video.nim
+import logging
+
+import c4/systems
+import c4/systems/video/ogre
+
+type CustomVideoSystem* = object of VideoSystem
+
+method init(self: ref CustomVideoSystem) =
+  # call base method, which will perform default initialization
+  procCall self.as(ref VideoSystem).init()
+
+  # write something to ensure custom `init()` is called
+  logging.debug "Initializing custom video system"
+```
+
+`as()` template is nothing but type convertion, so `self.as(ref VideoSystem)` equals to `(ref VideoSystem)(self)`.
+
+`procCall self.as(ref VideoSystem).init()` calls base method (i.e. `VideoSystem.init()`). When customizing some method, almost always it's a good idea to call base method first, unless you know how it works and have specific reasons to overwrite it.
+
+Now replace default `VideoSystem` with our custom one:
+
+```nim
+# main.nim
+import tables
+
+import c4/core
+import c4/systems
+
+import systems/video
+
+
+when isMainModule:
+  core.run(
+    clientSystems={
+      "video": CustomVideoSystem.new().as(ref System),
+    }.toOrderedTable(),
+  )
+```
+
+Ensure that custom video system is used:
+
+```sh
+> nim cpp -r main.nim -l=debug
+...
+[2019-08-14T08:12:15] client DEBUG: Ogre initialized
+[2019-08-14T08:12:15] client DEBUG: Initializing custom video system
+...
+```
+
+#### Assets
+
+Models, shaders, textures - all these things are required for Ogre to work. It's up to you to manage assets - create a directory, collect and load all types of resources your game needs. `Cat 400` doesn't have any general-purpose asset manager.
+
+Here we will use Ogre's built-in resources manager and a `defautMediaDir` const defined in [c4/lib/ogre/ogre.nim](../../../c4/lib/ogre/ogre.nim) (which points to folder with default Ogre assets):
+
+```nim
+# systems/video.nim
+import logging
+import os  # required for `/` proc
+
+import c4/systems
+import c4/systems/video/ogre
+# in order to use ogre bindings like `self.resourceManager.addResourceLocation`, 
+# we have to import `c4/lib/ogre/ogre` module;
+# to avoid name clash with `c4/systems/video/ogre`, we use `import ... as ...`
+import c4/lib/ogre/ogre as ogre_lib
+
+type CustomVideoSystem* = object of VideoSystem
+
+method init(self: ref CustomVideoSystem) =
+  # call base method, which will perform default initialization
+  procCall self.as(ref VideoSystem).init()
+
+  # write something to ensure custom `init()` is called
+  logging.debug "Initializing custom video system"
+
+  logging.debug "Loading custom video resources"
+  
+  self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
+  self.resourceManager.addResourceLocation(defaultMediaDir, "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "models", "FileSystem", resGroup="General")
+  # self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
+  self.resourceManager.initialiseAllResourceGroups()
+```

@@ -1,8 +1,6 @@
 ## Basic wrapper for Ogre3d.
 ## Only minimal requred definitions included.
 import unittest
-import strformat
-import os
 
 when isMainModule:
   # some modules required for unit testing
@@ -14,15 +12,18 @@ when defined(windows):
 elif defined(macosx):
   raise newException(LibraryError, "Not implemented")
 
-else:
+elif defined(linux):
   {.link: "/usr/lib/libOgre.so".}
   {.link: "/usr/lib/libOgreMain.so".}
   {.link: "/usr/lib/libOgreBites.so".}
   {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}
 
   const
-    pluginsConfig* = "/usr/share/OGRE/plugins.cfg"
-    mediaDir* = "/usr/share/OGRE/Media"
+    defaultPluginFile* = "/usr/share/OGRE/plugins.cfg"
+    defaultMediaDir* = "/usr/share/OGRE/Media"
+
+else:
+  raise newException(LibraryError, "Platform not supported")  
 
 
 type
@@ -202,7 +203,7 @@ proc createLight*(this: ptr SceneManager, name: cstring): ptr Light
 
 # ---- OgreWindowEventUtilities ----
 {.push header: "OgreWindowEventUtilities.h".}
-proc messagePump() {.importcpp: "OgreBites::WindowEventUtilities::messagePump()".}
+proc messagePump*() {.importcpp: "OgreBites::WindowEventUtilities::messagePump()".}
 {.pop.}
 
 
@@ -211,7 +212,7 @@ proc messagePump() {.importcpp: "OgreBites::WindowEventUtilities::messagePump()"
 type
   Root* {.importcpp: "Ogre::Root", bycopy.} = object
 
-proc newRoot*(pluginFileName: cstring = pluginsConfig, configFileName: cstring = "ogre.cfg", logFileName: cstring = "ogre.log"): ptr Root {.importcpp: "new Ogre::Root(@)", constructor.}
+proc newRoot*(pluginFileName: cstring = defaultPluginFile, configFileName: cstring = "ogre.cfg", logFileName: cstring = "ogre.log"): ptr Root {.importcpp: "new Ogre::Root(@)", constructor.}
 
 {.push importcpp: "#.$1(@)".}
 proc showConfigDialog*(this: ptr Root, dialog: ptr ConfigDialog = nil): bool

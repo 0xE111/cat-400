@@ -1,6 +1,7 @@
 import logging
 import strformat
 import tables
+import os
 
 import c4/entities
 import c4/systems
@@ -32,6 +33,13 @@ strMethod(SandboxVideoSystem, fields=false)
 method init*(self: ref SandboxVideoSystem) =
   procCall self.as(ref VideoSystem).init()
   logging.debug "Loading custom video resources"
+
+  self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
+  self.resourceManager.addResourceLocation(defaultMediaDir, "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "models", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
+  self.resourceManager.initialiseAllResourceGroups()
 
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
