@@ -102,7 +102,7 @@ method init*(self: ref VideoSystem) =
   # ---- Ogre ----
   logging.debug "Initializing OGRE"
 
-  self.root = newRoot()
+  self.root = newRoot(logFileName=joinPath(getAppDir(), "ogre.log"))
   # TODO:
   # proc getAvailableRenderers*(this: ptr Root):
   # Once you have a pointer to the RenderSystem, you can use RenderSystem::getConfigOptions to see what options it provides.
