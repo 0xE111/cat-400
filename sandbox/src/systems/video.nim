@@ -43,7 +43,7 @@ method init*(self: ref SandboxVideoSystem) =
 
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
-  var light = self.sceneManager.createLight("MainLight");
+  let light = self.sceneManager.createLight("MainLight");
   light.setPosition(20.0, 80.0, 50.0);
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =

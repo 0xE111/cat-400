@@ -156,7 +156,7 @@ Ensure that custom video system is used:
 
 Models, shaders, textures - all these things are required for Ogre to work. It's up to you to manage assets - create a directory, collect and load all types of resources your game needs. `Cat 400` doesn't have any general-purpose asset manager.
 
-Here we will use Ogre's built-in resources manager and a `defautMediaDir` const defined in [c4/lib/ogre/ogre.nim](../../../c4/lib/ogre/ogre.nim) (which points to folder with default Ogre assets):
+Here we will use Ogre's built-in resources manager and a `defautMediaDir` const defined in [c4/lib/ogre/ogre.nim](../../../c4/lib/ogre/ogre.nim) (which points to folder with default Ogre assets). Resources manager is automatically initialized and can be accessed as `self.resourcesManager`, see Ogre documentation for detailed instructions on how to use it.
 
 ```nim
 # systems/video.nim
@@ -184,7 +184,70 @@ method init(self: ref CustomVideoSystem) =
   self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
   self.resourceManager.addResourceLocation(defaultMediaDir, "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "models", "FileSystem", resGroup="General")
-  # self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
   self.resourceManager.initialiseAllResourceGroups()
 ```
+
+Scene manager is available at `self.sceneManager`, let's use it to create light:
+
+```nim
+  self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
+
+  let light = self.sceneManager.createLight("MainLight");
+  light.setPosition(20.0, 80.0, 50.0);
+```
+
+#### Video component
+
+We need to create Ogre nodes and attach 3d models to them. Of course we could instantiate a model right in `CustomVideoSystem.init()` method, but a better way is to make model "belong" to some entity, i.e. create a _video component_ of entity - this way we can create as much entities as we want, and optionally attach & display their components.
+
+Default `VideoSystem` already defines a `Video` component which automatically adds a `ogre.SceneNode` to the scene. Let's define custom  component inherited from the default one. It will load "ogrehead" mesh and attach it to component's node:
+
+```nim
+# systems/video.nim
+type
+  CustomVideo* = object of Video
+
+method attach*(self: ref CustomVideo) =
+  # call base method which creates `self.node`
+  procCall self.as(ref Video).attach()
+
+  # get reference to video system
+  let videoSystem = systems.get("video").as(ref CustomVideoSystem)
+
+  # create Ogre entity (not to be confused with c4's entity)
+  let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
+
+  # attach Ogre's entity to node
+  self.node.attachObject(entity)
+```
+
+Now when we attach `CustomVideo` component to any entity, new Ogre node is created and attached to main scene.
+
+> If you component uses any external resources, never forget to release them when component is detached (i.e. define custom `detach()` method). Default `Video` component automatically removes scene node when detached, so we don't need to define `CustomVideo.detach()` method.
+
+#### Entities creation
+
+In order to display something, we need to create entities and attach `CustomVideoComponent`s to them. Let's do it after video system is initialized. When any system finishes initializing, it receives `SystemReadyMessage`, and right at this moment we can create all our entities:
+
+```nim
+# systems/video.nim
+import c4/entities
+
+# ...
+
+method process(self: ref CustomVideoSystem, message: ref SystemReadyMessage) =
+  let ogre = newEntity()
+  ogre[ref Video] = new(CustomVideo)
+  ogre[ref Video].node.setPosition(0, 0, -300.0)
+```
+
+Use following image to understand Ogre's coordinate system:
+
+![Ogre coordinate system](media/ogre_coordinates.jpg)
+
+By default, our camera is located at `(0, 0, 0)` and watching at `(0, 0, -1)` point. That's why we put out entity at `(0, 0, -300)` - it will be located in front of camera, not too close and not too far away:
+
+![Resulting scene](media/scene.jpg)
+
