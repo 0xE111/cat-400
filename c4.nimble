@@ -21,7 +21,7 @@ license = staticRead("LICENSE").splitLines()[0]
 skipDirs = @["docs", "sandbox"]
 
 # Dependencies
-requires "nim >= 0.20.99"
+requires "nim >= 0.20"
 requires "msgpack4nim >= 0.2.7"
 requires "fsm >= 0.1.0"
 requires "sdl2_nim >= 2.0.9.2"
