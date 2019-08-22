@@ -1,7 +1,5 @@
 import logging
-import strformat
 import os
-import sequtils
 import tables
 
 import sdl2/sdl, sdl2/sdl_syswm
@@ -10,7 +8,6 @@ import ../../lib/ogre/ogre
 
 import ../../messages
 import ../../systems
-import ../input/sdl as sdl_input
 import ../../utils/stringify
 
 
@@ -103,7 +100,6 @@ method init*(self: ref VideoSystem) =
   logging.debug "Initializing OGRE"
 
   self.root = newRoot(logFileName=joinPath(getAppDir(), "ogre.log"))
-  # TODO:
   # proc getAvailableRenderers*(this: ptr Root):
   # Once you have a pointer to the RenderSystem, you can use RenderSystem::getConfigOptions to see what options it provides.
   # RenderSystem* rs = mRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");

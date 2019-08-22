@@ -64,6 +64,25 @@ proc initQuaternion*(fW: Real, fX: Real, fY: Real, fZ: Real): Quaternion {.impor
 {.pop.}
 
 
+# ---- Radian ----
+{.push header: "OgreMath.h".}
+type
+  Radian* {.importcpp: "Ogre::Radian", bycopy.} = object
+
+proc initRadian*(r: Real): Radian {.importcpp: "Ogre::Radian(@)", constructor.}
+{.pop.}
+
+
+# ---- Vector3 ----
+{.push header: "OgreVector3.h".}
+type
+  Vector3* {.importcpp: "Ogre::Vector3", bycopy.} = object
+    x*, y*, z*: Real
+
+proc initVector3*(fX: Real, fY: Real, fZ: Real): Vector3 {.importcpp: "Ogre::Vector3(@)", constructor.}
+{.pop.}
+
+
 # ---- MovableObject ----
 {.push header: "OgreMovableObject.h".}
 type
@@ -104,6 +123,12 @@ proc setAspectRatio*(this: ptr Camera, ratio: Real)
 {.pop.}
 
 
+# ---- Transform ----
+type
+  TransformSpace* {.importcpp: "Ogre::Node::TransformSpace", bycopy.} = enum
+    LOCAL, PARENT, WORLD
+
+
 # ---- Node ----
 {.push header: "OgreSceneNode.h".}
 type
@@ -132,8 +157,14 @@ proc attachObject*(this: ptr SceneNode, obj: ptr MovableObject)
 proc attachObject*(this: ptr SceneNode, obj: ptr Entity)
 proc attachObject*(this: ptr SceneNode, obj: ptr Camera)
 
+proc getPosition*(this: ptr SceneNode): Vector3
 proc setPosition*(this: ptr SceneNode, x: Real, y: Real, z: Real)
+
 proc setDirection*(this: ptr SceneNode, x: Real, y: Real, z: Real)
+
+proc roll*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
+proc pitch*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
+proc yaw*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
 {.pop.}
 {.pop.}
 
