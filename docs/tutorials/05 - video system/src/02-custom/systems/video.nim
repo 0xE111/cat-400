@@ -1,6 +1,8 @@
 # systems/video.nim
 import logging
 import os  # required for `/` proc
+import tables
+import math
 
 import c4/entities
 import c4/systems
@@ -47,3 +49,12 @@ method process(self: ref CustomVideoSystem, message: ref SystemReadyMessage) =
   let ogre = newEntity()
   ogre[ref Video] = new(CustomVideo)
   ogre[ref Video].node.setPosition(0, 0, -300.0)
+
+
+method update(self: ref CustomVideoSystem, dt: float) =
+  const speed = PI  # rotate PI per second
+  let angle = speed * dt
+  for video in getComponents(ref Video).values:
+    video.node.yaw(initRadian(angle))
+
+  procCall self.as(ref VideoSystem).update(dt)

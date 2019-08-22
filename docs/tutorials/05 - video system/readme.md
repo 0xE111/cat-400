@@ -251,3 +251,22 @@ By default, our camera is located at `(0, 0, 0)` and watching at `(0, 0, -1)` po
 
 ![Resulting scene](media/scene.jpg)
 
+#### Updating the scene
+
+You probably noticed that something _happens_ in every game. Let's make our scene change. Usually it should be done as a reaction to some event (i.e. after receiving some `Message`), but we'll cover this case in next lessons. For simplicity, let's just rotate all scene nodes each frame.
+
+```nim
+# systems/video.nim
+
+method update(self: ref CustomVideoSystem, dt: float) =
+  const speed = PI  # rotate PI per second
+  let angle = speed * dt
+  for video in getComponents(ref Video).values:
+    video.node.yaw(initRadian(angle))
+
+  procCall self.as(ref VideoSystem).update(dt)
+```
+
+We cannot just rotate by fixed angle each `update()` because time delta between each update may vary. Instead, we use `dt` variable which shows how much _seconds_ passed since previous update.
+
+Also notice that we retrieved all `ref Video` components using `getComponents(ref Video).values`.
