@@ -1,5 +1,3 @@
-import strformat
-
 
 template strMethod*(T: typedesc, fields: bool = true) =
   ## Defines ``$`` method for selected type ``T``. Output contains type name and all fields' values.

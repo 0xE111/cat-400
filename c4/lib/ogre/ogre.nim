@@ -1,9 +1,7 @@
 ## Basic wrapper for Ogre3d.
 ## Only minimal requred definitions included.
-import unittest
-
 when isMainModule:
-  # some modules required for unit testing
+  import unittest
   import sdl2/sdl, sdl2/sdl_syswm
 
 when defined(windows):

@@ -2,20 +2,19 @@
 
 import hashes
 import tables
-import streams
-import strformat
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
-import unittest
-import logging
+
+when isMainModule:
+  import unittest
 
 
 type
-  Peer* = object {.inheritable.}
+  Peer* {.inheritable.} = object
     ## This is a type for addressing an entity in network connection. ``Peer`` may refer to a server or one of its clients.
     discard
 
-  Message* = object {.inheritable.}
+  Message* {.inheritable.} = object
     ## Message is an object with minimal required information to describe some event or command.
     ## Every message contains a reference to a sender (Peer).
     ## Network system should populate the `peer` field when receiving Message from remote machine.

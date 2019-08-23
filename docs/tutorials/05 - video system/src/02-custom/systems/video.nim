@@ -50,7 +50,6 @@ method process(self: ref CustomVideoSystem, message: ref SystemReadyMessage) =
   ogre[ref Video] = new(CustomVideo)
   ogre[ref Video].node.setPosition(0, 0, -300.0)
 
-
 method update(self: ref CustomVideoSystem, dt: float) =
   const speed = PI  # rotate PI per second
   let angle = speed * dt

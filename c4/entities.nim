@@ -5,7 +5,9 @@ import strformat
 import logging
 
 import messages
-import unittest
+
+when isMainModule:
+  import unittest
 
 
 type
