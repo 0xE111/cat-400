@@ -2,6 +2,7 @@ import logging
 import strformat
 import tables
 import os
+import math
 
 import c4/entities
 import c4/systems
@@ -37,14 +38,31 @@ method init*(self: ref SandboxVideoSystem) =
   self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
   self.resourceManager.addResourceLocation(defaultMediaDir, "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "models", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "Cg", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "GLSL", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "GLSL120", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "GLSL150", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "GLSL400", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "HLSL", "FileSystem", resGroup="General")
+  self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "programs" / "HLSL_Cg", "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "scripts", "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
   self.resourceManager.initialiseAllResourceGroups()
 
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
-  let light = self.sceneManager.createLight("MainLight");
-  light.setPosition(20.0, 80.0, 50.0);
+  let light = self.sceneManager.createLight("MainLight")
+  light.setPosition(20.0, 80.0, 50.0)
+
+  var manualObject = self.sceneManager.createManualObject()
+  manualObject[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
+  
+  manualObject[].position(0, 0, 0)
+  manualObject[].position(0, 0, -300)
+  discard manualObject[].end()
+
+  var node = self.sceneManager.getRootSceneNode().createChildSceneNode()
+  node.attachObject(manualObject)
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
   ## Load skybox when connection is established

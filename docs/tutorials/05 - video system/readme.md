@@ -227,6 +227,22 @@ Now when we attach `CustomVideo` component to any entity, new Ogre node is creat
 
 > If you component uses any external resources, never forget to release them when component is detached (i.e. define custom `detach()` method). Default `Video` component automatically removes scene node when detached, so we don't need to define `CustomVideo.detach()` method.
 
+For debug purposes, let's draw lines which will represent local `X` and `Y` axis for our node:
+
+```nim
+  let line = videoSystem.sceneManager.createManualObject()
+  line[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
+  # x line
+  line[].position(0, 0, 0)
+  line[].position(200, 0, 0)
+  # y line
+  line[].position(0, 0, 0)
+  line[].position(0, 100, 0)
+  discard line[].end()
+
+  self.node.attachObject(line)
+```
+
 #### Entities creation
 
 In order to display something, we need to create entities and attach `CustomVideoComponent`s to them. Let's do it after video system is initialized. When any system finishes initializing, it receives `SystemReadyMessage`, and right at this moment we can create all our entities:
@@ -240,14 +256,14 @@ import c4/entities
 method process(self: ref CustomVideoSystem, message: ref SystemReadyMessage) =
   let ogre = newEntity()
   ogre[ref Video] = new(CustomVideo)
-  ogre[ref Video].node.setPosition(0, 0, -300.0)
+  ogre[ref Video].node.setPosition(0, -20, -300.0)
 ```
 
 Use following image to understand Ogre's coordinate system:
 
 ![Ogre coordinate system](media/ogre_coordinates.jpg)
 
-By default, our camera is located at `(0, 0, 0)` and watching at `(0, 0, -1)` point. That's why we put out entity at `(0, 0, -300)` - it will be located in front of camera, not too close and not too far away:
+By default, our camera is located at `(0, 0, 0)` and watching at `(0, 0, -1)` point. That's why we put out entity at `(0, -20, -300)` - it will be located in front of camera, not too close and not too far away.
 
 ![Resulting scene](media/scene.jpg)
 
@@ -270,3 +286,7 @@ method update(self: ref CustomVideoSystem, dt: float) =
 We cannot just rotate by fixed angle each `update()` because time delta between each update may vary. Instead, we use `dt` variable which shows how much _seconds_ passed since previous update.
 
 Also notice that we retrieved all `ref Video` components using `getComponents(ref Video).values`.
+
+#### Drawing somethin more complex
+
+We've covered basic drawing using default `Ogre` backend, but it's up to you to learn `Ogre` library and make it fit you game's requirements.

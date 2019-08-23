@@ -26,7 +26,7 @@ else:
 
 type
   StdMap[K, V] {.header: "<map>", importcpp: "std::map".} = object
-  String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = object
+  String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = cstring  # object
   # String* {.header: "<string>", importcpp: "std::string", bycopy.} = object
   ConfigDialog* {.header: "OgreConfigDialog.h", importcpp: "Ogre::ConfigDialog", bycopy.} = object
   NameValuePairList* = StdMap[String, String]
@@ -42,6 +42,45 @@ proc toString*[T](value: T): String {.importcpp: "std::to_string(@)".}
 proc c_str*(value: String): cstring {.importcpp: "#.c_str()".}
 proc initString*(value: cstring): String {.header: "OgrePrerequisites.h", importcpp: "Ogre::String(@)".}
 # proc initNameValuePairList*: NameValuePairList {.headerimportcpp: "NameValuePairList()".}
+
+
+# ---- Render operation ----
+{.push header: "OgreRenderOperation.h".}
+type
+  OperationType* {.importcpp: "Ogre::RenderOperation::OperationType", bycopy.} = enum
+    OT_POINT_LIST = 1, OT_LINE_LIST = 2, OT_LINE_STRIP = 3, OT_TRIANGLE_LIST = 4, 
+    OT_TRIANGLE_STRIP = 5, OT_TRIANGLE_FAN = 6, OT_PATCH_1_CONTROL_POINT = 7, OT_PATCH_2_CONTROL_POINT = 8, 
+    OT_PATCH_3_CONTROL_POINT = 9, OT_PATCH_4_CONTROL_POINT = 10, OT_PATCH_5_CONTROL_POINT = 11, OT_PATCH_6_CONTROL_POINT = 12, 
+    OT_PATCH_7_CONTROL_POINT = 13, OT_PATCH_8_CONTROL_POINT = 14, OT_PATCH_9_CONTROL_POINT = 15, OT_PATCH_10_CONTROL_POINT = 16, 
+    OT_PATCH_11_CONTROL_POINT = 17, OT_PATCH_12_CONTROL_POINT = 18, OT_PATCH_13_CONTROL_POINT = 19, OT_PATCH_14_CONTROL_POINT = 20, 
+    OT_PATCH_15_CONTROL_POINT = 21, OT_PATCH_16_CONTROL_POINT = 22, OT_PATCH_17_CONTROL_POINT = 23, OT_PATCH_18_CONTROL_POINT = 24, 
+    OT_PATCH_19_CONTROL_POINT = 25, OT_PATCH_20_CONTROL_POINT = 26, OT_PATCH_21_CONTROL_POINT = 27, OT_PATCH_22_CONTROL_POINT = 28, 
+    OT_PATCH_23_CONTROL_POINT = 29, OT_PATCH_24_CONTROL_POINT = 30, OT_PATCH_25_CONTROL_POINT = 31, OT_PATCH_26_CONTROL_POINT = 32, 
+    OT_PATCH_27_CONTROL_POINT = 33, OT_PATCH_28_CONTROL_POINT = 34, OT_PATCH_29_CONTROL_POINT = 35, OT_PATCH_30_CONTROL_POINT = 36, 
+    OT_PATCH_31_CONTROL_POINT = 37, OT_PATCH_32_CONTROL_POINT = 38, 
+    OT_DETAIL_ADJACENCY_BIT = 1 shl 6,
+    OT_LINE_LIST_ADJ = OT_LINE_LIST.int or OT_DETAIL_ADJACENCY_BIT.int, 
+    OT_LINE_STRIP_ADJ = OT_LINE_STRIP.int or OT_DETAIL_ADJACENCY_BIT.int,
+    OT_TRIANGLE_LIST_ADJ = OT_TRIANGLE_LIST.int or OT_DETAIL_ADJACENCY_BIT.int,
+    OT_TRIANGLE_STRIP_ADJ = OT_TRIANGLE_STRIP.int or OT_DETAIL_ADJACENCY_BIT.int 
+{.pop.}
+
+
+# ---- ResourceGroupManager ----
+{.push header: "OgreResourceGroupManager.h".}
+type
+  ResourceGroupManager* {.importcpp: "Ogre::ResourceGroupManager", bycopy.} = object
+
+var
+  DEFAULT_RESOURCE_GROUP_NAME {.importcpp: "Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME".}: String
+
+proc getSingletonPtr*(): ptr ResourceGroupManager {.importcpp: "Ogre::ResourceGroupManager::getSingletonPtr()".}
+
+{.push importcpp: "#.$1(@)".}
+proc addResourceLocation*(this: ptr ResourceGroupManager, name: cstring, locType: cstring, resGroup: cstring = DEFAULT_RESOURCE_GROUP_NAME, recursive: bool = false, readOnly: bool = true)
+proc initialiseAllResourceGroups*(this: ptr ResourceGroupManager)
+{.pop.}
+{.pop.}
 
 
 # ---- Colour ----
@@ -71,13 +110,29 @@ proc initRadian*(r: Real): Radian {.importcpp: "Ogre::Radian(@)", constructor.}
 {.pop.}
 
 
-# ---- Vector3 ----
-{.push header: "OgreVector3.h".}
+# ---- Mesh ----
+{.push header: "OgreMesh.h".}
 type
+  Mesh* {.importcpp: "Ogre::Mesh", bycopy.} = object
+  MeshPtr* {.importcpp: "Ogre::MeshPtr", bycopy.} = object
+{.pop.}
+
+
+# ---- Vector3 ----
+{.push header: "OgreVector.h".}
+type
+  Vector2* {.importcpp: "Ogre::Vector2", bycopy.} = object
+    x*, y*: Real
+
   Vector3* {.importcpp: "Ogre::Vector3", bycopy.} = object
     x*, y*, z*: Real
 
+  Vector4* {.importcpp: "Ogre::Vector4", bycopy.} = object
+    x*, y*, z*, w*: Real
+
+proc initVector2*(fX: Real, fY: Real): Vector2 {.importcpp: "Ogre::Vector2(@)", constructor.}
 proc initVector3*(fX: Real, fY: Real, fZ: Real): Vector3 {.importcpp: "Ogre::Vector3(@)", constructor.}
+proc initVector4*(fX: Real, fY: Real, fZ: Real, fW: Real): Vector4 {.importcpp: "Ogre::Vector4(@)", constructor.}
 {.pop.}
 
 
@@ -85,6 +140,33 @@ proc initVector3*(fX: Real, fY: Real, fZ: Real): Vector3 {.importcpp: "Ogre::Vec
 {.push header: "OgreMovableObject.h".}
 type
   MovableObject* {.importcpp: "Ogre::MovableObject", bycopy, inheritable.} = object
+{.pop.}
+
+
+# ---- ManualObject ----
+{.push header: "OgreManualObject.h".}
+type
+  ManualObject* {.importcpp: "Ogre::ManualObject", bycopy.} = object of MovableObject
+  ManualObjectSection* {.importcpp: "Ogre::ManualObject::ManualObjectSection", bycopy.} = object
+
+proc initManualObject*(name: String): ManualObject {.importcpp: "Ogre::ManualObject(@)", constructor.}
+{.push importcpp: "#.$1(@)".}
+proc begin*(this: ManualObject, materialName: String, opType: OperationType = OT_TRIANGLE_LIST, groupName: String = DEFAULT_RESOURCE_GROUP_NAME)
+proc position*(this: ManualObject, pos: Vector3)
+proc position*(this: ManualObject, x: float, y: float, z: float)
+proc normal*(this: ManualObject, norm: Vector3)
+proc normal*(this: ManualObject, x: float, y: float, z: float)
+proc textureCoord*(this: ManualObject, u: float)
+proc textureCoord*(this: ManualObject, u: float, v: float)
+proc textureCoord*(this: ManualObject, u: float, v: float, w: float)
+proc textureCoord*(this: ManualObject, x: float, y: float, z: float, w: float)
+proc textureCoord*(this: ManualObject, uv: Vector2)
+proc textureCoord*(this: ManualObject, uvw: Vector3)
+proc textureCoord*(this: ManualObject, xyzw: Vector4)
+proc quad*(this: ManualObject, i1, i2, i3, i4: uint32)
+proc `end`*(this: ManualObject): ptr ManualObjectSection
+proc convertToMesh*(this: ManualObject, meshName: String, groupName: String = DEFAULT_RESOURCE_GROUP_NAME): MeshPtr
+{.pop.}
 {.pop.}
 
 
@@ -124,7 +206,7 @@ proc setAspectRatio*(this: ptr Camera, ratio: Real)
 # ---- Transform ----
 type
   TransformSpace* {.importcpp: "Ogre::Node::TransformSpace", bycopy.} = enum
-    LOCAL, PARENT, WORLD
+    TS_LOCAL, TS_PARENT, TS_WORLD
 
 
 # ---- Node ----
@@ -160,9 +242,9 @@ proc setPosition*(this: ptr SceneNode, x: Real, y: Real, z: Real)
 
 proc setDirection*(this: ptr SceneNode, x: Real, y: Real, z: Real)
 
-proc roll*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
-proc pitch*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
-proc yaw*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = LOCAL)
+proc roll*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
+proc pitch*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
+proc yaw*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
 {.pop.}
 {.pop.}
 
@@ -190,23 +272,6 @@ proc addViewport*(this: ptr RenderWindow, cam: ptr Camera, ZOrder: cint = 0, lef
 {.pop.}
 
 
-# ---- ResourceGroupManager ----
-{.push header: "OgreResourceGroupManager.h".}
-type
-  ResourceGroupManager* {.importcpp: "Ogre::ResourceGroupManager", bycopy.} = object
-
-var
-  DEFAULT_RESOURCE_GROUP_NAME {.importcpp: "Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME".}: cstring
-
-proc getSingletonPtr*(): ptr ResourceGroupManager {.importcpp: "Ogre::ResourceGroupManager::getSingletonPtr()".}
-
-{.push importcpp: "#.$1(@)".}
-proc addResourceLocation*(this: ptr ResourceGroupManager, name: cstring, locType: cstring, resGroup: cstring = DEFAULT_RESOURCE_GROUP_NAME, recursive: bool = false, readOnly: bool = true)
-proc initialiseAllResourceGroups*(this: ptr ResourceGroupManager)
-{.pop.}
-{.pop.}
-
-
 # ---- SceneManager ----
 {.push header: "OgreSceneManager.h".}
 type
@@ -226,6 +291,9 @@ proc createEntity*(this: ptr SceneManager, meshName: cstring): ptr Entity
 proc getRootSceneNode*(this: ptr SceneManager): ptr SceneNode
 proc setAmbientLight*(this: ptr SceneManager, colour: ColourValue)
 proc createLight*(this: ptr SceneManager, name: cstring): ptr Light
+
+proc createManualObject*(this: ptr SceneManager): ptr ManualObject
+proc createManualObject*(this: ptr SceneManager, name: cstring): ptr ManualObject
 {.pop.}
 {.pop.}
 

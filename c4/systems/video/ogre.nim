@@ -34,7 +34,7 @@ type
     camera*: ptr Camera
     viewport*: ptr Viewport
 
-  Video* = object {.inheritable.}
+  Video* {.inheritable.} = object
     node*: ptr SceneNode
 
 

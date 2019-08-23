@@ -31,9 +31,8 @@ method init(self: ref CustomVideoSystem) =
 
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
-  let light = self.sceneManager.createLight("MainLight");
-  light.setPosition(20.0, 80.0, 50.0);
-
+  let light = self.sceneManager.createLight("MainLight")
+  light.setPosition(20.0, 80.0, 50.0)
 
 type
   CustomVideo* = object of Video
@@ -45,10 +44,22 @@ method attach(self: ref CustomVideo) =
   let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
   self.node.attachObject(entity)
 
+  let line = videoSystem.sceneManager.createManualObject()
+  line[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
+  # x line
+  line[].position(0, 0, 0)
+  line[].position(200, 0, 0)
+  # y line
+  line[].position(0, 0, 0)
+  line[].position(0, 100, 0)
+  discard line[].end()
+
+  self.node.attachObject(line)
+
 method process(self: ref CustomVideoSystem, message: ref SystemReadyMessage) =
   let ogre = newEntity()
   ogre[ref Video] = new(CustomVideo)
-  ogre[ref Video].node.setPosition(0, 0, -300.0)
+  ogre[ref Video].node.setPosition(0, -20, -300.0)
 
 method update(self: ref CustomVideoSystem, dt: float) =
   const speed = PI  # rotate PI per second
