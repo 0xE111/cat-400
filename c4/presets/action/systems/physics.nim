@@ -20,13 +20,20 @@ type
     impersonationsMap*: Table[ref Peer, Entity]  ## Mapping from remote Peer to an Entity it's controlling
 
   ActionPhysics* = object of Physics
-    ## Physics component which additionally stores its previous position. Position update messages are sent only when position really changes.
+    # additionally store previous position & rotation;
+    # position/rotation update messages are sent only when values really changes
     prevPosition: array[3, ode.dReal]
     prevRotation: ode.dQuaternion
+
+    movementDurationElapsed: float
 
 
 const
   G* = 0  #9.81
+
+  # when received any movement command, this defines how long the movement will continue;
+  # even if there's no command from client, the entity will continue moving during this period (in seconds)
+  movementDuration = 0.25
 
 
 # ---- Component ----
@@ -36,6 +43,12 @@ method attach*(self: ref ActionPhysics) =
 
   self.prevPosition = self.body.bodyGetPosition()[]
   self.prevRotation = self.body.bodyGetQuaternion()[]
+
+  self.movementDurationElapsed = 0
+
+
+proc startMovement*(self: ref ActionPhysics) =
+  self.movementDurationElapsed = movementDuration
 
 
 # ---- System ----
@@ -69,3 +82,9 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
         quaternion: rotation,
       ).send(systems.get("network"))
       break
+  
+  if self.movementDurationElapsed > 0:
+    self.movementDurationElapsed -= dt
+    if self.movementDurationElapsed <= 0:
+      # it's time to stop movement
+      self.body.bodySetLinearVel(0, 0, 0)
