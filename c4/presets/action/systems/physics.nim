@@ -33,7 +33,7 @@ const
 
   # when received any movement command, this defines how long the movement will continue;
   # even if there's no command from client, the entity will continue moving during this period (in seconds)
-  movementDuration = 0.25
+  movementDuration = 0.1
 
 
 # ---- Component ----
@@ -82,7 +82,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
         quaternion: rotation,
       ).send(systems.get("network"))
       break
-  
+
   if self.movementDurationElapsed > 0:
     self.movementDurationElapsed -= dt
     if self.movementDurationElapsed <= 0:

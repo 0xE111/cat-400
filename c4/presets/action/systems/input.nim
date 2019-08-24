@@ -6,7 +6,6 @@ import ../../../systems
 import ../../../systems/input/sdl as input
 import ../../../utils/stringify
 
-import physics
 import ../messages
 
 
@@ -31,30 +30,65 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
         # systems.get("video"),  # client-side prediction
       ])
 
-    of sdl.KEYDOWN:
-      case event.key.keysym.sym
-        # movement keys
-        of K_w, K_s, K_a, K_d:
-          var moveMessage = new(ref PlayerMoveMessage)
+    # when some key is held down, there's usually a delay between first sdl.KEYDOWN event
+    # and subsequent ones; so if you want to send some messages constantly when key is pressed
+    # (for example, `PlayerMoveMessage`), you shouldn't rely on sdl.KEYDOWN event; instead,
+    # you should check whether key is down in `update()` method
 
-          case event.key.keysym.sym
-            of K_w:
-              moveMessage.yaw = 0
-            of K_s:
-              moveMessage.yaw = PI
-            of K_a:
-              moveMessage.yaw = PI / 2
-            of K_d:
-              moveMessage.yaw = -PI / 2
-            else:
-              discard
+    # of sdl.KEYDOWN:
+    #   case event.key.keysym.sym
+    #     of K_t:
+    #       var moveMessage = new(ref PlayerMoveMessage)
+    #       moveMessage.send(systems.get("network"))
+    #     else:
+    #       discard
 
-          moveMessage.send(systems.get("network"))
-
-        else:
-          discard
     else:
       discard
 
   # fallback to default implementation
   procCall self.as(ref InputSystem).handle(event)
+
+
+method update(self: ref ActionInputSystem, dt: float) =
+  procCall self.as(ref InputSystem).update(dt)
+
+  # process long-pressing key by polling keyboard state
+  let
+    keyboard = getKeyboardState(nil)
+
+  var
+    forward = keyboard[SCANCODE_W].bool
+    backward = keyboard[SCANCODE_S].bool
+    left = keyboard[SCANCODE_A].bool
+    right = keyboard[SCANCODE_D].bool
+
+  # pressing opposite keys disables both of them
+  if forward and backward:
+    forward = false
+    backward = false
+
+  if left and right:
+    left = false
+    right = false
+
+  if forward or backward or left or right:
+    var yaw: float
+    if right and not forward and not backward:
+      yaw = -2 * PI/4
+    elif right and forward:
+      yaw = -1 * PI/4
+    elif forward and not right and not left:
+      yaw = 0 * PI/4
+    elif forward and left:
+      yaw = 1 * PI/4
+    elif left and not forward and not backward:
+      yaw = 2 * PI/4
+    elif left and backward:
+      yaw = 3 * PI/4
+    elif backward and not left and not right:
+      yaw = 4 * PI/4
+    elif backward and right:
+      yaw = 5 * PI/4
+
+    (ref PlayerMoveMessage)(yaw: yaw).send(systems.get("network"))
