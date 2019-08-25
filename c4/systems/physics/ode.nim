@@ -5,7 +5,6 @@ import tables
 
 import ../../entities
 import ../../systems
-import ../../utils/floats
 import ../../utils/stringify
 
 import ../../lib/ode/ode
@@ -18,7 +17,7 @@ type
     world*: dWorldID
     simulationStepRemains: float
 
-  Physics* = object {.inheritable.}
+  Physics* {.inheritable.} = object
     body*: dBodyID
     geometry*: dGeomID
 
@@ -32,11 +31,6 @@ method attach*(self: ref Physics) {.base.} =
   self.body = systems.get("physics").as(ref PhysicsSystem).world.bodyCreate()
   self.body.bodySetPosition(0.0, 0.0, 0.0)
 
-  # logging.debug &"Initializing mass"
-  # var mass: = create(ode.dMass)
-  # var mass: ode.dMass  # var mass: ptr ode.dMass = cast[ptr ode.dMass](alloc(sizeof(ode.dMass)))
-  # mass.addr.massSetBoxTotal(1.0, 1.0, 1.0, 1.0)
-  # component.body.bodySetMass(mass.addr)
 
 method detach*(self: ref Physics) {.base.} =
   logging.debug &"Physics system: destroying component"

@@ -25,11 +25,11 @@ type
     prevPosition: array[3, ode.dReal]
     prevRotation: ode.dQuaternion
 
-    movementDurationElapsed: float
+    movementDurationElapsed: float  # TODO: required only for players' nodes
 
 
 const
-  G* = 0  #9.81
+  G* = 0  # 9.81
 
   # when received any movement command, this defines how long the movement will continue;
   # even if there's no command from client, the entity will continue moving during this period (in seconds)
@@ -45,7 +45,6 @@ method attach*(self: ref ActionPhysics) =
   self.prevRotation = self.body.bodyGetQuaternion()[]
 
   self.movementDurationElapsed = 0
-
 
 proc startMovement*(self: ref ActionPhysics) =
   self.movementDurationElapsed = movementDuration
