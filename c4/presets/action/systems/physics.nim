@@ -69,7 +69,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
         x: position[0],
         y: position[1],
         z: position[2],
-      ).send(systems.get("network"))
+      ).send("network")
       break
 
   let rotation = self.body.bodyGetQuaternion()[]
@@ -79,7 +79,7 @@ method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
       (ref SetRotationMessage)(
         entity: entity,
         quaternion: rotation,
-      ).send(systems.get("network"))
+      ).send("network")
       break
 
   if self.movementDurationElapsed > 0:

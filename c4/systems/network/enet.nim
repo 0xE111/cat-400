@@ -71,14 +71,14 @@ type
   ConnectMessage* = object of Message
     ## Send this message to network system in order to connect to server.
     ##
-    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send(systems.get("network"))``
+    ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send("network")``
 
     address*: Address  # Address to connect to (server's address)
 
   DisconnectMessage* = object of Message
     ## Send this message to network system in order to disconnect from server.
     ##
-    ## Example: ``new(DisconnectMessage).send(systems.get("network"))``
+    ## Example: ``new(DisconnectMessage).send("network")``
 
   ConnectionOpenedMessage* = object of Message
     ## This message is sent to network system when new connection with remote peer is established.
@@ -144,7 +144,7 @@ method init*(self: ref NetworkSystem) =
 
   # set up address - nil for client, HOST_ANY+port for server
   var addressPtr: ptr enet.Address = nil
-  
+
   var serverAddress = enet.Address(host: enet.HOST_ANY, port: self.port)
   if self of ServerNetworkSystem:
     addressPtr = serverAddress.addr

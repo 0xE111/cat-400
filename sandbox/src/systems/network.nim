@@ -33,4 +33,4 @@ method store*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessa
 method process*(self: ref SandboxServerNetworkSystem, message: ref ResetSceneMessage) =
   # When network receives ``ResetSceneMessage``, it forwards the message to physics system
   procCall self.as(ref ActionServerNetworkSystem).process(message)
-  message.send(systems.get("physics"))
+  message.send("physics")

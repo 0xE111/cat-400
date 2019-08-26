@@ -39,7 +39,7 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
     #   case event.key.keysym.sym
     #     of K_t:
     #       var moveMessage = new(ref PlayerMoveMessage)
-    #       moveMessage.send(systems.get("network"))
+    #       moveMessage.send("network")
     #     else:
     #       discard
 
@@ -91,4 +91,4 @@ method update(self: ref ActionInputSystem, dt: float) =
     elif backward and right:
       yaw = 5 * PI/4
 
-    (ref PlayerMoveMessage)(yaw: yaw).send(systems.get("network"))
+    (ref PlayerMoveMessage)(yaw: yaw).send("network")

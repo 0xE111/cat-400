@@ -11,4 +11,4 @@ method `$`*(self: ref PingerSystem): string =
 
 method process(self: ref PingerSystem, message: ref PongMessage) =
   # send ``PingMessage`` with increased counter
-  (ref PingMessage)(cnt: message.cnt + 1).send(systems.get("ponger"))
+  (ref PingMessage)(cnt: message.cnt + 1).send("ponger")

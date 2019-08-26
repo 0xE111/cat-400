@@ -56,7 +56,7 @@ method init*(self: ref SandboxVideoSystem) =
 
   var manualObject = self.sceneManager.createManualObject()
   manualObject[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
-  
+
   manualObject[].position(0, 0, 0)
   manualObject[].position(0, 0, -300)
   discard manualObject[].end()

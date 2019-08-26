@@ -23,7 +23,7 @@ method store*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMess
 
 
 method process*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
-  message.send(systems.get("physics"))
+  message.send("physics")
 
 
 proc eulFromR(r: dMatrix3): tuple[z, y, x: float] =
@@ -95,7 +95,7 @@ method store*(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessag
 
 
 method process(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
-  message.send(systems.get("physics"))
+  message.send("physics")
 
 
 method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =

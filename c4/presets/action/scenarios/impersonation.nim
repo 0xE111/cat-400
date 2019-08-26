@@ -16,7 +16,7 @@ import ../systems/video
 method process*(self: ref ActionClientNetworkSystem, message: ref ImpersonationMessage) =
   ## When server tells client to occupy some entity, send this message to video system
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems.get("video"))
+  message.send("video")
 
 
 method process*(self: ref ActionVideoSystem, message: ref ImpersonationMessage) =

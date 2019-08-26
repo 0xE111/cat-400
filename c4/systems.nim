@@ -12,7 +12,6 @@ type
     messageQueue: Deque[ref Message]
 
 var systemsMap* = initOrderedTable[string, ref System]()  ## variable which stores all active systems for current process (mode)
-template get*(name: string): ref System = systemsMap[name]  ## Use this to retrieve system by name (i.e. ``systems.get("network")``)
 
 # ---- System procs ----
 method `$`*(self: ref System): string {.base.} =
@@ -42,13 +41,15 @@ method update*(self: ref System, dt: float) {.base.} =
 
 # ---- Message procs ----
 proc send*(self: ref Message, system: ref System) =
-  if not system.isNil:
-    logging.debug &"Sending {$(self)} to {$(system)}"
-    system.store(self)
+  logging.debug &"Sending {$(self)} to {$(system)}"
+  system.store(self)
 
-proc send*(self: ref Message, systems: seq[ref System]) =
-  for system in systems:
-    self.send(system)
+proc send*(self: ref Message, systemName: string) =
+  self.send(systemsMap[systemName])
+
+proc send*(self: ref Message, systemsNames: seq[string]) =
+  for systemName in systemsNames:
+    self.send(systemName)
 
 
 # ---- messages ----

@@ -11,7 +11,7 @@ import ../systems/video
 method process(self: ref ActionClientNetworkSystem, message: ref CreateEntityMessage) =
     ## Sends message to video system
     procCall self.as(ref ClientNetworkSystem).process(message)  # generate remote->local entity mapping
-    message.send(systems.get("video"))
+    message.send("video")
 
 
 method process(self: ref ActionVideoSystem, message: ref CreateEntityMessage) =

@@ -18,7 +18,7 @@ import ../messages as action_messages
 
 method process*(self: ref ActionClientNetworkSystem, message: ref SetPositionMessage) =
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems.get("video"))
+  message.send("video")
 
 
 method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
@@ -36,7 +36,7 @@ method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
 method process*(self: ref ActionClientNetworkSystem, message: ref SetRotationMessage) =
   ## Forward the message to video system
   procCall self.as(ref ClientNetworkSystem).process(message)
-  message.send(systems.get("video"))
+  message.send("video")
 
 
 method process*(self: ref ActionVideoSystem, message: ref SetRotationMessage) =
