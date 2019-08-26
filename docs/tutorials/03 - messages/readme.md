@@ -138,7 +138,7 @@ Here's how we do that:
 # ...
 
 method process(self: ref PingerSystem, message: ref PongMessage) =
-  (ref PingMessage)(cnt: message.cnt + 1).send(systems.get("ponger"))
+  (ref PingMessage)(cnt: message.cnt + 1).send("ponger")
 ```
 
 `(ref PingMessage)(cnt: message.cnt + 1)` is a creation of new `ref PingMessage` with field `cnt` increased by `1`. Also note that we can retrieve any system using `systems.get(<system_name>)`.
@@ -228,7 +228,7 @@ We know that by the time when `PongerSystem` receives `SystemReadyMessage`, all 
 
 method process(self: ref PongerSystem, message: ref SystemReadyMessage) =
   # send first message
-  (ref PongMessage)(cnt: 0).send(systems.get("pinger"))
+  (ref PongMessage)(cnt: 0).send("pinger")
 ```
 
 Now compile the project:
