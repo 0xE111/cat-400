@@ -141,7 +141,7 @@ method process(self: ref PingerSystem, message: ref PongMessage) =
   (ref PingMessage)(cnt: message.cnt + 1).send("ponger")
 ```
 
-`(ref PingMessage)(cnt: message.cnt + 1)` is a creation of new `ref PingMessage` with field `cnt` increased by `1`. Also note that we can retrieve any system using `systems.get(<system_name>)`.
+`(ref PingMessage)(cnt: message.cnt + 1)` is a creation of new `ref PingMessage` with field `cnt` increased by `1`. Also note that we can send message to any system using `message.send(<system_name>)`.
 
 That's it! The only problem is that we use `method` here, which means that we need enable `--multimethods:on` compiler switch. You can call it like `nim c --multimethods:on ...`, but `ping_pong.nims` is a better place.
 
