@@ -26,7 +26,7 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
         yaw: -x.float * radInPixel,
         pitch: -y.float * radInPixel,
       ).send(@[
-        systems.get("network"),
+        "network",
         # systems.get("video"),  # client-side prediction
       ])
 

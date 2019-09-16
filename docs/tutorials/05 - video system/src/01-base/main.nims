@@ -1,2 +1,2 @@
 include "c4.nims"
-include "c4/systems/video/ogre.nims"
+include "c4/system/video/ogre.nims"
