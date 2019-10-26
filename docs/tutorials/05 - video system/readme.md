@@ -17,7 +17,7 @@ Originally, `C4` was using [Horde3d](http://horde3d.org/) as default backend for
 
 However, lack of updates and tiny API make working with `Horde3d` unpleasant on big projects. We won't cover the backend in this tutorial.
 
-The sources may be found at [c4/systems/video/horde3d.nim](../../../c4/systems/video/horde3d.nim). 
+The sources may be found at [c4/systems/video/horde3d.nim](../../../c4/systems/video/horde3d.nim).
 
 ## C++ / Ogre3d
 
@@ -165,7 +165,7 @@ import os  # required for `/` proc
 
 import c4/systems
 import c4/systems/video/ogre
-# in order to use ogre bindings like `self.resourceManager.addResourceLocation`, 
+# in order to use ogre bindings like `self.resourceManager.addResourceLocation`,
 # we have to import `c4/lib/ogre/ogre` module;
 # to avoid name clash with `c4/systems/video/ogre`, we use `import ... as ...`
 import c4/lib/ogre/ogre as ogre_lib
@@ -180,7 +180,7 @@ method init(self: ref CustomVideoSystem) =
   logging.debug "Initializing custom video system"
 
   logging.debug "Loading custom video resources"
-  
+
   self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
   self.resourceManager.addResourceLocation(defaultMediaDir, "FileSystem", resGroup="General")
   self.resourceManager.addResourceLocation(defaultMediaDir / "models", "FileSystem", resGroup="General")
@@ -290,3 +290,31 @@ Also notice that we retrieved all `ref Video` components using `getComponents(re
 #### Drawing somethin more complex
 
 We've covered basic drawing using default `Ogre` backend, but it's up to you to learn `Ogre` library and make it fit you game's requirements.
+
+> Easiest way to draw something without too much mess is to use Ogre's `ManualObject`. It allows you to create and display objects by just defining its vertices and colors. Here is an example of drawing X, Y and Z axis, with red, green, and blue colors respectively:
+
+```nim
+  # draw axis
+  var manualObject = self.sceneManager.createManualObject()
+  manualObject[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
+
+  # X axis, red
+  manualObject[].position(0, 0, 0)
+  manualObject[].colour(1, 0, 0)
+  manualObject[].position(100, 0, 0)
+
+  # Y axis, green
+  manualObject[].position(0, 0, 0)
+  manualObject[].colour(0, 1, 0)
+  manualObject[].position(0, 100, 0)
+
+  # Z axis, blue
+  manualObject[].position(0, 0, 0)
+  manualObject[].colour(0, 0, 1)
+  manualObject[].position(0, 0, 100)
+
+  discard manualObject[].end()
+
+  var node = self.sceneManager.getRootSceneNode().createChildSceneNode()
+  node.attachObject(manualObject)
+```

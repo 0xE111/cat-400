@@ -47,16 +47,31 @@ method init*(self: ref SandboxVideoSystem) =
   self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
   self.resourceManager.initialiseAllResourceGroups()
 
+  self.camera.setNearClipDistance(0.5)
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
   let light = self.sceneManager.createLight("MainLight")
   light.setPosition(20.0, 80.0, 50.0)
 
+  # draw axis
   var manualObject = self.sceneManager.createManualObject()
   manualObject[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
 
+  # X axis, red
   manualObject[].position(0, 0, 0)
-  manualObject[].position(0, 0, -300)
+  manualObject[].colour(1, 0, 0)
+  manualObject[].position(100, 0, 0)
+
+  # Y axis, green
+  manualObject[].position(0, 0, 0)
+  manualObject[].colour(0, 1, 0)
+  manualObject[].position(0, 100, 0)
+
+  # Z axis, blue
+  manualObject[].position(0, 0, 0)
+  manualObject[].colour(0, 0, 1)
+  manualObject[].position(0, 0, 100)
+
   discard manualObject[].end()
 
   var node = self.sceneManager.getRootSceneNode().createChildSceneNode()

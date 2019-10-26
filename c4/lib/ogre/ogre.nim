@@ -156,6 +156,8 @@ proc position*(this: ManualObject, pos: Vector3)
 proc position*(this: ManualObject, x: float, y: float, z: float)
 proc normal*(this: ManualObject, norm: Vector3)
 proc normal*(this: ManualObject, x: float, y: float, z: float)
+proc colour*(this: ManualObject, col: ColourValue)
+proc colour*(this: ManualObject, r: Real, g: Real, b: Real, a: Real = 1.0)
 proc textureCoord*(this: ManualObject, u: float)
 proc textureCoord*(this: ManualObject, u: float, v: float)
 proc textureCoord*(this: ManualObject, u: float, v: float, w: float)
@@ -199,6 +201,8 @@ type
 proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
 proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
 proc setAspectRatio*(this: ptr Camera, ratio: Real)
+proc setNearClipDistance*(this: ptr Camera, nearDist: Real)
+proc setFarClipDistance*(this: ptr Camera, farDist: Real)
 {.pop.}
 {.pop.}
 
