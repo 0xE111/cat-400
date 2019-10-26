@@ -1,5 +1,6 @@
 import logging
 import tables
+import strformat
 
 import c4/lib/ode/ode
 
@@ -17,6 +18,7 @@ type
   SandboxPhysicsSystem* = object of ActionPhysicsSystem
     cubes: seq[Entity]
 
+  SandboxPhysics* = object of ActionPhysics
 
 strMethod(SandboxPhysicsSystem, fields=false)
 
@@ -25,6 +27,21 @@ method init*(self: ref SandboxPhysicsSystem) =
   # Disable gravitation for now
   procCall self.as(ref ActionPhysicsSystem).init()
   self.world.worldSetGravity(0, 0, 0)
+
+method newPhysics*(self: ref SandboxPhysicsSystem): ref Physics =
+  SandboxPhysics.new()
+
+method init*(self: ref SandboxPhysicsSystem, physics: ref SandboxPhysics) =
+  procCall self.as(ref ActionPhysicsSystem).init(physics)
+
+  let geometry = createBox(self.space, 100, 100, 100)
+  geometry.geomSetBody(physics.body)
+
+  let mass = cast[ptr dMass](alloc(sizeof(dMass)))
+  mass.massSetBoxTotal(1.0, 1.0, 1.0, 1.0)
+  physics.body.bodySetMass(mass)
+
+  # TODO: send geometry (AABB) to graphics system - AddGeometryMessage
 
 
 method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage) =
@@ -59,7 +76,11 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
     cube = newEntity()
     (ref CreateEntityMessage)(entity: cube).send("network")
 
-    cube[ref Physics] = ActionPhysics.new()
+    let physics = self.newPhysics()
+    self.init(physics)
+    cube[ref Physics] = physics
+
+    logging.debug &"Setting position: {coords[0]} {coords[1]} {coords[2]}"
     cube[ref Physics].body.bodySetPosition(coords[0], coords[1], coords[2])
     # cube[ref Physics].body.bodySetRotation(!!!)
     (ref SyncPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send("network")

@@ -1,16 +1,11 @@
 import logging
-import strformat
-import tables
 import os
-import math
 
-import c4/entities
 import c4/systems
 import c4/systems/network/enet
 import c4/systems/video/ogre as ogre_video
 import c4/lib/ogre/ogre
 import c4/presets/action/systems/video
-import c4/presets/action/messages
 import c4/utils/stringify
 
 
@@ -21,11 +16,14 @@ type
 
 
 # ---- Component ----
-method attach*(self: ref SandboxVideo) =
-  procCall self.as(ref Video).attach()
-  let videoSystem = systems.get("video").as(ref SandboxVideoSystem)
-  let entity = videoSystem.sceneManager.createEntity("ogrehead.mesh")
-  self.node.attachObject(entity)
+method newVideo*(self: ref SandboxVideoSystem): ref Video =
+  SandboxVideo.new()
+
+method init*(self: ref SandboxVideoSystem, video: ref SandboxVideo) =
+  procCall self.as(ref ActionVideoSystem).init(video)
+
+  let entity = self.sceneManager.createEntity("ogrehead.mesh")
+  video.node.attachObject(entity)
 
 
 # ---- System ----
@@ -63,6 +61,7 @@ method init*(self: ref SandboxVideoSystem) =
 
   var node = self.sceneManager.getRootSceneNode().createChildSceneNode()
   node.attachObject(manualObject)
+
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
   ## Load skybox when connection is established

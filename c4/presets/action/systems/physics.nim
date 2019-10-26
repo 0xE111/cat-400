@@ -1,7 +1,4 @@
 import tables
-import logging
-import strformat
-import math
 
 import ../../../lib/ode/ode
 
@@ -9,7 +6,6 @@ import ../../../systems
 import ../../../entities
 import ../../../messages
 import ../../../systems/physics/ode as physics_system
-import ../../../systems/network/enet
 import ../../../utils/stringify
 
 import ../messages as action_messages
@@ -37,14 +33,16 @@ const
 
 
 # ---- Component ----
-method attach*(self: ref ActionPhysics) =
-  ## This method remembers component's inital position
-  procCall self.as(ref Physics).attach()
+method newPhysics*(self: ref ActionPhysicsSystem): ref Physics =
+  ActionPhysics.new()
 
-  self.prevPosition = self.body.bodyGetPosition()[]
-  self.prevRotation = self.body.bodyGetQuaternion()[]
+method init*(self: ref ActionPhysicsSystem, physics: ref ActionPhysics) =
+  procCall self.as(ref PhysicsSystem).init(physics)
 
-  self.movementDurationElapsed = 0
+  physics.prevPosition = physics.body.bodyGetPosition()[]
+  physics.prevRotation = physics.body.bodyGetQuaternion()[]
+
+  physics.movementDurationElapsed = 0
 
 proc startMovement*(self: ref ActionPhysics) =
   self.movementDurationElapsed = movementDuration

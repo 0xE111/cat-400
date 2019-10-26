@@ -16,7 +16,7 @@ type
 
   Component* = concept component
     ## Component is something which has ``attach()`` and ``detach()`` procs.
-    ## When component is attached to an Entity (``entity[Component] = component``), it is initialized - ``attach()`` is called automatically. When component is detached from entity (deleted ``entity.del(Component)`` or replaced with other component ``entity[Component] = newComponent``), or entire entity is deleted - ``detach()`` is called automatically.
+    ## When component is attached to an Entity (``entity[Component] = component``), ``attach()`` is called automatically. When component is detached from entity (deleted ``entity.del(Component)`` or replaced with other component ``entity[Component] = newComponent``), or entire entity is deleted - ``detach()`` is called automatically.
     component.attach()
     component.detach()
 

@@ -26,7 +26,7 @@ method handle*(self: ref SandboxInputSystem, event: sdl.Event) =
       case event.key.keysym.sym
         of K_c:
           # When player presses "C" key, we want to establish connection to remote server. We create new ``ConnectMessage`` (which is already predefined in Enet networking system), set server address and send this message to network system. Default Enet networking system knows that it should connect to the server when receiving this kind of message.
-          let connectMsg = (ref ConnectMessage)(address: ("localhost", systems.get("network").as(ref NetworkSystem).getPort()))
+          let connectMsg = (ref ConnectMessage)(address: ("localhost", 11477'u16))
           connectMsg.send("network")
 
         of K_q:

@@ -9,4 +9,6 @@ import ../systems/video
 
 method process*(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
   logging.debug &"Creating video component for {message.entity}"
-  message.entity[ref Video] = SandboxVideo.new()
+  let video = self.newVideo()
+  self.init(video)
+  message.entity[ref Video] = video

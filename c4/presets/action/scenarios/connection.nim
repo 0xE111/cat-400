@@ -31,7 +31,9 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   ## We also need to send all world information to new peer.
 
   let player = newEntity()  # create new Entity
-  player[ref Physics] = ActionPhysics.new()
+  let physics = self.newPhysics()
+  self.init(physics)
+  player[ref Physics] = physics
   player[ref Physics].body.bodySetPosition(0.0, 0.0, 0.0)
 
   # send new entity to all peers
@@ -60,7 +62,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
     (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send("network")
 
     let rotation = physics.body.bodyGetQuaternion()[]
-    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send("network")
+    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send("network")  # TODO: make `recipient` attrubute of `send()`?
 
 
 method process*(self: ref ActionClientNetworkSystem, message: ref ConnectionClosedMessage) =

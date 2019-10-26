@@ -1,15 +1,6 @@
-import tables
-import strformat
-import logging
-
-import ../../../entities
-import ../../../systems
 import ../../../lib/ogre/ogre
 import ../../../systems/video/ogre as video
 import ../../../utils/stringify
-
-import physics
-import ../messages
 
 
 type
@@ -18,4 +9,3 @@ type
 
 
 strMethod(ActionVideoSystem, fields=false)
-

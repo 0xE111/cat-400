@@ -2,6 +2,7 @@ import logging
 import strformat
 import math
 import tables
+import system
 
 import ../../entities
 import ../../systems
@@ -17,6 +18,7 @@ type
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
+    # contactGroup: dJointGroupID
     simulationStepRemains: float
 
   Physics* {.inheritable.} = object
@@ -24,14 +26,17 @@ type
 
 
 # ---- Component ----
+method newPhysics*(self: ref PhysicsSystem): ref Physics {.base.} =
+  ## A way to crete new physics component. You may redefine it to return your own inherited component.
+  Physics.new()
+
+method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
+  logging.debug &"{self}: initializing component"
+  physics.body = self.world.bodyCreate()
+  physics.body.bodySetPosition(0.0, 0.0, 0.0)
+
 method attach*(self: ref Physics) {.base.} =
-  assert systems.get("physics") of ref PhysicsSystem
-
-  logging.debug &"Physics system: initializing component"
-
-  self.body = systems.get("physics").as(ref PhysicsSystem).world.bodyCreate()
-  self.body.bodySetPosition(0.0, 0.0, 0.0)
-
+  discard
 
 method detach*(self: ref Physics) {.base.} =
   logging.debug &"Physics system: destroying component"
