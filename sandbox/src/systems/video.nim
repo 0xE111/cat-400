@@ -53,29 +53,83 @@ method init*(self: ref SandboxVideoSystem) =
   let light = self.sceneManager.createLight("MainLight")
   light.setPosition(20.0, 80.0, 50.0)
 
-  # draw axis
-  var manualObject = self.sceneManager.createManualObject()
-  manualObject[].begin("BaseWhiteNoLighting", OT_LINE_LIST)
+  # ---- draw axis ----
+  var axisObject = self.sceneManager.createManualObject()[]
+  axisObject.begin("BaseWhiteNoLighting", OT_LINE_LIST)
 
   # X axis, red
-  manualObject[].position(0, 0, 0)
-  manualObject[].colour(1, 0, 0)
-  manualObject[].position(100, 0, 0)
+  axisObject.position(0, 0, 0)
+  axisObject.colour(1, 0, 0)
+  axisObject.position(100, 0, 0)
 
   # Y axis, green
-  manualObject[].position(0, 0, 0)
-  manualObject[].colour(0, 1, 0)
-  manualObject[].position(0, 100, 0)
+  axisObject.position(0, 0, 0)
+  axisObject.colour(0, 1, 0)
+  axisObject.position(0, 100, 0)
 
   # Z axis, blue
-  manualObject[].position(0, 0, 0)
-  manualObject[].colour(0, 0, 1)
-  manualObject[].position(0, 0, 100)
+  axisObject.position(0, 0, 0)
+  axisObject.colour(0, 0, 1)
+  axisObject.position(0, 0, 100)
 
-  discard manualObject[].end()
+  discard axisObject.end()
+  discard axisObject.convertToMesh("axis")
+  self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(self.sceneManager.createEntity("axis"))
 
-  var node = self.sceneManager.getRootSceneNode().createChildSceneNode()
-  node.attachObject(manualObject)
+  # ---- create box mesh ----
+  var boxObject = self.sceneManager.createManualObject()[]
+
+  boxObject.begin("BaseWhiteNoLighting", OT_TRIANGLE_LIST)
+
+  # front
+  boxObject.position(-0.5, -0.5, 0.5)
+  boxObject.colour(0, 0, 0.75)
+  boxObject.position(0.5, -0.5, 0.5)
+  boxObject.position(0.5, 0.5, 0.5)
+  boxObject.position(-0.5, 0.5, 0.5)
+  boxObject.quad(0, 1, 2, 3)
+
+  # back
+  boxObject.position(-0.5, 0.5, -0.5)
+  boxObject.position(0.5, 0.5, -0.5)
+  boxObject.position(0.5, -0.5, -0.5)
+  boxObject.position(-0.5, -0.5, -0.5)
+  boxObject.quad(4, 5, 6, 7)
+
+  # right
+  boxObject.position(0.5, -0.5, 0.5)
+  boxObject.colour(0.75, 0, 0)
+  boxObject.position(0.5, -0.5, -0.5)
+  boxObject.position(0.5, 0.5, -0.5)
+  boxObject.position(0.5, 0.5, 0.5)
+  boxObject.quad(8, 9, 10, 11)
+
+  # left
+  boxObject.position(-0.5, -0.5, -0.5)
+  boxObject.position(-0.5, -0.5, 0.5)
+  boxObject.position(-0.5, 0.5, 0.5)
+  boxObject.position(-0.5, 0.5, -0.5)
+  boxObject.quad(12, 13, 14, 15)
+
+  # bottom
+  boxObject.position(-0.5, -0.5, -0.5)
+  boxObject.colour(0, 0.75, 0)
+  boxObject.position(0.5, -0.5, -0.5)
+  boxObject.position(0.5, -0.5, 0.5)
+  boxObject.position(-0.5, -0.5, 0.5)
+  boxObject.quad(16, 17, 18, 19)
+
+  # up
+  boxObject.position(-0.5, 0.5, 0.5)
+  boxObject.position(0.5, 0.5, 0.5)
+  boxObject.position(0.5, 0.5, -0.5)
+  boxObject.position(-0.5, 0.5, -0.5)
+  boxObject.quad(20, 21, 22, 23)
+
+  discard boxObject.end()
+
+  discard boxObject.convertToMesh("box")
+  self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(self.sceneManager.createEntity("box"))
 
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =

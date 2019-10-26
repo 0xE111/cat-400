@@ -112,10 +112,11 @@ method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =
     rotation[8] * direction[0] + rotation[9] * direction[1] + rotation[10] * direction[2],
   ]
 
+  const walkSpeed = 5 * 1000 / 60 / 60
   playerEntity[ref Physics].body.bodySetLinearVel(
-    finalDirection[0] * 30,
-    finalDirection[1] * 30,
-    finalDirection[2] * 30,
+    finalDirection[0] * walkSpeed,
+    finalDirection[1] * walkSpeed,
+    finalDirection[2] * walkSpeed,
   )
   # TODO: `as(ref ActionPhysics)` is ugly
   playerEntity[ref Physics].as(ref ActionPhysics).startMovement()

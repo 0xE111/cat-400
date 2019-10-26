@@ -34,7 +34,7 @@ method newPhysics*(self: ref SandboxPhysicsSystem): ref Physics =
 method init*(self: ref SandboxPhysicsSystem, physics: ref SandboxPhysics) =
   procCall self.as(ref ActionPhysicsSystem).init(physics)
 
-  let geometry = createBox(self.space, 100, 100, 100)
+  let geometry = createBox(self.space, 1, 1, 1)
   geometry.geomSetBody(physics.body)
 
   let mass = cast[ptr dMass](alloc(sizeof(dMass)))
@@ -61,12 +61,12 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
 
   # define cubes locations
   let cubeCoords = @[
-    (0.0, 0.0, -300.0),
-    (-300.0, 0.0, 0.0),
-    (0.0, 0.0, 300.0),
-    (300.0, 0.0, 0.0),
-    (0.0, 300.0, 0.0),
-    (0.0, -300.0, 0.0),
+    (0.0, 0.0, -100.0),
+    (-100.0, 0.0, 0.0),
+    (0.0, 0.0, 100.0),
+    (100.0, 0.0, 0.0),
+    (0.0, 100.0, 0.0),
+    (0.0, -100.0, 0.0),
   ]
 
   var cube: Entity
