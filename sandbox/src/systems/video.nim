@@ -16,14 +16,10 @@ type
 
 
 # ---- Component ----
-method newVideo*(self: ref SandboxVideoSystem): ref Video =
-  SandboxVideo.new()
-
 method init*(self: ref SandboxVideoSystem, video: ref SandboxVideo) =
   procCall self.as(ref ActionVideoSystem).init(video)
 
-  let entity = self.sceneManager.createEntity("ogrehead.mesh")
-  video.node.attachObject(entity)
+  video.node.attachObject(self.sceneManager.createEntity("box"))
 
 
 # ---- System ----
@@ -54,7 +50,7 @@ method init*(self: ref SandboxVideoSystem) =
   light.setPosition(20.0, 80.0, 50.0)
 
   # ---- draw axis ----
-  var axisObject = self.sceneManager.createManualObject()[]
+  let axisObject = self.sceneManager.createManualObject()
   axisObject.begin("BaseWhiteNoLighting", OT_LINE_LIST)
 
   # X axis, red
@@ -74,10 +70,12 @@ method init*(self: ref SandboxVideoSystem) =
 
   discard axisObject.end()
   discard axisObject.convertToMesh("axis")
-  self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(self.sceneManager.createEntity("axis"))
+
+  let axis = self.sceneManager.createEntity("axis")
+  self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(axis)
 
   # ---- create box mesh ----
-  var boxObject = self.sceneManager.createManualObject()[]
+  let boxObject = self.sceneManager.createManualObject()
 
   boxObject.begin("BaseWhiteNoLighting", OT_TRIANGLE_LIST)
 
@@ -129,7 +127,6 @@ method init*(self: ref SandboxVideoSystem) =
   discard boxObject.end()
 
   discard boxObject.convertToMesh("box")
-  self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(self.sceneManager.createEntity("box"))
 
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =

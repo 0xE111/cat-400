@@ -151,23 +151,23 @@ type
 
 proc initManualObject*(name: String): ManualObject {.importcpp: "Ogre::ManualObject(@)", constructor.}
 {.push importcpp: "#.$1(@)".}
-proc begin*(this: ManualObject, materialName: String, opType: OperationType = OT_TRIANGLE_LIST, groupName: String = DEFAULT_RESOURCE_GROUP_NAME)
-proc position*(this: ManualObject, pos: Vector3)
-proc position*(this: ManualObject, x: float, y: float, z: float)
-proc normal*(this: ManualObject, norm: Vector3)
-proc normal*(this: ManualObject, x: float, y: float, z: float)
-proc colour*(this: ManualObject, col: ColourValue)
-proc colour*(this: ManualObject, r: Real, g: Real, b: Real, a: Real = 1.0)
-proc textureCoord*(this: ManualObject, u: float)
-proc textureCoord*(this: ManualObject, u: float, v: float)
-proc textureCoord*(this: ManualObject, u: float, v: float, w: float)
-proc textureCoord*(this: ManualObject, x: float, y: float, z: float, w: float)
-proc textureCoord*(this: ManualObject, uv: Vector2)
-proc textureCoord*(this: ManualObject, uvw: Vector3)
-proc textureCoord*(this: ManualObject, xyzw: Vector4)
-proc quad*(this: ManualObject, i1, i2, i3, i4: uint32)
-proc `end`*(this: ManualObject): ptr ManualObjectSection
-proc convertToMesh*(this: ManualObject, meshName: String, groupName: String = DEFAULT_RESOURCE_GROUP_NAME): MeshPtr
+proc begin*(this: ptr ManualObject, materialName: String, opType: OperationType = OT_TRIANGLE_LIST, groupName: String = DEFAULT_RESOURCE_GROUP_NAME)
+proc position*(this: ptr ManualObject, pos: Vector3)
+proc position*(this: ptr ManualObject, x: float, y: float, z: float)
+proc normal*(this: ptr ManualObject, norm: Vector3)
+proc normal*(this: ptr ManualObject, x: float, y: float, z: float)
+proc colour*(this: ptr ManualObject, col: ColourValue)
+proc colour*(this: ptr ManualObject, r: Real, g: Real, b: Real, a: Real = 1.0)
+proc textureCoord*(this: ptr ManualObject, u: float)
+proc textureCoord*(this: ptr ManualObject, u: float, v: float)
+proc textureCoord*(this: ptr ManualObject, u: float, v: float, w: float)
+proc textureCoord*(this: ptr ManualObject, x: float, y: float, z: float, w: float)
+proc textureCoord*(this: ptr ManualObject, uv: Vector2)
+proc textureCoord*(this: ptr ManualObject, uvw: Vector3)
+proc textureCoord*(this: ptr ManualObject, xyzw: Vector4)
+proc quad*(this: ptr ManualObject, i1, i2, i3, i4: uint32)
+proc `end`*(this: ptr ManualObject): ptr ManualObjectSection
+proc convertToMesh*(this: ptr ManualObject, meshName: String, groupName: String = DEFAULT_RESOURCE_GROUP_NAME): MeshPtr
 {.pop.}
 {.pop.}
 
