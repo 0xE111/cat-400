@@ -18,7 +18,7 @@ type
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
-    # contactGroup: dJointGroupID
+    contactGroup: dJointGroupID
     simulationStepRemains: float
 
   Physics* {.inheritable.} = object
@@ -77,7 +77,8 @@ method init*(self: ref PhysicsSystem) =
   self.space = hashSpaceCreate(nil)
   self.simulationStepRemains = 0
   self.nearCallback = nearCallback  # cast[ptr dNearCallback](nearCallback.rawProc)
-  # self.contactGroup = jointGroupCreate(0);
+  self.contactGroup = jointGroupCreate(0)
+
   logging.debug "ODE initialized"
 
   procCall self.as(ref System).init()
@@ -94,6 +95,7 @@ method update*(self: ref PhysicsSystem, dt: float) =
     self.space.spaceCollide(nil, cast[ptr dNearCallback](self.nearCallback.rawProc))
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
+    self.contactGroup.jointGroupEmpty()
 
   for entity, physics in getComponents(ref Physics).pairs():
     physics.update(dt, entity)
@@ -101,6 +103,8 @@ method update*(self: ref PhysicsSystem, dt: float) =
   procCall self.as(ref System).update(dt)
 
 proc `=destroy`*(self: var PhysicsSystem) =
+  self.contactGroup.jointGroupDestroy()
+  self.space.spaceDestroy()
   self.world.worldDestroy()
   ode.closeODE()
   logging.debug "ODE destroyed"

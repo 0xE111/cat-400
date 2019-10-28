@@ -43,7 +43,7 @@ method init*(self: ref SandboxVideoSystem) =
   self.resourceManager.addResourceLocation(defaultMediaDir / "materials" / "textures", "FileSystem", resGroup="General")
   self.resourceManager.initialiseAllResourceGroups()
 
-  self.camera.setNearClipDistance(0.5)
+  self.camera.setNearClipDistance(0.01)
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
 
   let light = self.sceneManager.createLight("MainLight")
