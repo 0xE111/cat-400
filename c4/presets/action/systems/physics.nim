@@ -33,8 +33,6 @@ const
 
 
 # ---- Component ----
-method newPhysics*(self: ref ActionPhysicsSystem): ref Physics =
-  ActionPhysics.new()
 
 method init*(self: ref ActionPhysicsSystem, physics: ref ActionPhysics) =
   procCall self.as(ref PhysicsSystem).init(physics)
@@ -43,6 +41,9 @@ method init*(self: ref ActionPhysicsSystem, physics: ref ActionPhysics) =
   physics.prevRotation = physics.body.bodyGetQuaternion()[]
 
   physics.movementDurationElapsed = 0
+
+method newPlayerPhysics*(self: ref ActionPhysicsSystem): ref Physics {.base.} =
+  ActionPhysics.new()
 
 proc startMovement*(self: ref ActionPhysics) =
   self.movementDurationElapsed = movementDuration

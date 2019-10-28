@@ -26,9 +26,6 @@ type
 
 
 # ---- Component ----
-method newPhysics*(self: ref PhysicsSystem): ref Physics {.base.} =
-  ## A way to crete new physics component. You may redefine it to return your own inherited component.
-  Physics.new()
 
 method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
   logging.debug &"{self}: initializing component"
@@ -76,6 +73,7 @@ proc nearCallback(data: pointer, o1: dGeomID, o2: dGeomID) =
 method init*(self: ref PhysicsSystem) =
   ode.initODE()
   self.world = worldCreate()
+  # self.world.worldSetAutoDisableFlag(1)
   self.space = hashSpaceCreate(nil)
   self.simulationStepRemains = 0
   self.nearCallback = nearCallback  # cast[ptr dNearCallback](nearCallback.rawProc)

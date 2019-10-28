@@ -18,7 +18,7 @@ type
   SandboxPhysicsSystem* = object of ActionPhysicsSystem
     cubes: seq[Entity]
 
-  SandboxPhysics* = object of ActionPhysics
+  BoxPhysics* = object of ActionPhysics
 
 strMethod(SandboxPhysicsSystem, fields=false)
 
@@ -31,7 +31,8 @@ method init*(self: ref SandboxPhysicsSystem) =
 method newPhysics*(self: ref SandboxPhysicsSystem): ref Physics =
   SandboxPhysics.new()
 
-method init*(self: ref SandboxPhysicsSystem, physics: ref SandboxPhysics) =
+
+method init*(self: ref SandboxPhysicsSystem, physics: ref BoxPhysics) =
   procCall self.as(ref ActionPhysicsSystem).init(physics)
 
   let geometry = createBox(self.space, 1, 1, 1)
@@ -42,6 +43,10 @@ method init*(self: ref SandboxPhysicsSystem, physics: ref SandboxPhysics) =
   physics.body.bodySetMass(mass)
 
   # TODO: send geometry (AABB) to graphics system - AddGeometryMessage
+
+
+method newPlayerPhysics(self: ref SandboxPhysicsSystem): ref Physics =
+  BoxPhysics.new()
 
 
 method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage) =
@@ -61,12 +66,12 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
 
   # define cubes locations
   let cubeCoords = @[
-    (0.0, 0.0, -100.0),
-    (-100.0, 0.0, 0.0),
-    (0.0, 0.0, 100.0),
-    (100.0, 0.0, 0.0),
-    (0.0, 100.0, 0.0),
-    (0.0, -100.0, 0.0),
+    (0.0, 1.0, -10.0),
+    (-2.0, 1.0, -10.0),
+    (2.0, 1.0, -10.0),
+    (-1.0, 2.5, -10.0),
+    (1.0, 2.5, -10.0),
+    (0.0, 4.0, -10.0),
   ]
 
   var cube: Entity
@@ -76,30 +81,18 @@ method process*(self: ref SandboxPhysicsSystem, message: ref ResetSceneMessage) 
     cube = newEntity()
     (ref CreateEntityMessage)(entity: cube).send("network")
 
-    let physics = self.newPhysics()
+    let physics = BoxPhysics.new()
     self.init(physics)
     cube[ref Physics] = physics
 
     logging.debug &"Setting position: {coords[0]} {coords[1]} {coords[2]}"
     cube[ref Physics].body.bodySetPosition(coords[0], coords[1], coords[2])
-    # cube[ref Physics].body.bodySetRotation(!!!)
     (ref SyncPositionMessage)(entity: cube, x: coords[0], y: coords[1], z: coords[2]).send("network")
-
-    var mass = ode.dMass()
-    mass.addr.massSetBoxTotal(10.0, 1.0, 1.0, 1.0)
-    cube[ref Physics].body.bodySetMass(mass.addr)
+    # TODO: add RotateMessage
+    # cube[ref Physics].body.bodySetQuaternion([1.0, 1.0, 1.0, 0])
+    # let quat = cube[ref Physics].body.bodyGetQuaternion()
+    # (ref SyncRotationMessage)(entity: cube, quaternion: [quat[0], quat[1], quat[2], quat[3]]).send("network")
 
     self.cubes.add(cube)
-
-  #   cube[ref Physics] = physics
-  #   var position = physics.body.bodyGetPosition()
-  #   (ref MoveMessage)(
-  #     entity: cube,
-  #     x: position[][0],
-  #     y: position[][1],
-  #     z: position[][2],
-  #   ).send("network")
-
-  #   # TODO: add RotateMessage
 
   logging.debug "Scene loaded"
