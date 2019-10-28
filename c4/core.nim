@@ -3,6 +3,7 @@ import logging
 from osproc import startProcess, running, kill, ProcessOption
 from os import getAppDir, getAppFilename, commandLineParams, sleep, joinPath
 import tables
+import times
 
 from strutils import join, toLowerAscii, toUpperAscii, parseEnum
 from strformat import `&`
@@ -27,7 +28,7 @@ const
     -m, --mode=[{modes}] - launch server/client/both
   """
 
-proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]()) =
+proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems = initOrderedTable[string, ref System]()) =
   ## Handles CLI args, sets up logging and runs client / server / overseer process.
   ##
   ## Run this in your main module.
@@ -61,9 +62,10 @@ proc run*(serverSystems, clientSystems = initOrderedTable[string, ref System]())
 
   # TODO: add logger helper - include file name (and possibly line) in log message
   let
-    logFile = joinPath(getAppDir(), &"{mode}.log")
+    timestamp = now().format("yyyy-MM-dd-hh-mm-ss")
+    logFile = joinPath(getAppDir(), &"{mode}.{timestamp}.log")
     logFmtStr = &"[$datetime] {mode} $levelname: "
-  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000, levelThreshold=logLevel, fmtStr=logFmtStr))
+  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.debug("Version " & frameworkVersion)
 
