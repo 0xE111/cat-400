@@ -11,7 +11,7 @@ when isMainModule:
 
 
 type
-  Entity* = int16  ## Entity is just an int which may have components of any type.
+  Entity* = int16  ## Entity is just an int which may have components of any type. Zero entity is reserved as "not initialized"
   # uint doesn't check boundaries
 
   Component* = concept component
@@ -26,11 +26,15 @@ var
 
 
 # ---- Entity ----
+proc isInitialized*(self: Entity): bool =
+  ## Checks whether entity was initialized using `newEntity()`.
+  self != 0
+
 proc newEntity*(): Entity =
   ## Return new Entity or raise error if limit exceeded
   result = low(Entity)
-  while result in entities:
-    result += 1  # TODO: pretty dumb
+  while result in entities or not result.isInitialized:
+    result += 1  # TODO: pretty dumb, use random instead
 
   entities.incl(result)  # add entity to global entities registry
 
@@ -95,10 +99,14 @@ proc flush*() =
 # ---- CRUD for components ----
 template has*(entity: Entity, T: typedesc[Component]): bool =
   ## Checks whether ``entity`` has component of type ``T``
+  assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
+
   getComponents(T).hasKey(entity)
 
 template del*(entity: Entity, T: typedesc[Component]) =
   ## Deletes component ``T`` from ``entity``, or does nothing if ``entity`` doesn't have such a component
+  assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
+
   var components = getComponents(T)
   if components.hasKey(entity):
     components[entity].detach()
@@ -106,10 +114,14 @@ template del*(entity: Entity, T: typedesc[Component]) =
 
 template `[]`*(entity: Entity, T: typedesc[Component]): var typed =
   ## Returns ``T`` component for ``entity``. Make sure the component exists before retrieving it.
+  assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
+
   getComponents(T)[entity]
 
 template `[]=`*(entity: Entity, T: typedesc[Component], value: T) =
   ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
+  assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
+
   entity.del(T)
   getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
   getComponents(T)[entity].attach()
@@ -153,6 +165,11 @@ when isMainModule:
     discard
 
   suite "Entities tests":
+    test "Undefined entity":
+      var entity: Entity
+      expect AssertionError:
+        entity[TestComponent] = TestComponent()
+
     test "Auto-initialization of components":
       var
         entity = newEntity()

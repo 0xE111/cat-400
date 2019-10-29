@@ -28,9 +28,6 @@ method init*(self: ref SandboxPhysicsSystem) =
   procCall self.as(ref ActionPhysicsSystem).init()
   self.world.worldSetGravity(0, 0, 0)
 
-method newPhysics*(self: ref SandboxPhysicsSystem): ref Physics =
-  SandboxPhysics.new()
-
 
 method init*(self: ref SandboxPhysicsSystem, physics: ref BoxPhysics) =
   procCall self.as(ref ActionPhysicsSystem).init(physics)
