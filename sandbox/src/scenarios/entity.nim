@@ -8,7 +8,8 @@ import ../systems/video
 
 
 method process*(self: ref SandboxVideoSystem, message: ref CreateEntityMessage) =
-  logging.debug &"Creating video component for {message.entity}"
-  let video = SandboxVideo.new()
+  # sent by action network system when player connected and got new entity
+  logging.debug &"Creating video component for entity {message.entity}"
+  let video = new(BoxVideo)
   self.init(video)
   message.entity[ref Video] = video

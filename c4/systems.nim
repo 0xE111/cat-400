@@ -2,7 +2,6 @@ import deques
 import logging
 import strformat
 import tables
-export tables.`[]`
 
 import messages
 

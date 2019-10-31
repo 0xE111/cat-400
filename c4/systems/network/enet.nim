@@ -225,7 +225,7 @@ method connect*(self: ref NetworkSystem, address: Address, numChannels = 1) {.ba
   enetAddress.port = address.port
 
   if enet.host_connect(self.host, enetAddress.addr, numChannels.csize, 0.uint32).isNil:
-    raise newException(LibraryError, "No available peers for initiating an ENet connection")
+    raise newException(LibraryError, "Could not establish connection")
 
   # further connection success / failure is handled by ``handle`` method
 

@@ -1,13 +1,12 @@
-from parseopt import nil
+import parseopt
 import logging
-from osproc import startProcess, running, kill, ProcessOption
-from os import getAppDir, getAppFilename, commandLineParams, sleep, joinPath
+import os
+import osproc
 import tables
 import times
-
-from strutils import join, toLowerAscii, toUpperAscii, parseEnum
-from strformat import `&`
-from sequtils import mapIt
+import strutils
+import strformat
+import sequtils
 
 import systems
 import utils/loop

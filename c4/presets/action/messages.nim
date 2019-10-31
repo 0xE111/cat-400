@@ -1,6 +1,5 @@
 import ../../messages
 import ../../entities
-import ../../utils/stringify
 
 
 type PlayerMoveMessage* = object of Message
