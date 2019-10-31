@@ -2,6 +2,7 @@
 
 import hashes
 import tables
+import macros
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
 

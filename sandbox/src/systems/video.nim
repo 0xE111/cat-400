@@ -12,14 +12,18 @@ import c4/utils/stringify
 type
   SandboxVideoSystem* = object of ActionVideoSystem
 
-  SandboxVideo* = object of Video
+  BoxVideo* = object of Video
+  PlaneVideo* = object of Video
 
 
 # ---- Component ----
-method init*(self: ref SandboxVideoSystem, video: ref SandboxVideo) =
+method init*(self: ref SandboxVideoSystem, video: ref BoxVideo) =
   procCall self.as(ref ActionVideoSystem).init(video)
-
   video.node.attachObject(self.sceneManager.createEntity("box"))
+
+method init*(self: ref SandboxVideoSystem, video: ref PlaneVideo) =
+  procCall self.as(ref ActionVideoSystem).init(video)
+  video.node.attachObject(self.sceneManager.createEntity("plane"))
 
 
 # ---- System ----
@@ -127,6 +131,31 @@ method init*(self: ref SandboxVideoSystem) =
   discard boxObject.end()
 
   discard boxObject.convertToMesh("box")
+
+  # ---- plane ----
+  let planeObject = self.sceneManager.createManualObject()
+
+  planeObject.begin("BaseWhiteNoLighting", OT_TRIANGLE_LIST)
+
+  planeObject.position(-50, 0, 50)
+  planeObject.colour(0.75, 0.75, 0.75)
+  planeObject.position(50, 0, 50)
+  planeObject.position(50, 0, -50)
+  planeObject.position(-50, 0, -50)
+  planeObject.quad(0, 1, 2, 3)
+
+  discard planeObject.end()
+  discard planeObject.convertToMesh("plane")
+
+
+method process*(self: ref SandboxVideoSystem, message: ref SystemReadyMessage) =
+  # connect to server as soon as video system is loaded
+  (ref ConnectMessage)(address: ("localhost", 11477'u16)).send("network")
+
+
+method process*(self: ref SandboxVideoSystem, message: ref SystemQuitMessage) =
+  # disconnect as soon as video system is unloaded
+  new(DisconnectMessage).send("network")
 
 
 method process*(self: ref SandboxVideoSystem, message: ref ConnectionOpenedMessage) =
