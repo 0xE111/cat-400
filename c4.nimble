@@ -17,6 +17,7 @@ installExt = @["nim", "nims", "nimble", "txt"]
 # Dependencies
 requires "nim >= 0.20"
 requires "msgpack4nim >= 0.2.7"
+requires "cligen >= 0.9.41"
 requires "fsm >= 0.1.0"
 requires "sdl2_nim >= 2.0.9.2"
 when defined(linux):
