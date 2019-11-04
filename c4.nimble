@@ -1,24 +1,18 @@
 import strutils
 import strformat
-import ospaths
+import os
 
-# Constants
-const
-  versionFile = "c4/version.txt"
-  pinnedVersion = staticRead(versionFile)
-
-# Helpers
-proc getGitVersion*(): string {.compileTime.} =
-  staticExec("git describe --tags --long").split('-')[0..^2].join("-")
-
-# Package
-version = pinnedVersion.split('-')[0]  # don't include number of updates
+# Package info
+version = "0.2.0"
 author = "c0ntribut0r"
 description = "Game framework"
-license = staticRead("LICENSE").splitLines()[0]
+license = "MPL-2.0"
 
-# Dirs
-skipDirs = @["docs", "sandbox"]
+# srcDir = "c4"
+bin = @["bin/c4"]
+installDirs = @["c4"]
+installExt = @["nim", "nims", "nimble", "txt"]
+# skipDirs = @["docs", "sandbox"]
 
 # Dependencies
 requires "nim >= 0.20"
@@ -27,17 +21,6 @@ requires "fsm >= 0.1.0"
 requires "sdl2_nim >= 2.0.9.2"
 when defined(linux):
   requires "x11 >= 1.1"
-
-
-# Tasks
-task pinVersion, "Update version file":
-  const gitVersion = getGitVersion()
-
-  if gitVersion != pinnedVersion:
-    writeFile(versionFile, gitVersion)
-    discard staticExec("git add " & versionFile)
-    discard staticExec("git commit --amend --no-edit")
-    echo(&"Updated version {pinnedVersion} -> {gitVersion}")
 
 
 proc dirGenDocs(src, dst: string) =

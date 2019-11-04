@@ -1,21 +1,17 @@
-from strutils import split
+import strutils
 import distros
 import ospaths
 import strformat
 
 
 # Constants
-const
-  versionFile = "c4/version.txt"
-  pinnedVersion = staticRead(versionFile)
-  buildDir = thisDir().parentDir.parentDir / "build"
+const buildDir = thisDir().parentDir.parentDir / "build"
 
 # Package
-version = pinnedVersion.split('-')[0]  # don't include number of updates
+version = "0.1"
 author = "c0ntribut0r"
-description = "c4 sample"
+description = "C4 sample"
 license = "MIT"
-
 
 # Dependencies
 requires "nim >= 0.19.1"

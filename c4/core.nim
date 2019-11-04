@@ -16,8 +16,6 @@ type Mode = enum client, server, multi
 
 # TODO: use `finalizer` kw for every `new()` call
 const
-  frameworkVersion = staticRead("version.txt")
-
   logLevels = logging.Level.mapIt(($it)[3..^1].toLowerAscii).join("|")
   modes = Mode.mapIt($it).join("|")
   help = &"""
@@ -43,7 +41,6 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
-            echo "C4 " & frameworkVersion
             echo "Nim " & NimVersion
             echo "Compiled @ " & CompileDate & " " & CompileTime
             return
@@ -66,7 +63,7 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
     logFmtStr = &"[$datetime] {mode} $levelname: "
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr=logFmtStr))
   logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
-  logging.debug("Version " & frameworkVersion)
+  logging.debug("Nim version: " & NimVersion)
 
   # this part of code handles spawning & maintaining client & server subprocesses
   if mode == Mode.multi:
