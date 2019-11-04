@@ -1,5 +1,6 @@
 ## Basic wrapper for Ogre3d.
 ## Only minimal requred definitions included.
+# TODO: inspect all places where we use object instances directly instead of pointers!
 when isMainModule:
   import unittest
   import sdl2/sdl, sdl2/sdl_syswm
@@ -11,7 +12,7 @@ elif defined(macosx):
   raise newException(LibraryError, "Not implemented")
 
 elif defined(linux):
-  {.link: "/usr/lib/libOgre.so".}
+  # {.link: "/usr/lib/libOgre.so".}
   {.link: "/usr/lib/libOgreMain.so".}
   {.link: "/usr/lib/libOgreBites.so".}
   {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}

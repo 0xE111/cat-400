@@ -31,7 +31,7 @@ method process*(self: ref ActionPhysicsSystem, message: ref ConnectionOpenedMess
   ## We also need to send all world information to new peer.
 
   let player = newEntity()  # create new Entity
-  let physics = self.newPlayerPhysics()
+  let physics = new(ActionPhysics)
   self.init(physics)
   player[ref Physics] = physics
   player[ref Physics].body.bodySetPosition(0.0, 0.0, 0.0)

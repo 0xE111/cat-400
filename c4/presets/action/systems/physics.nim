@@ -42,9 +42,6 @@ method init*(self: ref ActionPhysicsSystem, physics: ref ActionPhysics) =
 
   physics.movementDurationElapsed = 0
 
-method newPlayerPhysics*(self: ref ActionPhysicsSystem): ref Physics {.base.} =
-  ActionPhysics.new()
-
 proc startMovement*(self: ref ActionPhysics) =
   self.movementDurationElapsed = movementDuration
 

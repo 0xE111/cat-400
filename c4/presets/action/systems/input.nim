@@ -18,6 +18,19 @@ strMethod(ActionInputSystem, fields=false)
 
 method handle*(self: ref ActionInputSystem, event: sdl.Event) =
   case event.kind
+    of sdl.WINDOWEVENT:
+      case event.window.event
+        of sdl.WINDOWEVENT_FOCUS_LOST:
+          discard
+          # self.state = State.inactive
+
+        of sdl.WINDOWEVENT_TAKE_FOCUS:
+          discard
+          # self.state = State.active
+
+        else:
+          discard
+
     of sdl.MOUSEMOTION:
       var x, y: cint
       let radInPixel = PI / 180 / 4  # 0.25 degree in 1 pixel

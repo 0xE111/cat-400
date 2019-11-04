@@ -95,14 +95,11 @@ template register*(MessageType: typedesc) =
         result = stream.data,
 
       proc(stream: MsgStream): ref Message {.closure.} =
-        # TODO: ugly
         var temp: ref MessageType
         stream.unpack(temp)
         result = temp,
     )
   )
-
-  # echo "Registered " & $MessageType
 
 
 when isMainModule:

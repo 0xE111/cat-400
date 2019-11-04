@@ -38,14 +38,11 @@ method init*(self: ref SandboxPhysicsSystem, physics: ref BoxPhysics) =
   geometry.geomSetBody(physics.body)
 
   let mass = cast[ptr dMass](alloc(sizeof(dMass)))
+  # TODO: var mass = ode.dMass()
   mass.massSetBoxTotal(1.0, 1.0, 1.0, 1.0)
   physics.body.bodySetMass(mass)
 
   # TODO: send geometry (AABB) to graphics system - AddGeometryMessage
-
-
-method newPlayerPhysics(self: ref SandboxPhysicsSystem): ref Physics =
-  BoxPhysics.new()
 
 
 method process*(self: ref SandboxPhysicsSystem, message: ref SystemReadyMessage) =
