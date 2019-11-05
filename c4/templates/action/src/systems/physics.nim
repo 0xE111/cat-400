@@ -54,7 +54,7 @@ method init*(self: ref PhysicsSystem) =
   procCall self.as(ref ode.PhysicsSystem).init()
   self.world.worldSetGravity(0, -G, 0)
 
-method update*(self: ref Physics, dt: float, entity: Entity) =
+method update*(self: ref Physics, dt: float, entity: Entity) {.base.} =
   ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
   let position = self.body.bodyGetPosition()[]
   for dimension in 0..2:

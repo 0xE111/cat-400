@@ -8,7 +8,11 @@ import src/systems/input
 import src/systems/video
 import src/systems/network
 
-import src/scenarios
+import src/scenarios/connection
+import src/scenarios/entity
+import src/scenarios/impersonation
+import src/scenarios/player_actions
+import src/scenarios/position
 
 
 when isMainModule:

@@ -1,29 +1,25 @@
 import logging
 import strformat
-import math
-import tables
 
-import c4/lib/ogre/ogre
+import c4/lib/ogre/ogre as ogrelib
 
-import c4/messages
 import c4/entities
 import c4/systems
-import c4/systems/video/ogre as ogre_video
-import c4/systems/network/enet as enet_network
+import c4/systems/video/ogre
+import c4/systems/network/enet
 
 import ../systems/video
-import ../systems/input
 import ../systems/network
-import ../messages as action_messages
+import ../messages
 
 
-method process*(self: ref ActionClientNetworkSystem, message: ref SetPositionMessage) =
-  procCall self.as(ref ClientNetworkSystem).process(message)
+method process*(self: ref network.ClientNetworkSystem, message: ref SetPositionMessage) =
+  procCall self.as(ref enet.ClientNetworkSystem).process(message)
   message.send("video")
 
 
-method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
-  if not message.entity.has(ref Video):
+method process(self: ref video.VideoSystem, message: ref SetPositionMessage) =
+  if not message.entity.has(ref video.Video):
     logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     # raise newException(LibraryError, "Shit im getting errors")
     # TODO: When client just connected to server, the server still may broadcast some messages
@@ -31,21 +27,21 @@ method process(self: ref ActionVideoSystem, message: ref SetPositionMessage) =
     # corresponding components yet, thus won't be able to process these messages and fail.
     return
 
-  message.entity[ref Video].node.setPosition(message.x, message.y, message.z)
+  message.entity[ref video.Video].node.setPosition(message.x, message.y, message.z)
 
 
-method process*(self: ref ActionClientNetworkSystem, message: ref SetRotationMessage) =
+method process*(self: ref network.ClientNetworkSystem, message: ref SetRotationMessage) =
   ## Forward the message to video system
-  procCall self.as(ref ClientNetworkSystem).process(message)
+  procCall self.as(ref enet.ClientNetworkSystem).process(message)
   message.send("video")
 
 
-method process*(self: ref ActionVideoSystem, message: ref SetRotationMessage) =
-  if not message.entity.has(ref Video):
+method process*(self: ref video.VideoSystem, message: ref SetRotationMessage) =
+  if not message.entity.has(ref video.Video):
     logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     return
 
-  message.entity[ref Video].node.setOrientation(
+  message.entity[ref video.Video].node.setOrientation(
     message.quaternion[0],
     message.quaternion[1],
     message.quaternion[2],

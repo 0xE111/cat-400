@@ -39,9 +39,6 @@ method detach*(self: ref Physics) {.base.} =
   logging.debug &"Physics system: destroying component"
   self.body.bodyDestroy()
 
-method update*(self: ref Physics, dt: float, entity: Entity) {.base.} =
-  discard
-
 
 # ---- System ----
 strMethod(PhysicsSystem, fields=false)
@@ -96,9 +93,6 @@ method update*(self: ref PhysicsSystem, dt: float) =
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
     self.contactGroup.jointGroupEmpty()
-
-  for entity, physics in getComponents(ref Physics).pairs():
-    physics.update(dt, entity)
 
   procCall self.as(ref System).update(dt)
 

@@ -1,6 +1,5 @@
 import tables
 
-import c4/messages
 import c4/systems/network/enet
 import c4/utils/stringify
 

@@ -1,28 +1,25 @@
-import logging
-import strformat
 import tables
 import math
 
-import c4/lib/ode/ode as ode_wrapper
+import c4/lib/ode/ode as odelib
 
-import c4/messages
+import c4/messages as c4messages
 import c4/entities
 import c4/systems
-import c4/systems/network/enet
 import c4/systems/physics/ode
 
-import ../systems/network as action_network
-import ../systems/physics as action_physics
-import ../messages as action_messages
+import ../systems/network
+import ../systems/physics
+import ../messages
 
 
-method store*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
+method store*(self: ref network.ServerNetworkSystem, message: ref PlayerRotateMessage) =
   ## Allow server to store ``PlayerRotateMessage``
   assert not message.isLocal
   procCall self.as(ref System).store(message)
 
 
-method process*(self: ref ActionServerNetworkSystem, message: ref PlayerRotateMessage) =
+method process*(self: ref network.ServerNetworkSystem, message: ref PlayerRotateMessage) =
   message.send("physics")
 
 
@@ -62,11 +59,11 @@ proc getPitchYaw(q: dQuaternion): tuple[yaw: float, pitch: float] =
   result.pitch = if not flip: eul.x else: eul.x + (if eul.x < 0: PI else: -PI)
 
 
-method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) =
+method process(self: ref physics.PhysicsSystem, message: ref PlayerRotateMessage) =
   let playerEntity = self.impersonationsMap[message.sender]
 
   # get current rotation quaternion
-  let qCurrent = playerEntity[ref Physics].body.bodyGetQuaternion()[]
+  let qCurrent = playerEntity[ref physics.Physics].body.bodyGetQuaternion()[]
 
   # get current yaw and pitch
   let current = qCurrent.getPitchYaw()
@@ -85,27 +82,27 @@ method process(self: ref ActionPhysicsSystem, message: ref PlayerRotateMessage) 
   var qFinal: dQuaternion
   qFinal.qMultiply0(qYaw, qPitch)
 
-  playerEntity[ref Physics].body.bodySetQuaternion(qFinal)
+  playerEntity[ref physics.Physics].body.bodySetQuaternion(qFinal)
 
 
-method store*(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
+method store*(self: ref network.ServerNetworkSystem, message: ref PlayerMoveMessage) =
   ## Allow server to store ``PlayerMoveMessage``
   assert not message.isLocal
   procCall self.as(ref System).store(message)
 
 
-method process(self: ref ActionServerNetworkSystem, message: ref PlayerMoveMessage) =
+method process(self: ref network.ServerNetworkSystem, message: ref PlayerMoveMessage) =
   message.send("physics")
 
 
-method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =
+method process(self: ref physics.PhysicsSystem, message: ref PlayerMoveMessage) =
   let playerEntity = self.impersonationsMap[message.sender]
 
   # calculate selected direction as a result of yaw on (0, 0, -1) vector
   let direction: array[3, float] = [-sin(message.yaw) , 0.0, -cos(message.yaw)]
 
   # get current rotation matrix and apply it to selected direction
-  let rotation = playerEntity[ref Physics].body.bodyGetRotation()[]
+  let rotation = playerEntity[ref physics.Physics].body.bodyGetRotation()[]
   let finalDirection: array[3, float] = [
     rotation[0] * direction[0] + rotation[1] * direction[1] + rotation[2] * direction[2],
     rotation[4] * direction[0] + rotation[5] * direction[1] + rotation[6] * direction[2],
@@ -113,10 +110,9 @@ method process(self: ref ActionPhysicsSystem, message: ref PlayerMoveMessage) =
   ]
 
   const walkSpeed = 5 * 1000 / 60 / 60
-  playerEntity[ref Physics].body.bodySetLinearVel(
+  playerEntity[ref physics.Physics].body.bodySetLinearVel(
     finalDirection[0] * walkSpeed,
     finalDirection[1] * walkSpeed,
     finalDirection[2] * walkSpeed,
   )
-  # TODO: `as(ref ActionPhysics)` is ugly
-  playerEntity[ref Physics].as(ref ActionPhysics).startMovement()
+  playerEntity[ref physics.Physics].startMovement()

@@ -7,5 +7,7 @@ type
   VideoSystem* = object of ogre.VideoSystem
     playerNode*: ptr SceneNode
 
+  Video* = object of ogre.Video
+
 
 strMethod(VideoSystem, fields=false)
