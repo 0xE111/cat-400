@@ -1,40 +1,39 @@
-import sdl2/sdl
+import sdl2/sdl as sdllib
 import math
-import tables
 
-import ../../../systems
-import ../../../systems/input/sdl as input
-import ../../../utils/stringify
+import c4/systems
+import c4/systems/input/sdl
+import c4/utils/stringify
 
 import ../messages
 
 
 type
-  ActionInputSystem* = object of InputSystem
+  InputSystem* = object of sdl.InputSystem
 
 
-strMethod(ActionInputSystem, fields=false)
+strMethod(InputSystem, fields=false)
 
 
-method handle*(self: ref ActionInputSystem, event: sdl.Event) =
+method handle*(self: ref InputSystem, event: Event) =
   case event.kind
-    of sdl.WINDOWEVENT:
+    of WINDOWEVENT:
       case event.window.event
-        of sdl.WINDOWEVENT_FOCUS_LOST:
+        of WINDOWEVENT_FOCUS_LOST:
           discard
           # self.state = State.inactive
 
-        of sdl.WINDOWEVENT_TAKE_FOCUS:
+        of WINDOWEVENT_TAKE_FOCUS:
           discard
           # self.state = State.active
 
         else:
           discard
 
-    of sdl.MOUSEMOTION:
+    of MOUSEMOTION:
       var x, y: cint
       let radInPixel = PI / 180 / 4  # 0.25 degree in 1 pixel
-      discard sdl.getRelativeMouseState(x.addr, y.addr)
+      discard getRelativeMouseState(x.addr, y.addr)
       (ref PlayerRotateMessage)(
         yaw: -x.float * radInPixel,
         pitch: -y.float * radInPixel,
@@ -60,11 +59,11 @@ method handle*(self: ref ActionInputSystem, event: sdl.Event) =
       discard
 
   # fallback to default implementation
-  procCall self.as(ref InputSystem).handle(event)
+  procCall self.as(ref sdl.InputSystem).handle(event)
 
 
-method update(self: ref ActionInputSystem, dt: float) =
-  procCall self.as(ref InputSystem).update(dt)
+method update(self: ref InputSystem, dt: float) =
+  procCall self.as(ref sdl.InputSystem).update(dt)
 
   # process long-pressing key by polling keyboard state
   let

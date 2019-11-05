@@ -1,25 +1,25 @@
 import tables
 
-import ../../../lib/ode/ode
+import c4/lib/ode/ode as odelib
 
-import ../../../systems
-import ../../../entities
-import ../../../messages
-import ../../../systems/physics/ode as physics_system
-import ../../../utils/stringify
+import c4/systems
+import c4/entities
+import c4/messages
+import c4/systems/physics/ode
+import c4/utils/stringify
 
 import ../messages as action_messages
 
 
 type
-  ActionPhysicsSystem* = object of PhysicsSystem
+  PhysicsSystem* = object of ode.PhysicsSystem
     impersonationsMap*: Table[ref Peer, Entity]  ## Mapping from remote Peer to an Entity it's controlling
 
-  ActionPhysics* = object of Physics
+  Physics* = object of ode.Physics
     # additionally store previous position & rotation;
     # position/rotation update messages are sent only when values really changes
-    prevPosition: array[3, ode.dReal]
-    prevRotation: ode.dQuaternion
+    prevPosition: array[3, dReal]
+    prevRotation: dQuaternion
 
     movementDurationElapsed: float  # TODO: required only for players' nodes
 
@@ -34,27 +34,27 @@ const
 
 # ---- Component ----
 
-method init*(self: ref ActionPhysicsSystem, physics: ref ActionPhysics) =
-  procCall self.as(ref PhysicsSystem).init(physics)
+method init*(self: ref PhysicsSystem, physics: ref Physics) =
+  procCall self.as(ref ode.PhysicsSystem).init(physics)
 
   physics.prevPosition = physics.body.bodyGetPosition()[]
   physics.prevRotation = physics.body.bodyGetQuaternion()[]
 
   physics.movementDurationElapsed = 0
 
-proc startMovement*(self: ref ActionPhysics) =
+proc startMovement*(self: ref Physics) =
   self.movementDurationElapsed = movementDuration
 
 
 # ---- System ----
-strMethod(ActionPhysicsSystem, fields=false)
+strMethod(PhysicsSystem, fields=false)
 
-method init*(self: ref ActionPhysicsSystem) =
+method init*(self: ref PhysicsSystem) =
   ## Sets real world gravity (G)
-  procCall self.as(ref PhysicsSystem).init()
+  procCall self.as(ref ode.PhysicsSystem).init()
   self.world.worldSetGravity(0, -G, 0)
 
-method update*(self: ref ActionPhysics, dt: float, entity: Entity) =
+method update*(self: ref Physics, dt: float, entity: Entity) =
   ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
   let position = self.body.bodyGetPosition()[]
   for dimension in 0..2:

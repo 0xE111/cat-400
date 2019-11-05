@@ -1,8 +1,8 @@
 import tables
 
-import ../../../entities
-import ../../../systems
-import ../../../systems/network/enet
+import c4/entities
+import c4/systems
+import c4/systems/network/enet
 
 import ../systems/network
 import ../systems/video

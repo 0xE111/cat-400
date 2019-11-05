@@ -3,13 +3,13 @@ import strformat
 import tables
 import math
 
-import ../../../lib/ode/ode as ode_wrapper
+import c4/lib/ode/ode as ode_wrapper
 
-import ../../../messages
-import ../../../entities
-import ../../../systems
-import ../../../systems/network/enet
-import ../../../systems/physics/ode
+import c4/messages
+import c4/entities
+import c4/systems
+import c4/systems/network/enet
+import c4/systems/physics/ode
 
 import ../systems/network as action_network
 import ../systems/physics as action_physics

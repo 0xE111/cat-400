@@ -2,11 +2,11 @@ import logging
 import strformat
 import tables
 
-import ../../../entities
-import ../../../systems
-import ../../../systems/network/enet
-import ../../../systems/video/ogre as ogre_video
-import ../../../lib/ogre/ogre
+import c4/entities
+import c4/systems
+import c4/systems/network/enet
+import c4/systems/video/ogre as ogre_video
+import c4/lib/ogre/ogre
 
 import ../messages
 import ../systems/network

@@ -1,5 +1,5 @@
-import ../../messages
-import ../../entities
+import c4/messages
+import c4/entities
 
 
 type PlayerMoveMessage* = object of Message

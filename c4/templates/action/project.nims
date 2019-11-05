@@ -2,7 +2,7 @@ import os
 
 include "c4.nims"
 
-const buildDir = thisDir().parentDir / "build"
+const buildDir = thisDir() / "build"
 
 # Compilter switches
 switch("nimcache", buildDir / "nimcache")

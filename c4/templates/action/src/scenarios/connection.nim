@@ -3,13 +3,13 @@ import logging
 import tables
 import strformat
 
-import ../../../lib/ode/ode
+import c4/lib/ode/ode
 
-import ../../../messages
-import ../../../systems
-import ../../../systems/network/enet
-import ../../../systems/physics/ode as ode_physics
-import ../../../entities
+import c4/messages
+import c4/systems
+import c4/systems/network/enet
+import c4/systems/physics/ode as ode_physics
+import c4/entities
 
 import ../systems/network
 import ../systems/physics

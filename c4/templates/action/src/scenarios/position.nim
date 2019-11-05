@@ -3,13 +3,14 @@ import strformat
 import math
 import tables
 
-import ../../../lib/ogre/ogre
+import c4/lib/ogre/ogre
 
-import ../../../messages
-import ../../../entities
-import ../../../systems
-import ../../../systems/video/ogre as ogre_video
-import ../../../systems/network/enet as enet_network
+import c4/messages
+import c4/entities
+import c4/systems
+import c4/systems/video/ogre as ogre_video
+import c4/systems/network/enet as enet_network
+
 import ../systems/video
 import ../systems/input
 import ../systems/network
