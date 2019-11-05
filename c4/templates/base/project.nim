@@ -8,7 +8,7 @@ import src/systems/input
 import src/systems/video
 import src/systems/network
 
-import src/scenarios
+import src/scenarios/init
 
 
 when isMainModule:

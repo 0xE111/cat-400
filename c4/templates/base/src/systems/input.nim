@@ -3,6 +3,8 @@ import sdl2/sdl as sdllib
 import c4/systems/input/sdl
 import c4/utils/stringify
 
+import ../messages
+
 
 type
   InputSystem* = object of sdl.InputSystem

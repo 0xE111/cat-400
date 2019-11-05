@@ -1,6 +1,8 @@
 import os
 
 include "c4.nims"
+include "c4/lib/ogre/ogre.nims"
+include "c4/lib/ogre/ogre_sdl.nims"
 
 const buildDir = thisDir() / "build"
 
