@@ -1,3 +1,6 @@
+when defined(nimHasUsed):
+  {.used.}
+
 # TODO: move specific messages here?
 import logging
 import tables

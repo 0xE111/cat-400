@@ -1,3 +1,6 @@
+when defined(nimHasUsed):
+    {.used.}
+
 import logging
 import strformat
 
