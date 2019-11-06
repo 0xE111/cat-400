@@ -12,3 +12,4 @@
 nimcache
 _*
 *.log
+build

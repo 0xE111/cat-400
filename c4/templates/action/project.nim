@@ -8,6 +8,7 @@ import src/systems/input
 import src/systems/video
 import src/systems/network
 
+import src/scenarios/init
 import src/scenarios/connection
 import src/scenarios/entity
 import src/scenarios/impersonation

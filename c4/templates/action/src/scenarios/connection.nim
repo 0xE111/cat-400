@@ -4,8 +4,7 @@ import tables
 import strformat
 
 import c4/lib/ode/ode as odelib
-
-import c4/messages
+import c4/messages as c4messages
 import c4/systems
 import c4/systems/network/enet
 import c4/systems/physics/ode
@@ -13,7 +12,8 @@ import c4/entities
 
 import ../systems/network
 import ../systems/physics
-import ../messages as action_messages
+import ../systems/video
+import ../messages
 
 
 method process*(self: ref network.ClientNetworkSystem, message: ref ConnectionOpenedMessage) =
@@ -89,3 +89,25 @@ method process*(self: ref physics.PhysicsSystem, message: ref ConnectionClosedMe
   (ref DeleteEntityMessage)(entity: entity).send("network")
 
   self.impersonationsMap.del(message.peer)  # exclude peer's Entity from mapping
+
+
+method process*(self: ref VideoSystem, message: ref SystemReadyMessage) =
+  # connect to server as soon as video system is loaded
+  (ref ConnectMessage)(address: ("localhost", 11477'u16)).send("network")
+
+
+method process*(self: ref VideoSystem, message: ref SystemQuitMessage) =
+  # disconnect as soon as video system is unloaded
+  new(DisconnectMessage).send("network")
+
+
+method process*(self: ref VideoSystem, message: ref ConnectionOpenedMessage) =
+  ## Load skybox when connection is established
+  logging.debug "Loading skybox"
+
+
+method process*(self: ref VideoSystem, message: ref ConnectionClosedMessage) =
+  ## Unload everything when connection is closed
+  logging.debug "Unloading skybox"
+
+  # self.skybox.removeNode()

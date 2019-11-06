@@ -1,18 +1,17 @@
+import logging
+import strformat
 import sdl2/sdl as sdllib
 import math
 
 import c4/systems
 import c4/systems/input/sdl
-import c4/utils/stringify
+import c4/systems/network/enet
 
 import ../messages
 
 
 type
   InputSystem* = object of sdl.InputSystem
-
-
-strMethod(InputSystem, fields=false)
 
 
 method handle*(self: ref InputSystem, event: Event) =
@@ -42,18 +41,22 @@ method handle*(self: ref InputSystem, event: Event) =
         # systems.get("video"),  # client-side prediction
       ])
 
-    # when some key is held down, there's usually a delay between first sdl.KEYDOWN event
-    # and subsequent ones; so if you want to send some messages constantly when key is pressed
-    # (for example, `PlayerMoveMessage`), you shouldn't rely on sdl.KEYDOWN event; instead,
-    # you should check whether key is down in `update()` method
+    of KEYDOWN:
+      case event.key.keysym.sym
+        of K_c:
+          # When player presses "C" key, we want to establish connection to remote server. We create new ``ConnectMessage`` (which is already predefined in Enet networking system), set server address and send this message to network system. Default Enet networking system knows that it should connect to the server when receiving this kind of message.
+          (ref ConnectMessage)(address: ("localhost", 11477'u16)).send("network")
 
-    # of sdl.KEYDOWN:
-    #   case event.key.keysym.sym
-    #     of K_t:
-    #       var moveMessage = new(ref PlayerMoveMessage)
-    #       moveMessage.send("network")
-    #     else:
-    #       discard
+        of K_q:
+          # When player presses "Q" key, we want to disconnect from server. We create new ``DisconnectMessage`` (which is already predefined in Enet networking system), and sent this message to network system. Default Enet networking system knows that it should disconnect from the server when receiving this kind of message.
+          new(DisconnectMessage).send("network")
+
+        of K_r:
+          # When player presses "R" key, we want server to reset the scene. We defined custom ``ResetSceneMessage`` and send it over the network.
+          new(ResetSceneMessage).send("network")
+
+        else:
+          discard
 
     else:
       discard
@@ -63,6 +66,11 @@ method handle*(self: ref InputSystem, event: Event) =
 
 
 method update(self: ref InputSystem, dt: float) =
+  # when some key is held down, there's usually a delay between first sdl.KEYDOWN event
+  # and subsequent ones; so if you want to send some messages constantly when key is pressed
+  # (for example, `PlayerMoveMessage`), you shouldn't rely on sdl.KEYDOWN event; instead,
+  # you should check whether key is down in `update()` method
+
   procCall self.as(ref sdl.InputSystem).update(dt)
 
   # process long-pressing key by polling keyboard state

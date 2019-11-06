@@ -11,7 +11,7 @@ proc runLoop*(
   maxFrequencyCallback: Callback = nil,
 ) =
   # handlers will receive dt - delta time between two last calls (in seconds, floating point)
-  let 
+  let
     skipSeconds = 1 / updatesPerSecond
     maxUpdatesSkip = int(updatesPerSecond.float * 0.3)
 
@@ -33,7 +33,7 @@ proc runLoop*(
       lastFixedUpdateTime = now
       nextFixedUpdateTime += skipSeconds
       numUpdates += 1
-    
+
     now = epochTime()
     if maxFrequencyCallback != nil and not maxFrequencyCallback(now - lastMaxUpdateTime):
       return
@@ -41,7 +41,7 @@ proc runLoop*(
 
 proc getFps*(dt:float): int =
   ## Calculates *very* approximate FPS value based on dt received by loop handlers. Example:
-  ## proc printFps(dt:float) = 
+  ## proc printFps(dt:float) =
   ##   echo "Max FPS is: ", $getFps(dt)
   ## runLoop(maxFrequencyHandlers = @[printFps])
   result = int(1.float / dt)

@@ -57,3 +57,9 @@ messages.register(ImpersonationMessage)
 
 method isReliable*(self: ref ImpersonationMessage): bool {.inline.} =
   true
+
+
+type ResetSceneMessage* = object of Message  # This message will reset physics system to initial state, so that we can play again
+
+# Always ``register`` Message subtypes. If not registered, network system won't have a knowledge on how to serialize the message, which will lead to sending pure ``Message`` instead of your subtype.
+messages.register(ResetSceneMessage)

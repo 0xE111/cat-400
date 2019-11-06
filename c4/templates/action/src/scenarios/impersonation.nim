@@ -21,7 +21,7 @@ method process*(self: ref network.ClientNetworkSystem, message: ref Impersonatio
 
 method process*(self: ref video.VideoSystem, message: ref ImpersonationMessage) =
   ## Store player's entity in `playerNode`; attach camera to impersonated entity
-  self.playerNode = message.entity[ref video.Video].node
+  self.playerNode = message.entity[ref Video].node
 
   self.playerNode.attachObject(self.camera)
   logging.debug &"Camera attached to player node"

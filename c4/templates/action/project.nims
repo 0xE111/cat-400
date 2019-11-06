@@ -8,5 +8,5 @@ const buildDir = thisDir() / "build"
 
 # Compilter switches
 switch("nimcache", buildDir / "nimcache")
-switch("out", buildDir / "sandbox")
+switch("out", buildDir / projectName())
 switch("debugger", "native")

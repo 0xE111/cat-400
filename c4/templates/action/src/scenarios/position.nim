@@ -19,7 +19,7 @@ method process*(self: ref network.ClientNetworkSystem, message: ref SetPositionM
 
 
 method process(self: ref video.VideoSystem, message: ref SetPositionMessage) =
-  if not message.entity.has(ref video.Video):
+  if not message.entity.has(ref Video):
     logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     # raise newException(LibraryError, "Shit im getting errors")
     # TODO: When client just connected to server, the server still may broadcast some messages
@@ -27,7 +27,7 @@ method process(self: ref video.VideoSystem, message: ref SetPositionMessage) =
     # corresponding components yet, thus won't be able to process these messages and fail.
     return
 
-  message.entity[ref video.Video].node.setPosition(message.x, message.y, message.z)
+  message.entity[ref Video].node.setPosition(message.x, message.y, message.z)
 
 
 method process*(self: ref network.ClientNetworkSystem, message: ref SetRotationMessage) =
@@ -37,11 +37,11 @@ method process*(self: ref network.ClientNetworkSystem, message: ref SetRotationM
 
 
 method process*(self: ref video.VideoSystem, message: ref SetRotationMessage) =
-  if not message.entity.has(ref video.Video):
+  if not message.entity.has(ref Video):
     logging.warn &"{$(self)} received {$(message)}, but has no Video component"
     return
 
-  message.entity[ref video.Video].node.setOrientation(
+  message.entity[ref Video].node.setOrientation(
     message.quaternion[0],
     message.quaternion[1],
     message.quaternion[2],

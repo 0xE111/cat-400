@@ -1,10 +1,8 @@
 import logging
 import strformat
 import math
-import tables
 import system
 
-import ../../entities
 import ../../systems
 import ../../utils/stringify
 

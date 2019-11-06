@@ -1,6 +1,10 @@
+import logging
+import strformat
+
 import c4/entities
 import c4/systems
 import c4/systems/network/enet
+import c4/systems/video/ogre
 
 import ../systems/network
 import ../systems/video
@@ -12,9 +16,12 @@ method process(self: ref network.ClientNetworkSystem, message: ref CreateEntityM
     message.send("video")
 
 
-method process(self: ref video.VideoSystem, message: ref CreateEntityMessage) =
-    ## Here we should create an entity. This is app-specific action, so developer should redefine it.
-    raise newException(LibraryError, "Method not implemented")
+method process*(self: ref video.VideoSystem, message: ref CreateEntityMessage) =
+    # sent by action network system when player connected and got new entity
+    logging.debug &"Creating video component for entity {message.entity}"
+    let video = new(BoxVideo)
+    self.init(video)
+    message.entity[ref Video] = video
 
 
 method process(self: ref network.ClientNetworkSystem, message: ref DeleteEntityMessage) =
