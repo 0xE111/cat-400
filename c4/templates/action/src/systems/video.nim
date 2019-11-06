@@ -1,5 +1,5 @@
 import logging
-import ospaths
+import os
 
 import c4/lib/ogre/ogre as ogrelib
 import c4/systems/video/ogre

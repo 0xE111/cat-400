@@ -66,12 +66,11 @@ method init*(self: ref PhysicsSystem, physics: ref BoxPhysics) =
 
   # TODO: send geometry (AABB) to graphics system - AddGeometryMessage
 
-################################################
 method attach*(self: ref Physics) =
   discard
+
 method detach*(self: ref Physics) =
-  discard
-################################################
+  procCall self.as(ref ode.Physics).detach()
 
 # ---- System ----
 strMethod(PhysicsSystem, fields = false)

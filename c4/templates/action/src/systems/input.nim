@@ -1,5 +1,3 @@
-import logging
-import strformat
 import sdl2/sdl as sdllib
 import math
 
