@@ -34,13 +34,13 @@ method process*(self: ref physics.PhysicsSystem, message: ref ConnectionOpenedMe
   ## We also need to send all world information to new peer.
 
   let player = newEntity()  # create new Entity
-  let phys = new(physics.Physics)
+  let phys = new(BoxPhysics)
   self.init(phys)
   player[ref physics.Physics] = phys
-  player[ref physics.Physics].body.bodySetPosition(0.0, 0.0, 0.0)
+  player[ref physics.Physics].body.bodySetPosition(0.0, 1.0, 5.0)
 
   # send new entity to all peers
-  (ref CreateEntityMessage)(entity: player).send("network")
+  (ref CreatePlayerEntityMessage)(entity: player).send("network")
 
   let position = player[ref physics.Physics].body.bodyGetPosition()[]
   (ref SyncPositionMessage)(entity: player, x: position[0], y: position[1], z: position[2]).send("network")
@@ -54,18 +54,21 @@ method process*(self: ref physics.PhysicsSystem, message: ref ConnectionOpenedMe
 
   # send all scene data to new peer
   logging.debug &"Sending all scene data to peer {$(message.peer[])}"
-  for entity, physics in getComponents(ref physics.Physics).pairs():
-    if entity == player:
-      # player entity was already broadcasted
-      continue
 
-    (ref CreateEntityMessage)(entity: entity, recipient: message.peer).send("network")
+  (ref CreatePlaneEntityMessage)(entity: self.plane, recipient: message.peer).send("network")
+  let planePosition = self.plane[ref physics.Physics].body.bodyGetPosition()[]
+  (ref SyncPositionMessage)(entity: self.plane, x: planePosition[0], y: planePosition[1], z: planePosition[2], recipient: message.peer).send("network")
+
+  for box in self.boxes:
+    (ref CreateBoxEntityMessage)(entity: box, recipient: message.peer).send("network")
+
+    let physics = box[ref physics.Physics]
 
     let position = physics.body.bodyGetPosition()[]
-    (ref SyncPositionMessage)(entity: entity, x: position[0], y: position[1], z: position[2], recipient: message.peer).send("network")
+    (ref SyncPositionMessage)(entity: box, x: position[0], y: position[1], z: position[2], recipient: message.peer).send("network")
 
     let rotation = physics.body.bodyGetQuaternion()[]
-    (ref SyncRotationMessage)(entity: entity, quaternion: rotation, recipient: message.peer).send("network")  # TODO: make `recipient` attrubute of `send()`?
+    (ref SyncRotationMessage)(entity: box, quaternion: rotation, recipient: message.peer).send("network")  # TODO: make `recipient` attrubute of `send()`?
 
 
 method process*(self: ref network.ClientNetworkSystem, message: ref ConnectionClosedMessage) =

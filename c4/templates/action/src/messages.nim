@@ -2,8 +2,17 @@ import c4/messages
 import c4/entities
 
 
+type
+  CreatePlayerEntityMessage* = object of CreateEntityMessage
+  CreateBoxEntityMessage* = object of CreateEntityMessage
+  CreatePlaneEntityMessage* = object of CreateEntityMessage
+messages.register(CreatePlayerEntityMessage)
+messages.register(CreateBoxEntityMessage)
+messages.register(CreatePlaneEntityMessage)
+
+
 type PlayerMoveMessage* = object of Message
-  ## Message for defining player's movement direction. The movement direction is relative to player's sight direction.
+  # message for defining player's movement direction; the movement direction is relative to player's sight direction.
   yaw*: float  ## Angle (in radians) around Y axis.
   pitch*: float  ## Angle (in radians) around X axis.
 messages.register(PlayerMoveMessage)

@@ -132,11 +132,14 @@ method init*(self: ref VideoSystem) =
 
   planeObject.begin("BaseWhiteNoLighting", OT_TRIANGLE_LIST)
 
-  planeObject.position(-50, 0, 50)
-  planeObject.colour(0.75, 0.75, 0.75)
-  planeObject.position(50, 0, 50)
-  planeObject.position(50, 0, -50)
-  planeObject.position(-50, 0, -50)
+  planeObject.position(-50, 0.float, 50)
+  planeObject.colour(0.0, 1.0, 1.0)
+  planeObject.position(50, 0.float, 50)
+  planeObject.colour(1.0, 1.0, 1.0)
+  planeObject.position(50, 0.float, -50)
+  planeObject.colour(1.0, 0.0, 0.0)
+  planeObject.position(-50, 0.float, -50)
+  planeObject.colour(0.0, 0.0, 0.0)
   planeObject.quad(0, 1, 2, 3)
 
   discard planeObject.end()
