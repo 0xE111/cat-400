@@ -12,7 +12,7 @@ import systems
 import utils/loop
 
 
-type Mode = enum client, server, multi
+type Mode = enum client, server, master
 
 # TODO: use `finalizer` kw for every `new()` call
 const
@@ -33,7 +33,7 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
   # default values
   var
     logLevel = logging.Level.lvlWarn
-    mode = Mode.multi
+    mode = Mode.master
 
   # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
@@ -41,8 +41,8 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
         case key
           of "version", "v":
-            echo "Nim " & NimVersion
-            echo "Compiled @ " & CompileDate & " " & CompileTime
+            echo &"Nim {NimVersion}"
+            echo &"Compiled @ {CompileDate} {CompileTime}"
             return
           of "loglevel", "l":
             logLevel = parseEnum[logging.Level](&"lvl{value}")
@@ -52,7 +52,7 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
           of "mode", "m":
             mode = parseEnum[Mode](value)
           else:
-            echo "Unknown option: " & key & "=" & value
+            echo &"Unknown option: {key}={value}"
             return
       else: discard
 
@@ -60,13 +60,12 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
   let
     timestamp = now().format("yyyy-MM-dd-hh-mm-ss")
     logFile = joinPath(getAppDir(), &"{mode}.{timestamp}.log")
-    logFmtStr = &"[$datetime] {mode} $levelname: "
-  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr=logFmtStr))
-  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr=logFmtStr))
-  logging.debug("Nim version: " & NimVersion)
+  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr="[$datetime] $levelname: "))
+  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr= &"[$datetime] {mode} $levelname: "))
+  logging.debug(&"Nim version: {NimVersion}")
 
   # this part of code handles spawning & maintaining client & server subprocesses
-  if mode == Mode.multi:
+  if mode == Mode.master:
     let
       serverProcess = startProcess(
         command=getAppFilename(),
