@@ -41,8 +41,29 @@ method detach*(self: ref Physics) {.base.} =
 # ---- System ----
 strMethod(PhysicsSystem, fields=false)
 
-proc nearCallback(data: pointer, o1: dGeomID, o2: dGeomID) =
-  logging.debug "Possible collision detected"
+proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
+  let
+    self = cast[ref PhysicsSystem](data)
+    body1 = geom1.geomGetBody()
+    body2 = geom2.geomGetBody()
+
+  const maxContacts = 4
+
+  var contact {.global.}: array[maxContacts, dContact]
+
+  for i in 0..<maxContacts:
+    contact[i] = dContact()
+    contact[i].surface.mode = dContactBounce or dContactSoftCFM
+    contact[i].surface.mu = dInfinity
+    contact[i].surface.mu2 = 0
+    contact[i].surface.bounce = 0.01
+    contact[i].surface.bounce_vel = 0.1
+    contact[i].surface.soft_cfm = 0.01
+
+  let numCollisions = collide(geom1, geom2, maxContacts.cint, contact[0].geom.addr, sizeof(dContact).cint)
+  for i in 0..<numCollisions:
+    let contact = jointCreateContact(self.world, self.contactGroup, contact[i].addr)
+    contact.jointAttach(body1, body2)
 
 
 method init*(self: ref PhysicsSystem) =
@@ -67,7 +88,7 @@ method update*(self: ref PhysicsSystem, dt: float) =
   self.simulationStepRemains = dt.mod(simulationStep)
 
   for i in 0..<nSteps:
-    self.space.spaceCollide(nil, cast[ptr dNearCallback](self.nearCallback.rawProc))
+    self.space.spaceCollide(cast[pointer](self), cast[ptr dNearCallback](self.nearCallback.rawProc))
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
     self.contactGroup.jointGroupEmpty()

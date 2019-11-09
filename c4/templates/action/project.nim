@@ -15,7 +15,6 @@ import src/scenarios/impersonation
 import src/scenarios/player_actions
 import src/scenarios/position
 
-
 when isMainModule:
   core.run(
     serverSystems={

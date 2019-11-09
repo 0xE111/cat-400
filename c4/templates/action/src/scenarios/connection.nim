@@ -37,7 +37,7 @@ method process*(self: ref physics.PhysicsSystem, message: ref ConnectionOpenedMe
   let phys = new(BoxPhysics)
   self.init(phys)
   player[ref physics.Physics] = phys
-  player[ref physics.Physics].body.bodySetPosition(0.0, 1.0, 5.0)
+  player[ref physics.Physics].body.bodySetPosition(0.0, 1.0, -5.0)
 
   # send new entity to all peers
   (ref CreatePlayerEntityMessage)(entity: player).send("network")
