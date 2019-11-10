@@ -1,16 +1,9 @@
 import strformat
 import c4/entities
 
-# 
+#
 type Health = object
   value: uint8
-
-proc attach(self: var Health) =
-  echo "I'm born!"
-  self.value = 100
-
-proc detach(self: Health) =
-  echo "I'm dead..."
 
 let player = newEntity()
 let chest = newEntity()

@@ -6,6 +6,7 @@ import sequtils
 
 import ../../lib/horde3d/horde3d
 
+import ../../entities
 import ../../systems
 import ../input/sdl as sdl_input
 import ../../utils/stringify
@@ -30,10 +31,8 @@ let assetsDir = getAppDir() / "assets" / "video"
 
 
 # ---- Component ----
-method attach*(self: ref Video) {.base.} =
-  raise newException(LibraryError, "Not implemented")
 
-method detach*(self: ref Video) {.base.} =
+method dispose*(self: ref Video) {.base.} =
   logging.debug "Destroying video component"
   self.node.removeNode()
 

@@ -14,15 +14,8 @@ type
   Entity* = int16  ## Entity is just an int which may have components of any type. Zero entity is reserved as "not initialized"
   # uint doesn't check boundaries
 
-  Component* = concept component
-    ## Component is something which has ``attach()`` and ``detach()`` procs.
-    ## When component is attached to an Entity (``entity[Component] = component``), ``attach()`` is called automatically. When component is detached from entity (deleted ``entity.del(Component)`` or replaced with other component ``entity[Component] = newComponent``), or entire entity is deleted - ``detach()`` is called automatically.
-    component.attach()
-    component.detach()
 
-
-var
-  entities: set[Entity] = {}  # set[int32] won't compile
+var entities: set[Entity] = {}  # set[int32] won't compile
 
 
 # ---- Entity ----
@@ -34,9 +27,13 @@ proc newEntity*(): Entity =
   ## Return new Entity or raise error if limit exceeded
   result = low(Entity)
   while result in entities or not result.isInitialized:
-    result += 1  # TODO: pretty dumb, use random instead
+    result += 1  # TODO: pretty dumb, use random or `lastUsedID` instead
 
   entities.incl(result)  # add entity to global entities registry
+
+iterator items*(): Entity =
+  for entity in entities:
+    yield entity
 
 # ---- Components ----
 
@@ -95,36 +92,33 @@ proc flush*() =
   for entity in entities:
     entity.delete()
 
-
 # ---- CRUD for components ----
-template has*(entity: Entity, T: typedesc[Component]): bool =
+template has*(entity: Entity, T: typedesc): bool =
   ## Checks whether ``entity`` has component of type ``T``
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
   getComponents(T).hasKey(entity)
 
-template del*(entity: Entity, T: typedesc[Component]) =
+template del*(entity: Entity, T: typedesc) =
   ## Deletes component ``T`` from ``entity``, or does nothing if ``entity`` doesn't have such a component
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
   var components = getComponents(T)
   if components.hasKey(entity):
-    components[entity].detach()
     components.del(entity)
 
-template `[]`*(entity: Entity, T: typedesc[Component]): var typed =
+template `[]`*(entity: Entity, T: typedesc): var typed =
   ## Returns ``T`` component for ``entity``. Make sure the component exists before retrieving it.
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
   getComponents(T)[entity]
 
-template `[]=`*(entity: Entity, T: typedesc[Component], value: T) =
+template `[]=`*(entity: Entity, T: typedesc, value: T) =
   ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
   entity.del(T)
   getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
-  getComponents(T)[entity].attach()
 
 
 # ---- messages ----
@@ -158,27 +152,11 @@ when isMainModule:
     TestComponent = object
       value: int
 
-  proc attach(self: var TestComponent) =
-    self.value = 42
-
-  proc detach(self: TestComponent) =
-    discard
-
   suite "Entities tests":
     test "Undefined entity":
       var entity: Entity
       expect AssertionError:
         entity[TestComponent] = TestComponent()
-
-    test "Auto-initialization of components":
-      var
-        entity = newEntity()
-        component = TestComponent(value: 0)
-
-      entity[TestComponent] = component
-
-      check:
-        entity[TestComponent].value == 42
 
     test "Auto-destruction of components":
       var

@@ -31,7 +31,7 @@ type
 
 
 const
-  G* = 0 # 9.81
+  G* = 0  # 9.81
 
   # when received any movement command, this defines how long the movement will continue;
   # even if there's no command from client, the entity will continue moving during this period (in seconds)
@@ -66,12 +66,6 @@ method init*(self: ref PhysicsSystem, physics: ref BoxPhysics) =
 
   # TODO: send geometry (AABB) to graphics system - AddGeometryMessage
 
-
-method attach*(self: ref Physics) =
-  discard
-
-method detach*(self: ref Physics) =
-  procCall self.as(ref ode.Physics).detach()
 
 # ---- System ----
 # proc nearCallback(data: pointer, o1: dGeomID, o2: dGeomID) =

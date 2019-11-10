@@ -77,6 +77,9 @@ method process*(self: ref network.ClientNetworkSystem, message: ref ConnectionCl
   message.send("video")
 
   logging.debug "Flushing local entities"
+  for entity in entities.items():
+    if entity.has(ref physics.Physics):
+      entity[ref physics.Physics].dispose()
   entities.flush()
 
 
@@ -91,7 +94,9 @@ method process*(self: ref physics.PhysicsSystem, message: ref ConnectionClosedMe
   logging.debug &"Removing entity"
   let entity = self.impersonationsMap[message.peer]
 
-  entity.delete()  # delete Entity
+  if entity.has(ref physics.Physics):
+    entity[ref physics.Physics].dispose()
+  entity.delete()
   (ref DeleteEntityMessage)(entity: entity).send("network")
 
   self.impersonationsMap.del(message.peer)  # exclude peer's Entity from mapping

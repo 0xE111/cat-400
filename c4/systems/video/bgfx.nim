@@ -132,6 +132,3 @@ proc `=destroy`*(self: var VideoSystem) =
   bgfx.shutdown()
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   logging.debug "Video system unloaded"
-
-method attach*(self: ref Video) {.base.} =
-  raise newException(LibraryError, &"{$self.type}.init() not implemented")

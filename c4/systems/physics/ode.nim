@@ -5,6 +5,7 @@ import system
 
 import ../../systems
 import ../../utils/stringify
+import ../../entities
 
 import ../../lib/ode/ode
 
@@ -30,10 +31,7 @@ method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
 
-method attach*(self: ref Physics) {.base.} =
-  discard
-
-method detach*(self: ref Physics) {.base.} =
+method dispose*(self: ref Physics) {.base.} =
   logging.debug &"Physics system: destroying component"
   self.body.bodyDestroy()
 

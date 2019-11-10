@@ -42,10 +42,7 @@ type
 method init*(self: ref VideoSystem, video: ref Video) {.base.} =
   video.node = self.sceneManager.getRootSceneNode().createChildSceneNode()
 
-method attach*(self: ref Video) {.base.} =
-  discard
-
-method detach*(self: ref Video) {.base.} =
+method dispose*(self: ref Video) {.base.} =
   self.node.destroy()
 
 
