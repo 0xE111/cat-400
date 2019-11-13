@@ -1,4 +1,4 @@
-from times import epochTime
+import times
 
 
 type
