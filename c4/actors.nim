@@ -52,12 +52,12 @@ proc spawn*(actor: Actor, name: string, kind: ActorKind) {.raises:[DuplicateName
   if knownActors.has(name):
     raise newException(DuplicateNameError, &"Name '{name}' already registered for actor {knownActors[name]}")
 
-    case kind
-      of Thread:
-        raise newException(LibraryError, "Not implemented")
+  case kind
+    of Thread:
+      raise newException(LibraryError, "Not implemented")
 
-      of Process:
-        raise newException(LibraryError, "Not implemented")
+    of Process:
+      raise newException(LibraryError, "Not implemented")
 
 
 proc send*(self: Actor, message: ref Message, recipient: string, reliable: bool = false) {.raises:[UnknownRecipientError].} =
