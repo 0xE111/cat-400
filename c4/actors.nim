@@ -2,82 +2,114 @@ import tables
 import times
 import strformat
 import unittest
+import logging
+import os
+import locks
+import sequtils
 
 import messages
 
 
 type
-  Actor* = concept actor
-    actor is object
-    actor.run()
+  # Actor* = concept actor
+  #   # actor is object
+  #   actor.run()
+  Actor = proc(): void {.thread.}
 
-    let message: ref Message
-    actor.store(message)
+  ActorID = string
 
   ActorKind* = enum
-    Thread, Process, Remote
+    Thread, Process
 
-  ActorLocation* = object
+  ActorInfo* = object
     case kind: ActorKind
       of Thread:
-        discard
+        thread: Thread[void]
+        channel: Channel[ref Message]
 
       of Process:
-        pid: int
-
-      of Remote:
         ip: string
         port: int16
 
-  UnknownRecipientError* = object of Exception
-  DuplicateNameError* = object of Exception
+  RecipientUnavailableError* = object of Exception
 
 
-var knownActors = initTable[string, ActorLocation]()
+var knownActorsLock: Lock
+knownActorsLock.initLock()
+var knownActors {.guard:knownActorsLock.}= initTable[ActorID, ActorInfo]()
 
 
-# proc waitAvailable*(actor: string, timeout: float = 10.0, interval: float = 1.0): bool =
-#   ## Waits until specific actor is available
-#   let startTime = epochTime()  # in seconds, floating point
-#   while epochTime() < startTime + timeout:
-#     if knownActors.hasKey(actor):
-#       return truename: string, actor: Actor
-
-#   return false
-
-proc spawn*(actor: Actor, name: string, kind: ActorKind) {.raises:[DuplicateNameError].} =
+proc spawn*(kind: ActorKind = Thread, id: ActorId, actor: Actor) =
   ## Registers the actor and launches it
-  assert kind in (Thread, Process), &"Actor kind '{kind}' is not allowed to spawn, use 'Thread' or 'Process' kind instead"
-
-  if knownActors.has(name):
-    raise newException(DuplicateNameError, &"Name '{name}' already registered for actor {knownActors[name]}")
-
   case kind
     of Thread:
-      raise newException(LibraryError, "Not implemented")
+      withLock knownActorsLock:
+        knownActors[id] = ActorInfo(kind: Thread)
+        knownActors[id].channel.open()
+        knownActors[id].thread.createThread(actor)
 
     of Process:
       raise newException(LibraryError, "Not implemented")
 
 
-proc send*(self: Actor, message: ref Message, recipient: string, reliable: bool = false) {.raises:[UnknownRecipientError].} =
-  if not knownActors.hasKey(recipient):
-    raise newException(UnknownRecipientError, &"Could not find '{recipient}' in known actors table")
+iterator recv*(self: Actor): ref Message =
+  raise newException(LibraryError, "Not implemented")
 
-  let recipientLocation = knownActors[recipient]
-  case recipientLocation.kind
+
+proc send*(self: Actor, message: ref Message, recipient: ActorID, reliable: bool = false) =
+  var recipientInfo: ActorInfo
+
+  withLock knownActorsLock:
+    if not knownActors.hasKey(recipient):
+      raise newException(RecipientUnavailableError, &"Could not find '{recipient}' in known actors table")
+
+    recipientInfo = knownActors[recipient]
+
+  case recipientInfo.kind
     of Thread:
       raise newException(LibraryError, "Not implemented")
 
     of Process:
       raise newException(LibraryError, "Not implemented")
 
-    of Remote:
-      raise newException(LibraryError, "Not implemented")
+
+proc waitAvailable*(actor: ActorID, timeout: float = 10.0, interval: float = 1.0): bool =
+  ## Waits until specific actor is available
+  let startTime = epochTime()  # in seconds, floating point
+  while epochTime() < startTime + timeout:
+    withLock knownActorsLock:
+      if actor in knownActors:
+        return true
+
+    sleep(int(interval / 1000))
+
+  return false
 
 
-# when isMainModule:
-#   suite "Actors test":
-#     test "Pack/unpack base Message type":
-#       expect LibraryError:
-#         packed = pack(message)
+proc joinAll*() =
+  var threads: seq[Thread[void]]
+  withLock knownActorsLock:
+    for info in knownActors.values:
+      if info.kind == Thread:
+        threads.add(info.thread)
+    # var threads = toSeq(knownActors.values.keepItIf(it.kind == Thread).mapIt(it.thread)
+
+  joinThreads(threads)
+
+
+when isMainModule:
+  proc ping() {.thread.} =
+    if not waitAvailable("pong"):
+      return
+
+    while true:
+      echo "ping"
+
+  proc pong() {.thread.} =
+    while true:
+      echo "Pong"
+
+  suite "Actors test":
+    test "Actor spawning":
+      Thread.spawn(ActorID("ping"), ping)
+      joinAll()
