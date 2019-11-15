@@ -1,22 +1,17 @@
 import tables
-import times
-import strformat
 import unittest
-import logging
 import os
-import locks
-import sequtils
+import times
 
 import messages
 
-
 type
-  # Actor* = concept actor
-  #   # actor is object
-  #   actor.run()
-  Actor = proc(): void {.thread.}
+  ActorName* = string
 
-  ActorID = string
+  Actor* = concept actor
+    actor is object
+    actor.actorName is ActorName
+    actor.run()
 
   ActorKind* = enum
     Thread, Process
@@ -31,85 +26,89 @@ type
         ip: string
         port: int16
 
-  RecipientUnavailableError* = object of Exception
+
+var knownActors = initTable[ActorName, ActorInfo]()
+let knownActorsPtr = knownActors.addr
 
 
-var knownActorsLock: Lock
-knownActorsLock.initLock()
-var knownActors {.guard:knownActorsLock.}= initTable[ActorID, ActorInfo]()
+template spawn*(actorType: typedesc[Actor], name: ActorName) =
+  knownActors[name] = ActorInfo(kind: Thread)
+  knownActors[name].channel.open()
+  knownActors[name].thread.createThread(proc() {.thread.} =
+    actorType(actorName: name).run()
+  )
 
+# proc spawn*(actorType: typedesc[Actor], name: ActorName) =
+#   knownActors[name] = ActorInfo(kind: Thread)
+#   knownActors[name].channel.open()
+#   knownActors[name].thread.createThread(proc() {.thread.} =
+#     actorType(actorName: name).run()
+#   )
 
-proc spawn*(kind: ActorKind = Thread, id: ActorId, actor: Actor) =
-  ## Registers the actor and launches it
-  case kind
-    of Thread:
-      withLock knownActorsLock:
-        knownActors[id] = ActorInfo(kind: Thread)
-        knownActors[id].channel.open()
-        knownActors[id].thread.createThread(actor)
+proc recv*(self: Actor): ref Message =
+  knownActorsPtr[][self.actorName].channel.recv()
 
-    of Process:
-      raise newException(LibraryError, "Not implemented")
+proc send*(message: ref Message, recipient: ActorName) =
+  knownActorsPtr[][recipient].channel.send(message)
 
-
-iterator recv*(self: Actor): ref Message =
-  raise newException(LibraryError, "Not implemented")
-
-
-proc send*(self: Actor, message: ref Message, recipient: ActorID, reliable: bool = false) =
-  var recipientInfo: ActorInfo
-
-  withLock knownActorsLock:
-    if not knownActors.hasKey(recipient):
-      raise newException(RecipientUnavailableError, &"Could not find '{recipient}' in known actors table")
-
-    recipientInfo = knownActors[recipient]
-
-  case recipientInfo.kind
-    of Thread:
-      raise newException(LibraryError, "Not implemented")
-
-    of Process:
-      raise newException(LibraryError, "Not implemented")
-
-
-proc waitAvailable*(actor: ActorID, timeout: float = 10.0, interval: float = 1.0): bool =
+proc waitAvailable*(actor: ActorName, timeout: float = 10.0, interval: float = 1.0): bool =
   ## Waits until specific actor is available
   let startTime = epochTime()  # in seconds, floating point
   while epochTime() < startTime + timeout:
-    withLock knownActorsLock:
-      if actor in knownActors:
-        return true
+    if actor in knownActorsPtr[]:
+      return true
 
     sleep(int(interval / 1000))
 
   return false
 
-
 proc joinAll*() =
   var threads: seq[Thread[void]]
-  withLock knownActorsLock:
-    for info in knownActors.values:
-      if info.kind == Thread:
-        threads.add(info.thread)
-    # var threads = toSeq(knownActors.values.keepItIf(it.kind == Thread).mapIt(it.thread)
+  for info in knownActorsPtr[].values:
+    if info.kind == Thread:
+      threads.add(info.thread)
+  # var threads = toSeq(knownActors.values.keepItIf(it.kind == Thread).mapIt(it.thread)
 
   joinThreads(threads)
 
 
 when isMainModule:
-  proc ping() {.thread.} =
-    if not waitAvailable("pong"):
+  type HelloMessage = object of Message
+  type GoodbyeMessage = object of Message
+
+  type Pinger = object
+    actorName: ActorName
+
+  method process(self: Pinger, message: ref Message) {.base.} =
+    raise newException(ValueError, "Got general message, dunno what to do")
+
+  method process(self: Pinger, message: ref HelloMessage) =
+    echo "Got hello message"
+
+  method process(self: Pinger, message: ref GoodbyeMessage) =
+    echo "Got goodbye message"
+
+  proc run(self: Pinger) =
+    if not waitAvailable("ponger", timeout=2.0, interval=0.5):
+      echo "Ponger unavailable -> not running"
       return
 
     while true:
-      echo "ping"
+      self.process(self.recv())
 
-  proc pong() {.thread.} =
-    while true:
-      echo "Pong"
+  type Ponger = object
+    actorName: ActorName
+
+  proc run(self: Ponger) =
+    if not waitAvailable("pinger", timeout=2.0, interval=0.5):
+      echo "Pinger unavailable -> not running"
+      return
+
+    new(HelloMessage).send("pinger")
+    new(GoodbyeMessage).send("pinger")
 
   suite "Actors test":
-    test "Actor spawning":
-      Thread.spawn(ActorID("ping"), ping)
+    test "Spawning":
+      Pinger.spawn(name="pinger")
+      Ponger.spawn(name="ponger")
       joinAll()
