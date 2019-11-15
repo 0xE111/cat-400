@@ -35,12 +35,17 @@ type
         ip: string
         port: int16
 
+  NameDuplicationError* = object of Exception
+
 
 var services = initTable[ServiceName, ServiceInfo]()  ## Table of all known services
 let servicesPtr = services.addr  ## Ptr to services table, in order to avoid shared memory restrictions
 
 template spawn*(T: typedesc[Service], name: ServiceName) =
   ## Given any service type, creates new thread by running `run()` proc and registers it under specific name
+  if name in services:
+    raise newException(NameDuplicationError, "Service with this name was already registered")
+
   services[name] = ServiceInfo(kind: Local)
   services[name].channel.open()
   services[name].thread.createThread(proc() {.thread.} =
@@ -57,6 +62,10 @@ template spawn*(T: typedesc[Service], name: ServiceName) =
 proc recv*(self: Service): ref Message =
   ## Wait until new message appears, and return this message
   servicesPtr[][self.serviceName].channel.recv()
+
+proc peek*(self: Service): int =
+  ## Returns current number of messages pending for specific service
+  servicesPtr[][self.serviceName].channel.peek
 
 proc send*(message: ref Message, recipient: ServiceName) =
   ## Send message to a specific service
