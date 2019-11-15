@@ -49,11 +49,21 @@ nimble genDocs
 
 Generated reference files will be located in `docs/ref` folder.
 
+## Submodules
+
+Although these modules are part of `Cat-400`, they may be used separately in any project.
+
+[`c4.entities` module](c4/entities.nim) - entity-component system, allowing to create lightweight entities and attach any user-defined components to them, with some basic CRUD operations.
+
+[`c4.messages` module](c4/messages.nim) - `Message` type and any user-defined subtypes, which may be packed and unpacked using msgpack, correctly preserving type information.
+
+[`c4.services` module](c4/services.nim) - actors-like approach for making threads spawning and intercommunication easy and comfortable.
+
 ## Wrappers
 
 There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately:
 
-* [enet](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/enet)
-* [horde3d](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/horde3d)
-* [bgfx](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/bgfx)
-* [ode](https://github.com/c0ntribut0r/cat-400/tree/master/c4/lib/ode)
+* [`enet` wrapper](c4/lib/enet) for [Enet networking library](http://enet.bespin.org/)
+* [`horde3d` wrapper](c4/lib/horde3d) for [Horde3d graphics engine](http://horde3d.org/)
+* [`bgfx` wrapper](c4/lib/bgfx) for [BGFX graphics library](https://github.com/bkaradzic/bgfx)
+* [`ode` wrapper](c4/lib/ode) for [Open dynamics engine](https://www.ode.org/)
