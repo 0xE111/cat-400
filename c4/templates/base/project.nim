@@ -12,14 +12,5 @@ import src/scenarios/init
 
 
 when isMainModule:
-  core.run(
-    serverSystems={
-      "network": ServerNetworkSystem.new().as(ref System),
-      "physics": PhysicsSystem.new().as(ref System),
-    }.toOrderedTable(),
-    clientSystems={
-      "network": ClientNetworkSystem.new().as(ref System),
-      "input": InputSystem.new().as(ref System),
-      "video": VideoSystem.new().as(ref System),
-    }.toOrderedTable(),
-  )
+  InputSystem.spawn("input")
+  services.joinAll()

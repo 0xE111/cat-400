@@ -1,6 +1,7 @@
 import sdl2/sdl
 import logging
 import tables
+import strformat
 
 import ../../services
 import ../../messages
@@ -61,16 +62,25 @@ proc poll*(self: InputSystem, dt: float) =
 
 proc `=destroy`*(self: var InputSystem) =
   sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems
-  logging.debug("Input system destroyed")
+  logging.debug "Input system destroyed"
+
+
+method process*(self: InputSystem, message: ref Message) {.base.} =
+  logging.warn &"No rule for processing {message}"
 
 
 proc run*(self: InputSystem) =
   self.init()
 
   runLoop(
+    updatesPerSecond=30,
     fixedFrequencyCallback=
       proc(dt: float): bool =
         self.poll(dt)
         true,
-    updatesPerSecond=30,
+    maxFrequencyCallback=
+      proc(dt: float): bool =
+        let message = self.tryRecv()
+        if not message.isNil:
+          self.process(message)
   )

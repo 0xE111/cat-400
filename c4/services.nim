@@ -82,6 +82,12 @@ template spawn*(T: typedesc[Service], name: ServiceName) =
 
 # ---- General operations ----
 
+proc tryRecv*(self: Service): ref Message =
+  ## Tries to receive a message, returns message if succeeded
+  ## or nil if there's no pending messages.
+  let res = servicesPtr[][self.serviceName].channel.tryRecv()
+  return if res.dataAvailable: res.msg else: nil
+
 proc recv*(self: Service): ref Message =
   ## Wait until new message appears, and return this message
   servicesPtr[][self.serviceName].channel.recv()
