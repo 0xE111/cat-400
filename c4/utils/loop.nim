@@ -5,6 +5,7 @@ type
   Callback* = proc(dt: float): bool {.closure.}
 
 
+# TODO: make async!
 proc runLoop*(
   updatesPerSecond = 30,
   fixedFrequencyCallback: Callback = nil,

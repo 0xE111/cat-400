@@ -1,7 +1,7 @@
 import tables
 
 import c4/core
-import c4/systems
+import c4/services
 
 import src/systems/physics
 import src/systems/input

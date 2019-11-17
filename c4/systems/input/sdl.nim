@@ -1,32 +1,28 @@
 import sdl2/sdl
 import logging
-import strformat
 import tables
 
-import ../../systems
+import ../../services
 import ../../messages
-import ../../utils/stringify
+import ../../utils/loop
 
 
-type
-  InputSystem* = object of System
-
+type InputSystem* = object of Service
 
 proc `$`*(event: sdl.Event): string = $event.kind
 
 
 # ---- messages ----
-type
-  WindowResizeMessage* = object of Message
+type WindowResizeMessage* = object of Message
     width*, height*: int
-
 messages.register(WindowResizeMessage)
+
+type WindowQuitMessage* = object of Message
+messages.register(WindowQuitMessage)
 
 
 # ---- workflow methods ----
-strMethod(InputSystem, fields=false)
-
-method init*(self: ref InputSystem) =
+proc init*(self: InputSystem) =
   logging.debug("Initializing input system")
 
   try:
@@ -38,13 +34,11 @@ method init*(self: ref InputSystem) =
     logging.fatal(getCurrentExceptionMsg())
     raise
 
-  procCall self.as(ref System).init()
-
-method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
+proc handle*(self: InputSystem, event: sdl.Event) =
   ## Handling of basic sdl event. These are pretty reasonable defaults.
   case event.kind
     of sdl.QUIT:
-      new(SystemQuitMessage).send(@["video", "network"])
+      new(WindowQuitMessage).send("video")
     of sdl.WINDOWEVENT:
       case event.window.event
         of sdl.WINDOWEVENT_SIZE_CHANGED:
@@ -57,15 +51,26 @@ method handle*(self: ref InputSystem, event: sdl.Event) {.base.} =
     else:
       discard
 
-method update*(self: ref InputSystem, dt: float) =
+proc poll*(self: InputSystem, dt: float) =
   # process all network events
   var event {.global.} = sdl.Event()
 
   while sdl.pollEvent(event.addr) != 0:
     self.handle(event)
 
-  procCall self.as(ref System).update(dt)  # TODO: maybe avoid using procCall, just put message handling in proc other than `update`
 
 proc `=destroy`*(self: var InputSystem) =
   sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems
   logging.debug("Input system destroyed")
+
+
+proc run*(self: InputSystem) =
+  self.init()
+
+  runLoop(
+    fixedFrequencyCallback=
+      proc(dt: float): bool =
+        self.poll(dt)
+        true,
+    updatesPerSecond=30,
+  )
