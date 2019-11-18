@@ -188,10 +188,12 @@ proc run*(self: var VideoSystem) =
   self.init()
 
   loop(frequency=30) do:
-    self.update(dt)
-  do:
-    let message = self.tryRecv()
-    if not message.isNil:
+    while true:
+      let message = self.tryRecv()
+      if message.isNil:
+        break
       self.process(message)
+  do:
+    self.update(dt)
 
   self.dispose()

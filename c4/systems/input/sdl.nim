@@ -74,9 +74,12 @@ proc run*(self: var InputSystem) =
 
   loop(frequency=30) do:
     self.poll(dt)
-  do:
-    let message = self.tryRecv()
-    if not message.isNil:
+    while true:
+      let message = self.tryRecv()
+      if message.isNil:
+        break
       self.process(message)
+  do:
+    discard
 
   self.dispose()

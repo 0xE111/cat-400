@@ -106,9 +106,12 @@ proc run*(self: var PhysicsSystem) =
 
   loop(frequency=30) do:
     self.update(dt)
-  do:
-    let message = self.tryRecv()
-    if not message.isNil:
+    while true:
+      let message = self.tryRecv()
+      if message.isNil:
+        break
       self.process(message)
+  do:
+    discard
 
   self.dispose()
