@@ -5,6 +5,7 @@
 import tables
 import unittest
 import os
+import asyncnet
 import times
 import strformat
 
@@ -50,7 +51,8 @@ proc spawn*(T: typedesc, name: ServiceName) =
   services[name].thread.createThread(
     param = name,
     tp = proc(name: ServiceName) {.thread.} =
-      T(serviceName: name).run(),
+      var service = T(serviceName: name)
+      service.run(),
   )
 
 # ---- Network services ----

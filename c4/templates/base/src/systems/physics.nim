@@ -1,13 +1,11 @@
 import c4/systems/physics/ode
-import c4/utils/stringify
 
 import ../messages
 
 
-type
-  PhysicsSystem* = object of ode.PhysicsSystem
+type PhysicsSystem* = object of ode.PhysicsSystem
 
-
-strMethod(PhysicsSystem, fields=false)
+proc run*(self: var PhysicsSystem) =
+  ode.PhysicsSystem(self).run()
 
 # redefine physics system methods below

@@ -1,14 +1,13 @@
-import logging
 import os
-import tables
+import logging
+import strformat
 
 import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
-
 import ../../messages
-import ../../systems
-import ../../utils/stringify
+import ../../services
+import ../../utils/loop
 
 
 type
@@ -17,7 +16,7 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* = object of System
+  VideoSystem* = object of Service
     window*: sdl.Window
     windowConfig*: tuple[
       title: string,
@@ -47,10 +46,7 @@ method dispose*(self: ref Video) {.base.} =
 
 
 # ---- System ----
-strMethod(VideoSystem, fields=false)
-
-
-method init*(self: ref VideoSystem) =
+proc init*(self: var VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
@@ -151,11 +147,8 @@ method init*(self: ref VideoSystem) =
 
   logging.debug "Ogre initialized"
 
-  procCall self.as(ref System).init()
 
-method update*(self: ref VideoSystem, dt: float) =
-  procCall self.as(ref System).update(dt)
-
+proc update*(self: VideoSystem, dt: float) =
   # if logLevel <= lvlDebug:
   #   show stats?
 
@@ -163,7 +156,8 @@ method update*(self: ref VideoSystem, dt: float) =
   discard self.root.renderOneFrame(dt)
   # self.window.glSwapWindow()
 
-proc `=destroy`*(self: var VideoSystem) =
+
+proc dispose*(self: var VideoSystem) =
   # TODO: shutdown
   sdl.quitSubSystem(sdl.INIT_VIDEO)
   logging.debug "Video system unloaded"
@@ -183,6 +177,21 @@ proc `=destroy`*(self: var VideoSystem) =
 
 
 # ---- handlers ----
+method process*(self: VideoSystem, message: ref Message) {.base.} =
+  logging.warn &"No rule for processing {message}"
+
 # method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
 
 #   self.updateViewport(message.width, message.height)
+
+proc run*(self: var VideoSystem) =
+  self.init()
+
+  loop(frequency=30) do:
+    self.update(dt)
+  do:
+    let message = self.tryRecv()
+    if not message.isNil:
+      self.process(message)
+
+  self.dispose()

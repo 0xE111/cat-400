@@ -23,7 +23,7 @@ messages.register(WindowQuitMessage)
 
 
 # ---- workflow methods ----
-proc init*(self: InputSystem) =
+proc init*(self: var InputSystem) =
   logging.debug("Initializing input system")
 
   try:
@@ -60,7 +60,7 @@ proc poll*(self: InputSystem, dt: float) =
     self.handle(event)
 
 
-proc `=destroy`*(self: var InputSystem) =
+proc dispose*(self: var InputSystem) =
   sdl.quitSubSystem(sdl.INIT_EVENTS)  # TODO: destroying single InputSystem will destroy sdl events for all other InputSystems
   logging.debug "Input system destroyed"
 
@@ -69,19 +69,14 @@ method process*(self: InputSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 
-proc run*(self: InputSystem) =
+proc run*(self: var InputSystem) =
   self.init()
 
-  runLoop(
-    updatesPerSecond=30,
-    fixedFrequencyCallback=
-      proc(dt: float): bool =
-        self.poll(dt)
-        true,
-    maxFrequencyCallback=
-      proc(dt: float): bool =
-        let message = self.tryRecv()
-        if not message.isNil:
-          self.process(message)
-        true,
-  )
+  loop(frequency=30) do:
+    self.poll(dt)
+  do:
+    let message = self.tryRecv()
+    if not message.isNil:
+      self.process(message)
+
+  self.dispose()

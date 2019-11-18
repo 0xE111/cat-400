@@ -5,16 +5,12 @@ type
   Callback* = proc(dt: float): bool {.closure.}
 
 
-# TODO: make async!
-proc runLoop*(
-  updatesPerSecond = 30,
-  fixedFrequencyCallback: Callback = nil,
-  maxFrequencyCallback: Callback = nil,
-) =
+# TODO: make async?
+template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCode: untyped) =
   # handlers will receive dt - delta time between two last calls (in seconds, floating point)
   let
-    skipSeconds = 1 / updatesPerSecond
-    maxUpdatesSkip = int(updatesPerSecond.float * 0.3)
+    skipSeconds = 1 / frequency
+    maxUpdatesSkip = int(frequency.float * 0.3)
 
   var
     numUpdates: int
@@ -28,21 +24,16 @@ proc runLoop*(
     numUpdates = 0
     while (epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
       now = epochTime()
-      if fixedFrequencyCallback != nil and not fixedFrequencyCallback(now - lastFixedUpdateTime):
-        return
+      block:
+        let dt {.inject.} = now - lastFixedUpdateTime
+        fixedFrequencyCode
 
       lastFixedUpdateTime = now
       nextFixedUpdateTime += skipSeconds
       numUpdates += 1
 
     now = epochTime()
-    if maxFrequencyCallback != nil and not maxFrequencyCallback(now - lastMaxUpdateTime):
-      return
+    block:
+      let dt {.inject.} = now - lastMaxUpdateTime
+      maxFrequencyCode
     lastMaxUpdateTime = now
-
-proc getFps*(dt:float): int =
-  ## Calculates *very* approximate FPS value based on dt received by loop handlers. Example:
-  ## proc printFps(dt:float) =
-  ##   echo "Max FPS is: ", $getFps(dt)
-  ## runLoop(maxFrequencyHandlers = @[printFps])
-  result = int(1.float / dt)

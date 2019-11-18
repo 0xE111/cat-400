@@ -1,13 +1,11 @@
 import c4/systems/video/ogre
-import c4/utils/stringify
 
 import ../messages
 
 
-type
-  VideoSystem* = object of ogre.VideoSystem
+type VideoSystem* = object of ogre.VideoSystem
 
-
-strMethod(VideoSystem, fields=false)
+proc run*(self: var VideoSystem) =
+  ogre.VideoSystem(self).run()
 
 # redefine video system methods below

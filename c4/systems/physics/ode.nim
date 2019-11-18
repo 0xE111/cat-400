@@ -3,17 +3,18 @@ import strformat
 import math
 import system
 
-import ../../systems
-import ../../utils/stringify
-import ../../entities
-
 import ../../lib/ode/ode
+
+import ../../messages
+import ../../services
+import ../../entities
+import ../../utils/loop
 
 
 const simulationStep = 1 / 30
 
 type
-  PhysicsSystem* = object of System
+  PhysicsSystem* = object of Service
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
@@ -26,7 +27,7 @@ type
 
 # ---- Component ----
 
-method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
+method init*(self: PhysicsSystem, physics: ref Physics) {.base.} =
   logging.debug &"{self}: initializing component"
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
@@ -37,11 +38,9 @@ method dispose*(self: ref Physics) {.base.} =
 
 
 # ---- System ----
-strMethod(PhysicsSystem, fields=false)
-
 proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   let
-    self = cast[ref PhysicsSystem](data)
+    self = cast[ptr PhysicsSystem](data)[]
     body1 = geom1.geomGetBody()
     body2 = geom2.geomGetBody()
 
@@ -64,7 +63,7 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     contact.jointAttach(body1, body2)
 
 
-method init*(self: ref PhysicsSystem) =
+proc init*(self: var PhysicsSystem) =
   ode.initODE()
   self.world = worldCreate()
   # self.world.worldSetAutoDisableFlag(1)
@@ -75,10 +74,8 @@ method init*(self: ref PhysicsSystem) =
 
   logging.debug "ODE initialized"
 
-  procCall self.as(ref System).init()
 
-
-method update*(self: ref PhysicsSystem, dt: float) =
+proc update*(self: var PhysicsSystem, dt: float) =
   let
     dt = dt + self.simulationStepRemains
     nSteps = (dt / simulationStep).int
@@ -86,16 +83,32 @@ method update*(self: ref PhysicsSystem, dt: float) =
   self.simulationStepRemains = dt.mod(simulationStep)
 
   for i in 0..<nSteps:
-    self.space.spaceCollide(cast[pointer](self), cast[ptr dNearCallback](self.nearCallback.rawProc))
+    self.space.spaceCollide(cast[pointer](self.addr), cast[ptr dNearCallback](self.nearCallback.rawProc))
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
     self.contactGroup.jointGroupEmpty()
 
-  procCall self.as(ref System).update(dt)
 
-proc `=destroy`*(self: var PhysicsSystem) =
+proc dispose*(self: var PhysicsSystem) =
   self.contactGroup.jointGroupDestroy()
   self.space.spaceDestroy()
   self.world.worldDestroy()
   ode.closeODE()
   logging.debug "ODE destroyed"
+
+
+method process*(self: PhysicsSystem, message: ref Message) {.base.} =
+  logging.warn &"No rule for processing {message}"
+
+
+proc run*(self: var PhysicsSystem) =
+  self.init()
+
+  loop(frequency=30) do:
+    self.update(dt)
+  do:
+    let message = self.tryRecv()
+    if not message.isNil:
+      self.process(message)
+
+  self.dispose()

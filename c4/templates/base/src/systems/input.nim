@@ -8,7 +8,7 @@ import ../messages
 type InputSystem* = object of sdl.InputSystem
 
 # TODO: make this unneeded
-proc run*(self: InputSystem) =
+proc run*(self: var InputSystem) =
   sdl.InputSystem(self).run()
 
 # redefine input system methods below
