@@ -13,7 +13,7 @@ import messages
 type
   ServiceName* = string  ## Each service must have a unique name; this name will be used as a reference to the services
 
-  Service* = object {.inheritable.}
+  Service* {.inheritable.} = object
     serviceName: ServiceName
 
   ServiceKind* = enum
@@ -24,18 +24,15 @@ type
     ## Data structure containing service's internal information
     case kind: ServiceKind
       of Local:
-        thread: Thread[void]
+        thread: Thread[ServiceName]
         channel: Channel[ref Message]
 
       of Remote:
         ip: string
         port: int16
+        socket: AsyncSocket
 
   NameDuplicationError* = object of Exception
-
-
-proc run*(self: Service) =
-  raise newException(LibraryError, "Undefined `run()` proc")
 
 # TODO: try to use newTable in order to avoid `servicesPtr`
 var services = initTable[ServiceName, ServiceInfo]()  ## Table of all known services
@@ -43,23 +40,18 @@ let servicesPtr = services.addr  ## Ptr to services table, in order to avoid sha
 
 # ---- Local services ----
 
-template spawn*(T: typedesc[Service], name: ServiceName) =
+proc spawn*(T: typedesc, name: ServiceName) =
   ## Given any service type, creates new thread by running `run()` proc and registers it under specific name
   if name in services:
     raise newException(NameDuplicationError, "Service with this name was already registered")
 
   services[name] = ServiceInfo(kind: Local)
   services[name].channel.open()
-  services[name].thread.createThread(proc() {.thread.} =
-    T(serviceName: name).run()
+  services[name].thread.createThread(
+    param = name,
+    tp = proc(name: ServiceName) {.thread.} =
+      T(serviceName: name).run(),
   )
-
-# proc spawn*(actorType: typedesc[Actor], name: ActorName) =
-#   knownActors[name] = ActorInfo(kind: Thread)
-#   knownActors[name].channel.open()
-#   knownActors[name].thread.createThread(proc() {.thread.} =
-#     actorType(actorName: name).run()
-#   )
 
 # ---- Network services ----
 
@@ -117,7 +109,7 @@ proc waitAvailable*(service: ServiceName, timeout: float = 10.0, interval: float
 
 proc joinAll*() =
   ## Waits for all local services to terminate
-  var threads: seq[Thread[void]]
+  var threads: seq[Thread[ServiceName]]
   for info in servicesPtr[].values:
     if info.kind == Local:
       threads.add(info.thread)

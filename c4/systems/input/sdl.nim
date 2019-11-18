@@ -83,4 +83,5 @@ proc run*(self: InputSystem) =
         let message = self.tryRecv()
         if not message.isNil:
           self.process(message)
+        true,
   )
