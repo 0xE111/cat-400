@@ -2,6 +2,7 @@ import tables
 
 import c4/services
 
+import src/systems/network
 import src/systems/physics
 import src/systems/input
 import src/systems/video
@@ -10,6 +11,7 @@ import src/scenarios/init
 
 
 when isMainModule:
+  NetworkSystem.spawn("network")
   InputSystem.spawn("input")
   PhysicsSystem.spawn("physics")
   VideoSystem.spawn("video")

@@ -90,6 +90,10 @@ proc peek*(self: Service): int =
   ## Returns current number of messages pending for specific service
   servicesPtr[][self.serviceName].channel.peek
 
+proc send*(self: Service, message: ref Message) =
+  ## Send message to self
+  servicesPtr[][self.serviceName].channel.send(message)
+
 proc send*(message: ref Message, recipient: ServiceName) =
   ## Send message to a specific service
   servicesPtr[][recipient].channel.send(message)
@@ -142,7 +146,7 @@ when isMainModule:
       number += 1
 
 
-  type Calculator = object  of Service # this service does some calculations
+  type Calculator = object of Service  # this service does some calculations
 
   method process(self: Calculator, message: ref Message) {.base.} =
     raise newException(ValueError, "Got general message, dunno what to do")
