@@ -19,10 +19,10 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  NetworkSystem* = object of Service
+  NetworkSystem* = object of System
     # TODO: use initialization at declaration when available
-    numConnections: csize
-    numChannels: csize
+    numConnections: csize_t
+    numChannels: csize_t
     inBandwidth: uint16
     outBandwidth: uint16
 
@@ -103,7 +103,7 @@ proc send*(self: NetworkSystem, message: ref Message, peer: ref messages.Peer = 
     data: string = pack(message)
     packet = enet.packet_create(
       data.cstring,
-      data.len.csize,  # do not read trailing \0
+      data.len.csize_t,  # do not read trailing \0
       if reliable: enet.PACKET_FLAG_RELIABLE else: enet.PACKET_FLAG_UNRELIABLE,
     )
 
@@ -215,7 +215,7 @@ proc connect*(self: var NetworkSystem, address: Address, numChannels = 1) =
   discard enet.address_set_host(enetAddress.addr, address.host.cstring)
   enetAddress.port = address.port
 
-  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize, 0.uint32).isNil:
+  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize_t, 0.uint32).isNil:
     raise newException(LibraryError, "Could not establish connection")
 
   # further connection success / failure is handled by ``handle`` method
