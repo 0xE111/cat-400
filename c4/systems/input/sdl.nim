@@ -3,12 +3,12 @@ import logging
 import tables
 import strformat
 
-import ../../services
+import ../../systems
 import ../../messages
 import ../../utils/loop
 
 
-type InputSystem* = object of Service
+type InputSystem* = object of System
 
 proc `$`*(event: sdl.Event): string = $event.kind
 

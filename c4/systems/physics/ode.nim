@@ -5,8 +5,8 @@ import system
 
 import ../../lib/ode/ode
 
+import ../../systems
 import ../../messages
-import ../../services
 import ../../entities
 import ../../utils/loop
 
@@ -14,7 +14,7 @@ import ../../utils/loop
 const simulationStep = 1 / 30
 
 type
-  PhysicsSystem* = object of Service
+  PhysicsSystem* = object of System
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback

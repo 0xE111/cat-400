@@ -6,7 +6,7 @@ import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 import ../../messages
-import ../../services
+import ../../systems
 import ../../utils/loop
 
 
@@ -16,7 +16,7 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* = object of Service
+  VideoSystem* = object of System
     window*: sdl.Window
     windowConfig*: tuple[
       title: string,

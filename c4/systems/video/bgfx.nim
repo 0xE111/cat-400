@@ -1,11 +1,13 @@
+# ================== WARNING ================== #
+#         This module is unmaintained           #
+# ============================================= #
 import logging
+import strformat
+
 import sdl2/sdl, sdl2/sdl_syswm
-from strformat import `&`
 
 import ../../lib/bgfx/bgfx
-
-from ../../systems import System, `as`, init, update
-from ../../utils/stringify import strMethod
+import ../../systems
 
 
 type
@@ -18,9 +20,7 @@ type
 # let assetsDir = getAppDir() / "assets" / "video"
 
 # ---- System ----
-strMethod(VideoSystem, fields=false)
-
-method init*(self: ref VideoSystem) =
+proc init*(self: var VideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
@@ -120,15 +120,3 @@ method init*(self: ref VideoSystem) =
   # bgfx.dbg_text_printf(0, 1, 0x0f, "BGFX debug text")
 
   # logging.debug "BGFX initialized"
-
-  # procCall self.as(ref System).init()
-
-method update*(self: ref VideoSystem, dt: float) =
-  procCall self.as(ref System).update(dt)
-
-  raise newException(LibraryError, "Not implemented")
-
-proc `=destroy`*(self: var VideoSystem) =
-  bgfx.shutdown()
-  sdl.quitSubSystem(sdl.INIT_VIDEO)
-  logging.debug "Video system unloaded"

@@ -8,7 +8,7 @@ import streams
 
 import ../../lib/enet/enet
 
-import ../../services
+import ../../systems
 import ../../entities
 import ../../messages
 import ../../utils/loop

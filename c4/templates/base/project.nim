@@ -11,7 +11,7 @@ import src/scenarios/init
 
 
 when isMainModule:
-  NetworkSystem.spawn("network")
+  ServerNetworkSystem.spawn("network")
   InputSystem.spawn("input")
   PhysicsSystem.spawn("physics")
   VideoSystem.spawn("video")
