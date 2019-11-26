@@ -1,9 +1,10 @@
 ## Message is a base unit for communication between systems.
 
 import hashes
-import sharedtables
-export sharedtables
+import tables
+export tables
 import macros
+import locks
 import typetraits
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
@@ -51,15 +52,16 @@ type
   PackProc = proc(message: ref Message): string {.closure.}
   UnpackProc = proc(stream: MsgStream): ref Message {.closure.}
 
-var packTable: SharedTable[
+var packTable = initTable[
   uint8,
   tuple[
     pack: PackProc,
     unpack: UnpackProc,
   ],
-]
-packTable.init(64)
-var lastId = 0.uint8
+]()
+let packTablePtr = packTable.addr
+var packTableLock: Lock
+initLock(packTableLock)
 
 # -- Message --
 method packId*(self: ref Message): uint8 {.base.} =
@@ -68,8 +70,8 @@ method `$`*(self: ref Message): string {.base.} = "Message"
 
 proc pack*(message: ref Message): string =
   ## General method which selects appropriate pack method from pack table according to real message runtime type.
-  packTable.withValue(key=message.packId, value) do:
-    result = value.pack(message)
+  withLock packTableLock:
+    result = packTablePtr[][message.packId].pack(message)
 
 proc unpack*(data: string): ref Message =
   ## General method which selects appropriate unpack method from pack table according to real message runtime type.
@@ -79,37 +81,35 @@ proc unpack*(data: string): ref Message =
 
   stream.setPosition(0)
   stream.unpack(packId)
-  packTable.withValue(key=packId, value) do:
-    result = value.unpack(stream)
+  withLock packTableLock:
+    result = packTablePtr[][packId].unpack(stream)
 
 # -- Message subtype --
 template register*(MessageType: typedesc) =
-  # let messageId = uint8(packTable.len + 1)
-  let messageId = lastId
-  lastId += 1
+  var messageId: uint8
 
-  method packId*(self: ref MessageType): uint8 = messageId.uint8
+  withLock packTableLock:
+    messageId = uint8(packTable.len) + 1
+
+    packTablePtr[][messageId] = (
+      # pack proc
+      proc(message: ref Message): string {.closure.} =
+        let packId = messageId
+        var stream = MsgStream.init(sizeof(packId) + sizeof(MessageType))
+
+        stream.pack packId
+        stream.pack (ref MessageType)message
+
+        result = stream.data,
+
+      proc(stream: MsgStream): ref Message {.closure.} =
+        var temp: ref MessageType
+        stream.unpack(temp)
+        result = temp
+    )
+
+  method packId*(self: ref MessageType): uint8 = messageId
   method `$`*(self: ref MessageType): string = $(self[].type) & $self[]
-
-  packTable.withKey(messageId) do (key: uint8, value: var tuple[pack: PackProc, unpack: UnpackProc], pairExists: var bool):
-    if pairExists:
-      raise newException(LibraryError, "ID of message " & $MessageType.name & " ({messageId}) was already registered in packTable")
-
-    value.pack = proc(message: ref Message): string {.closure.} =
-      let packId = messageId
-      var stream = MsgStream.init(sizeof(packId) + sizeof(MessageType))
-
-      stream.pack packId
-      stream.pack (ref MessageType)message
-
-      result = stream.data
-
-    value.unpack = proc(stream: MsgStream): ref Message {.closure.} =
-      var temp: ref MessageType
-      stream.unpack(temp)
-      result = temp
-
-    pairExists = true
 
 
 when isMainModule:
