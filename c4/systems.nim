@@ -53,28 +53,29 @@ proc spawn*(T: typedesc, name: SystemName) =
 proc tryRecv*(self: System): ref Message =
   ## Tries to receive a message, returns message if succeeded
   ## or nil if there's no pending messages.
-  let res = systemsPtr[][self.systemName].channel.tryRecv()
-  return if res.dataAvailable: res.msg else: nil
-
-proc recv*(self: System): ref Message =
-  ## Wait until new message appears, and return this message
-  systemsPtr[][self.systemName].channel.recv()
+  withLock systemsLock:
+    let res = systemsPtr[][self.systemName].channel.tryRecv()
+    result = if res.dataAvailable: res.msg else: nil
 
 proc peek*(self: System): int =
   ## Returns current number of messages pending for specific system
-  systemsPtr[][self.systemName].channel.peek
+  withLock systemsLock:
+    result = systemsPtr[][self.systemName].channel.peek
 
 proc send*(self: System, message: ref Message) =
   ## Send message to self
-  systemsPtr[][self.systemName].channel.send(message)
+  withLock systemsLock:
+    systemsPtr[][self.systemName].channel.send(message)
 
 proc send*(message: ref Message, recipient: SystemName) =
   ## Send message to a specific system
-  systemsPtr[][recipient].channel.send(message)
+  withLock systemsLock:
+    systemsPtr[][recipient].channel.send(message)
 
 proc exists*(system: SystemName): bool =
   ## Whether system is available (i.e. spawned or registered as remote one)
-  system in systemsPtr[]
+  withLock systemsLock:
+    result = system in systemsPtr[]
 
 proc waitAvailable*(system: SystemName, timeout: float = 10.0, interval: float = 1.0): bool =
   ## Returns whether specific system becomes available in `timeout` seconds, checking every `interval` seconds
@@ -90,7 +91,11 @@ proc waitAvailable*(system: SystemName, timeout: float = 10.0, interval: float =
 proc joinAll*() =
   ## Waits for all local systems to terminate.
   ## Threads spawned after this call are not waited for.
-  joinThreads(toSeq(systems.values).mapIt(it.thread))
+  var threads: seq[Thread[SystemName]] = @[]
+  withLock systemsLock:
+    threads = toSeq(systems.values).mapIt(it.thread)
+
+  threads.joinThreads()
 
 
 when isMainModule:
@@ -135,7 +140,9 @@ when isMainModule:
     self.running = true
 
     while self.running:
-      self.process(self.recv())
+      let msg = self.tryRecv()
+      if not msg.isNil:
+        self.process(msg)
 
   suite "Systems test":
     test "Spawning & communication":
