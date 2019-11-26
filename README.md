@@ -57,7 +57,7 @@ Although these modules are part of `Cat-400`, they may be used separately in any
 
 [`c4.messages` module](c4/messages.nim) - `Message` type and any user-defined subtypes, which may be packed and unpacked using msgpack, correctly preserving type information.
 
-[`c4.systems` module](c4/systems.nim) - actors-like approach for making threads spawning and intercommunication easy and comfortable.
+[`c4.namedthreads` module](c4/namedthreads.nim) - module for spawning named threads and sending messages between them; allows programmer to focus on his multithreaded app, not on settings up connection between threads.
 
 ## Wrappers
 
