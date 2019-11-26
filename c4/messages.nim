@@ -61,6 +61,7 @@ var packTable: SharedTable[
 packTable.init(64)
 var lastId = 0.uint8
 
+
 # -- Message --
 method packId*(self: ref Message): uint8 {.base.} =
   raise newException(LibraryError, "Trying to pack/unpack base Message type")
