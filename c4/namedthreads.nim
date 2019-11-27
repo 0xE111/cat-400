@@ -45,6 +45,11 @@ template spawn*(name: ThreadName, code: untyped) =
       param = name,
       tp = proc(nm: ThreadName) {.thread.} =
         currentThreadName = nm
+        onThreadDestruction(proc() =
+          withLock threadsLock:
+            threadsPtr[][nm].channel.close()
+            threadsPtr[].del(nm)
+        )
         code
     )
 
@@ -100,6 +105,11 @@ proc waitAvailable*(thread: ThreadName, timeout: float = 10.0, interval: float =
 
   return false
 
+proc runningThreads*(): seq[ThreadName] =
+  withLock threadsLock:
+    result = toSeq(threadsPtr[].keys)
+
+
 proc joinAll*() =
   ## Waits for all threads to terminate.
   ## Threads spawned after this call are not waited for.
@@ -133,6 +143,8 @@ when isMainModule:
           echo "Calculator is unavailable, shutting down"
           return
 
+        assert "calculator" in runningThreads()
+
         # just send numbers to calculator
         for number in 0..<10:
           echo &"Sending number {number}"
@@ -140,7 +152,11 @@ when isMainModule:
 
         new(TerminationMessage).send("calculator")
 
+      assert "generator" in runningThreads()
+
       spawn("calculator") do:
+        assert "generator" in runningThreads()
+
         while true:
           let msg = tryRecv()
           if not msg.isNil:
@@ -150,5 +166,10 @@ when isMainModule:
 
             process(msg)
 
+      assert runningThreads().len == 2
+
       joinAll()
+
+      assert runningThreads().len == 0
+
       echo "All threads finished execution"
