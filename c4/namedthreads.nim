@@ -28,6 +28,12 @@ var threadsLock: Lock
 threadsLock.initLock()
 var currentThreadName {.threadvar.}: string
 
+# main thread setup
+const mainThread = "main"
+currentThreadName = mainThread
+threads[currentThreadName] = ThreadInfo()
+threads[currentThreadName].channel.open()
+
 
 template spawn*(name: ThreadName, code: untyped) =
   ## Creates a new thread with name `name` and runs `code` inside this thread.
@@ -111,11 +117,11 @@ proc runningThreads*(): seq[ThreadName] =
 
 
 proc joinAll*() =
-  ## Waits for all threads to terminate.
-  ## Threads spawned after this call are not waited for.
+  ## Waits for all threads to terminate (except current one and main).
+  ## Threads spawned after this call are not taken into account.
   var runningThreads: seq[Thread[ThreadName]] = @[]
   withLock threadsLock:
-    runningThreads = toSeq(threads.values).mapIt(it.thread)
+    runningThreads = toSeq(threads.pairs).filterIt(it[0] notin @[currentThreadName, mainThread]).mapIt(it[1].thread)
 
   runningThreads.joinThreads()
 
@@ -125,6 +131,7 @@ when isMainModule:
     NumberMessage = object of Message
       number: int
 
+    HelloMessage = object of Message
     TerminationMessage = object of Message
 
 
@@ -166,10 +173,38 @@ when isMainModule:
 
             process(msg)
 
-      assert runningThreads().len == 2
+      assert runningThreads().len == 3
 
       joinAll()
 
-      assert runningThreads().len == 0
+      assert runningThreads().len == 1
 
       echo "All threads finished execution"
+
+  test "Communication with master":
+
+    spawn("thread") do:
+      assert mainThread in runningThreads()
+      echo "thread: running"
+
+      echo "thread: sending hello to main"
+      new(HelloMessage).send(mainThread)
+      while true:
+        let msg = tryRecv()
+        if not msg.isNil and msg of TerminationMessage:
+          echo "thread: received termination message, stopping"
+          return
+
+    echo "main: waiting for thread to appear"
+    assert waitAvailable("thread")
+
+    while true:
+      let msg = tryRecv()
+      if not msg.isNil and msg of HelloMessage:
+        echo "main: received hello message"
+        echo "main: sending termination message"
+        new(TerminationMessage).send("thread")
+        break
+
+    sleep(200)
+    assert "thread" notin runningThreads()
