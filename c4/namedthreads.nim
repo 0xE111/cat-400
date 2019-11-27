@@ -143,13 +143,11 @@ when isMainModule:
 
   suite "threads test":
     test "Spawning & communication":
+      assert "generator" notin runningThreads()
 
       spawn("generator") do:
         # wait for calculator to be available
-        if not waitAvailable("calculator"):
-          echo "Calculator is unavailable, shutting down"
-          return
-
+        assert waitAvailable("calculator")
         assert "calculator" in runningThreads()
 
         # just send numbers to calculator
@@ -159,6 +157,7 @@ when isMainModule:
 
         new(TerminationMessage).send("calculator")
 
+      assert waitAvailable("generator")
       assert "generator" in runningThreads()
 
       spawn("calculator") do:
