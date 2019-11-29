@@ -8,47 +8,17 @@ import locks
 import typetraits
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
-
-when isMainModule:
-  import unittest
+import unittest
 
 
 type
-  Peer* {.inheritable.} = object
-    ## This is a type for addressing an entity in network connection. ``Peer`` may refer to a server or one of its clients.
-    discard
-
   Message* {.inheritable.} = object
     ## Message is an object with minimal required information to describe some event or command.
-    ## Every message contains a reference to a sender (Peer).
-    ## Network system should populate the `peer` field when receiving Message from remote machine.
-    ## You need to call `core.messages.register` so that msgpack4nim knows how to (de)serialize your custom message.
-    sender*: ref Peer  ## Message sender; nil means that the message is local.
-    recipient*: ref Peer  ## Message recipient; nil means that the message should be broadcasted.
+    ## Call `messages.register` on message subtype so that msgpack4nim knows how to (de)serialize it.
+    ## Example:
+    ##   type CustomMessage = object of Message
+    ##   messages.register(CustomMessage)
 
-
-method `$`*(self: Peer): string {.base.} =
-  ## Just ``Peer``'s address. It should definitely be redefined in network module.
-  # TODO: Redefine in network module
-  result = $cast[int](self.unsafeAddr)
-
-proc isLocal*(self: ref Message): bool =
-  ## Check whether this message is local or from external Peer
-  self.sender.isNil
-
-proc hash*(self: ref Peer): Hash =
-  result = self[].addr.hash
-  # result = !$result
-
-method isReliable*(self: ref Message): bool {.base, inline.} =
-  ## Whether this message should be sent reliably over the network.
-  ## - Unreliable messages may be lost, delivery is not guaranteed;
-  ## - Reliable messages may product overhead to network communication.
-  false
-
-
-# ---- msgpack stuff ----
-type
   PackProc = proc(message: ref Message): string {.closure.}
   UnpackProc = proc(stream: MsgStream): ref Message {.closure.}
 
@@ -66,6 +36,7 @@ initLock(packTableLock)
 # -- Message --
 method packId*(self: ref Message): uint8 {.base.} =
   raise newException(LibraryError, "Trying to pack/unpack base Message type")
+
 method `$`*(self: ref Message): string {.base.} = "Message"
 
 proc pack*(message: ref Message): string {.gcsafe.} =
@@ -91,8 +62,9 @@ proc unpack*(data: string): ref Message {.gcsafe.} =
     withLock packTableLock:
       result = packTablePtr[][packId].unpack(stream)
 
-# -- Message subtype --
 template register*(MessageType: typedesc) =
+  ## Template for registering pack/unpack procs for specific message type.
+  ## Without registering, packing/unpacking won't store runtime type information.
   var messageId: uint8
 
   withLock packTableLock:
@@ -109,6 +81,7 @@ template register*(MessageType: typedesc) =
 
         result = stream.data,
 
+      # unpack proc
       proc(stream: MsgStream): ref Message {.closure.} =
         var temp: ref MessageType
         stream.unpack(temp)
@@ -154,7 +127,7 @@ when isMainModule:
       unpacked = packed.unpack()
 
       check:
-        packed.len == 17
+        packed.len == 15
         unpacked.getData() == "some message"
 
       message = (ref MessageB)(counter: 42, data: "some data string", is_correct: true)
@@ -162,7 +135,7 @@ when isMainModule:
       echo "MessageB packed as: " & stringify(packed)
       unpacked = packed.unpack()
       check:
-        packed.len == 23
+        packed.len == 21
         unpacked.getData() == "42"
 
     test "Instant pack":
