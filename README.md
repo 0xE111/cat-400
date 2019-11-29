@@ -9,12 +9,12 @@
 Core of "Cat 400" is platform-independent and may be run on every target platform supported by nim. However, default systems (which are optional) have external dependencies, and their officially supported platforms are Linux, Mac OS and Windows. Support for other platforms may be added later or implemented by independent contributors.
 
 Key features:
-- client-server architecture by default (even for single-player games) with network support
+- client-server multithreading architecture (even for single-player games) with network support
 - modularity: all code is split into "systems" (video/user input/networking etc) which work independently
-- systems communicate only by sending messages, which allows to avoid tangled code
+- systems communicate only by sending messages, thus avoiding tangled code
 - ECS (entity-component-system) with custom user components support
-- simple overwriting of existing systems and ability to use your own systems
-- "presets" (aka templates) which include some reasonable defaults for specific game genre
+- simple overwriting of existing systems and ability to create custom systems
+- templates which include some reasonable defaults for specific game genre
 
 ## Is 2D/3D supported?
 
