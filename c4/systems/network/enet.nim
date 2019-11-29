@@ -226,7 +226,7 @@ proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, ti
   if not force:
     enet.peer_disconnect(peer, 0)
 
-    var event: Event  # TODO: can {.global.} be used inside a thread?
+    var event: Event
     while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
       self.handle(event)
 
@@ -249,7 +249,7 @@ proc poll*(self: var NetworkSystem) =
   ## - poll the connection: receive and store incoming messages and send outgoing messages;
   ## - process all stored messages by calling ``process`` method on each message.
 
-  var event: enet.Event  # TODO: can {.global.} be used inside a thread?
+  var event: enet.Event
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     self.handle(event)
