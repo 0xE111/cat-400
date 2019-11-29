@@ -2,10 +2,12 @@ import logging
 import strformat
 import math
 import system
+import unittest
+import os
 
 import ../../lib/ode/ode
 
-import ../../systems
+import ../../namedthreads
 import ../../messages
 import ../../entities
 import ../../utils/loop
@@ -14,7 +16,7 @@ import ../../utils/loop
 const simulationStep = 1 / 30
 
 type
-  PhysicsSystem* = object of System
+  PhysicsSystem* {.inheritable.} = object
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
@@ -107,7 +109,7 @@ proc run*(self: var PhysicsSystem) =
   loop(frequency=30) do:
     self.update(dt)
     while true:
-      let message = self.tryRecv()
+      let message = tryRecv()
       if message.isNil:
         break
       self.process(message)
@@ -115,3 +117,13 @@ proc run*(self: var PhysicsSystem) =
     discard
 
   self.dispose()
+
+
+when isMainModule:
+  suite "System tests":
+    test "Running inside thread":
+      spawn("thread") do:
+        var system = PhysicsSystem()
+        system.run()
+
+      sleep 1000

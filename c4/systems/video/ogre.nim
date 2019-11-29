@@ -1,12 +1,13 @@
 import os
 import logging
 import strformat
+import unittest
 
 import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 import ../../messages
-import ../../systems
+import ../../namedthreads
 import ../../utils/loop
 
 
@@ -16,7 +17,7 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* = object of System
+  VideoSystem* {.inheritable.} = object
     window*: sdl.Window
     windowConfig*: tuple[
       title: string,
@@ -189,7 +190,7 @@ proc run*(self: var VideoSystem) =
 
   loop(frequency=30) do:
     while true:
-      let message = self.tryRecv()
+      let message = tryRecv()
       if message.isNil:
         break
       self.process(message)
@@ -197,3 +198,13 @@ proc run*(self: var VideoSystem) =
     self.update(dt)
 
   self.dispose()
+
+
+when isMainModule:
+  suite "System tests":
+    test "Running inside thread":
+      spawn("thread") do:
+        var system = VideoSystem()
+        system.run()
+
+      sleep 1000

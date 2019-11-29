@@ -141,7 +141,7 @@ when isMainModule:
   method process(message: ref NumberMessage) =
     echo &"Calculating {message.number}: {message.number * 2}"
 
-  suite "threads test":
+  suite "Threads test":
     test "Spawning & communication":
       assert "generator" notin runningThreads()
 

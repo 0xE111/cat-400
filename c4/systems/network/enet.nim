@@ -5,10 +5,12 @@ import logging
 import tables
 import strformat
 import streams
+import unittest
+import os
 
 import ../../lib/enet/enet
 
-import ../../systems
+import ../../namedthreads
 import ../../entities
 import ../../messages
 import ../../utils/loop
@@ -19,7 +21,7 @@ type
   Port* = uint16
   Address* = tuple[host: Host, port: Port]
 
-  NetworkSystem* = object of System
+  NetworkSystem* {.inheritable.} = object
     # TODO: use initialization at declaration when available
     numConnections: csize_t
     numChannels: csize_t
@@ -147,7 +149,7 @@ proc init*(self: var NetworkSystem) =
     raise newException(LibraryError, &"An error occured while trying to init host. Maybe port {self.port} is already in use?")
 
 # forward declaration, needed for ``handle`` method
-proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000)
+proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.gcsafe.}
 
 proc handle*(self: var NetworkSystem, event: enet.Event) =
   ## Handles Enet events and updates ``peersMap``.
@@ -220,11 +222,11 @@ proc connect*(self: var NetworkSystem, address: Address, numChannels = 1) =
 
   # further connection success / failure is handled by ``handle`` method
 
-proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) =
+proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.gcsafe.} =
   if not force:
     enet.peer_disconnect(peer, 0)
 
-    var event {.global.}: Event
+    var event: Event  # TODO: can {.global.} be used inside a thread?
     while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
       self.handle(event)
 
@@ -247,7 +249,7 @@ proc poll*(self: var NetworkSystem) =
   ## - poll the connection: receive and store incoming messages and send outgoing messages;
   ## - process all stored messages by calling ``process`` method on each message.
 
-  var event {.global.}: enet.Event
+  var event: enet.Event  # TODO: can {.global.} be used inside a thread?
 
   while enet.host_service(self.host, addr(event), 0.uint32) != 0:
     self.handle(event)
@@ -286,7 +288,7 @@ proc dispose*(self: var NetworkSystem) =
 #     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 
-method process*(self: NetworkSystem, message: ref Message) {.base.} =
+method process*(self: var NetworkSystem, message: ref Message) {.base.} =
   if message.isLocal:
     let recipient = message.recipient
     message.recipient = nil  # do not send recipient over network
@@ -410,7 +412,7 @@ proc run*(self: var NetworkSystem) =
     self.poll()
 
     while true:
-      let message = self.tryRecv()
+      let message = tryRecv()
       if message.isNil:
         break
 
@@ -419,3 +421,13 @@ proc run*(self: var NetworkSystem) =
     discard
 
   self.dispose()
+
+
+when isMainModule:
+  suite "System tests":
+    test "Running inside thread":
+      spawn("thread") do:
+        var system = ClientNetworkSystem()
+        system.run()
+
+      sleep 1000

@@ -2,13 +2,15 @@ import sdl2/sdl
 import logging
 import tables
 import strformat
+import unittest
+import os
 
-import ../../systems
+import ../../namedthreads
 import ../../messages
 import ../../utils/loop
 
 
-type InputSystem* = object of System
+type InputSystem* {.inheritable.} = object
 
 proc `$`*(event: sdl.Event): string = $event.kind
 
@@ -75,7 +77,7 @@ proc run*(self: var InputSystem) =
   loop(frequency=30) do:
     self.poll(dt)
     while true:
-      let message = self.tryRecv()
+      let message = tryRecv()
       if message.isNil:
         break
       self.process(message)
@@ -83,3 +85,13 @@ proc run*(self: var InputSystem) =
     discard
 
   self.dispose()
+
+
+when isMainModule:
+  suite "System tests":
+    test "Running inside thread":
+      spawn("thread") do:
+        var system = InputSystem()
+        system.run()
+
+      sleep 1000

@@ -9,3 +9,4 @@ const buildDir = thisDir() / "build"
 switch("nimcache", buildDir / "nimcache")
 switch("out", buildDir / projectName())
 switch("debugger", "native")
+switch("threads", "on")
