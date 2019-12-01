@@ -7,6 +7,10 @@ import strformat
 import streams
 import unittest
 import os
+import net
+import sets
+import options
+import sequtils
 
 import ../../lib/enet/enet
 
@@ -17,20 +21,9 @@ import ../../utils/loop
 
 
 type
-  Host* = string
-  Port* = uint16
-  Address* = tuple[host: Host, port: Port]
-
   NetworkSystem* {.inheritable.} = object
-    # TODO: use initialization at declaration when available
-    numConnections: csize_t
-    numChannels: csize_t
-    inBandwidth: uint16
-    outBandwidth: uint16
-
-    port: Port
-    host: ptr enet.Host  # remember own host
-    peersMap: Table[ptr enet.Peer, ref messages.Peer]  # table for converting enet.Peer into messages.Peer
+    host*: ptr Host
+    connectedPeers*: HashSet[ptr Peer]
 
   ClientNetworkSystem* = object of NetworkSystem
     entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
@@ -38,57 +31,32 @@ type
   ServerNetworkSystem* = object of NetworkSystem
 
 
-# ---- helpers ----
-proc `$`*(self: Address): string =
-  &"{self.host}:{self.port}"
-
-proc getHost*(self: enet.Address): string =
-  const ipLength = "000.000.000.000".len
-
-  result = newString(ipLength)
-  if address_get_host_ip(self.unsafeAddr, result, ipLength) != 0:
-    raise newException(LibraryError, "Could not get printable address")
-
-proc `$`*(self: enet.Address): string =
-  result = &"{self.getHost}:{self.port}"
-
-proc `$`*(self: enet.Host): string =
-  $self.address
-
-proc `$`*(self: enet.Peer): string =
-  $self.address
-
-proc `$`*(self: ptr Packet): string =
-  "Packet of size " & $self.dataLength
-
-proc toString(packet: enet.Packet): string =
-  result = newString(packet.dataLength)
-  copyMem(result.cstring, packet.data, packet.dataLength)
-
-proc getPort*(self: ref NetworkSystem): Port =
-  self.port
-
 # ---- messages ----
 type
-  ConnectMessage* = object of Message
+  NetworkMessage* = object of Message
+    ## Every message contains a reference to a sender (Peer).
+    ## Network system should populate the `peer` field when receiving Message from remote machine.
+    peer*: ptr Peer  ## Multi-purpose field. \
+    ## 1) When sending message to other machine, this field contains peer which represents recipient. Send to nil to broafcast.
+    ## 2) When receiving message from other machine, this field contans peer which sent the message. Nil means that the message is local.
+
+  ConnectMessage* = object of NetworkMessage
     ## Send this message to network system in order to connect to server.
     ##
     ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send("network")``
+    host*: string
+    port*: Port
 
-    address*: Address  # Address to connect to (server's address)
-
-  DisconnectMessage* = object of Message
+  DisconnectMessage* = object of NetworkMessage
     ## Send this message to network system in order to disconnect from server.
     ##
     ## Example: ``new(DisconnectMessage).send("network")``
 
-  ConnectionOpenedMessage* = object of Message
+  ConnectionOpenedMessage* = object of NetworkMessage
     ## This message is sent to network system when new connection with remote peer is established.
-    peer*: ref messages.Peer
 
-  ConnectionClosedMessage* = object of Message
+  ConnectionClosedMessage* = object of NetworkMessage
     ## This message is sent to network system when connection with remote peer is closed.
-    peer*: ref messages.Peer
 
 
 messages.register(ConnectMessage)
@@ -97,9 +65,52 @@ messages.register(ConnectionOpenedMessage)
 messages.register(ConnectionClosedMessage)
 
 
+proc toString(packet: enet.Packet): string =
+  result = newString(packet.dataLength)
+  copyMem(result.cstring, packet.data, packet.dataLength)
+
+proc getHostIp*(self: Address): string =
+  const ipLen = "000.000.000.000".len
+  result = newString(ipLen)
+  if address_get_host_ip(self.unsafeAddr, result, ipLen.csize_t) != 0:
+    raise newException(ValueError, "Could not get printable ip address")
+
+proc getHost*(self: Address): string =
+  const hostLen = 64
+  result = newString(hostLen)
+  if address_get_host(self.unsafeAddr, result, hostLen.csize_t) != 0:
+    raise newException(ValueError, "Could not get printable hostname")
+
+proc `$`*(self: Address): string =
+  try:
+    self.getHost()
+  except ValueError:
+    self.getHostIp()
+
+proc `$`*(self: Packet): string =
+  &"Packet of size {self.dataLength}"
+
+proc `$`*(self: Peer): string =
+  $self.address
+
+proc isLocal*(self: ref NetworkMessage): bool =
+  ## Check whether this message is local or from external Peer
+  self.peer.isNil
+
+# proc hash*(self: ref Peer): Hash =
+#   result = self[].addr.hash
+#   # result = !$result
+
+# method isReliable*(self: ref Message): bool {.base, inline.} =
+#   ## Whether this message should be sent reliably over the network.
+#   ## - Unreliable messages may be lost, delivery is not guaranteed;
+#   ## - Reliable messages may product overhead to network communication.
+#   false
+
+
 # ---- methods ----
 
-proc send*(self: NetworkSystem, message: ref Message, peer: ref messages.Peer = nil,  # set nil to broadcast
+proc send*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
            channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) =
   var
     data: string = pack(message)
@@ -112,46 +123,44 @@ proc send*(self: NetworkSystem, message: ref Message, peer: ref messages.Peer = 
   let sendSign = if reliable: "==>" else: "-->"
   logging.debug &"{sendSign} Network: sending {$(message)} (packed as \"{data.stringify}\", len={data.len})"
 
-  if peer == nil:  # broadcast
-    enet.host_broadcast(self.host, channelId, packet)
+  if peer.isNil:
+    self.host.host_broadcast(channelId, packet)
+
   else:
-    # reverse Table lookup
-    for enetPeer, msgsPeer in self.peersMap.pairs():
-      if msgsPeer == peer:
-        discard enet.peer_send(enetPeer, channelId, packet)
-        break
+    if enet.peer_send(peer, channelId, packet) != 0:
+      logging.error &"Could not send {packet[]} to {peer[]}"
+      return
 
   if immediate:
-    enet.host_flush(self.host)
+    self.host.host_flush()
 
 proc init*(self: var NetworkSystem) =
   # TODO: make these params configurable
-  self.numConnections = 32
-  self.numChannels = 1
-  self.inBandwidth = 0
-  self.outBandwidth = 0
-  self.port = 11477'u16
+  const
+    numConnections = 32
+    numChannels = 1
+    inBandwidth = 0
+    outBandwidth = 0
+    port = 11477'u16
 
   if enet.initialize() != 0:
-    let err = "An error occurred during initialization"
+    const err = "An error occurred during initialization"
     logging.fatal(err)
     raise newException(LibraryError, err)
 
   # set up address - nil for client, HOST_ANY+port for server
-  var addressPtr: ptr enet.Address = nil
+  var serverAddress = Address(host: HOST_ANY, port: port)
 
-  var serverAddress = enet.Address(host: enet.HOST_ANY, port: self.port)
-  if self of ServerNetworkSystem:
-    addressPtr = serverAddress.addr
-
-  self.host = enet.host_create(addressPtr, self.numConnections, self.numChannels, self.inBandwidth, self.outBandwidth)
+  self.host = host_create(if self of ServerNetworkSystem: serverAddress.addr else: nil, numConnections, numChannels, inBandwidth, outBandwidth)
   if self.host == nil:
-    raise newException(LibraryError, &"An error occured while trying to init host. Maybe port {self.port} is already in use?")
+    raise newException(LibraryError, &"An error occured while trying to init host. Maybe port {port} is already in use?")
+
+  logging.info &"Initialized network system on port {port}"
 
 # forward declaration, needed for ``handle`` method
-proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.gcsafe.}
+proc disconnect*(self: var NetworkSystem, peer: ptr Peer, force = false, timeout = 1000) {.gcsafe.}
 
-proc handle*(self: var NetworkSystem, event: enet.Event) =
+proc handle*(self: var NetworkSystem, event: Event) =
   ## Handles Enet events and updates ``peersMap``.
   ##
   ## - EVENT_TYPE_CONNECT: If peer with this address is already connected, then first disconnects this peer and sends ``ConnectionClosedMessage`` to self,  then sends ``ConnectionOpenedMessage`` to self;`.
@@ -162,85 +171,90 @@ proc handle*(self: var NetworkSystem, event: enet.Event) =
     of EVENT_TYPE_CONNECT:
       # We need to check whether new peer is already connected. If yes then we just close previous connection and open a new one.
 
-      # First, disconnect peers with same address as newly connected one
-      var peersToDelete: seq[ptr enet.Peer] = @[]
-      for peer in self.peersMap.keys():
-        if peer.address == event.peer.address:
-          logging.debug &"-x- Closing existing connection: {$(event.peer[])}"
-          self.disconnect(peer)
-          peersToDelete.add(peer)
-
-      # Second, for each disconnected peer send a ``DisconnectMessage`` to local network system and
-      # delete this peer from peer mapping table.
-      for peer in peersToDelete:
-        self.send((ref ConnectionClosedMessage)(peer: self.peersMap[peer]))
-        self.peersMap.del(peer)
+      # first, disconnect peer with same address as newly connected one
+      for peer in toSeq(self.connectedPeers).filterIt(it.address == event.peer.address):
+        logging.debug &"-x- Disconnecting existing peer {peer[]}"
+        self.disconnect(peer)
+        self.connectedPeers.excl(peer)
+        self.send((ref ConnectionClosedMessage)(peer: peer))
 
       # Now, send ``ConnectionOpenedMessage`` for newly created connection
-      let newPeer = new(messages.Peer)
-      self.peersMap[event.peer] = newPeer
-      self.send((ref ConnectionOpenedMessage)(peer: newPeer))
-      logging.info &"--- Connection established: {$(event.peer[])}"
-      logging.debug &"Current # of connections: {self.peersMap.len}"
+      self.connectedPeers.incl(peer)
+      self.send((ref ConnectionOpenedMessage)(peer: event.peer))
+      logging.info &"--- Connection established: {event.peer[]}"
+      logging.debug &"Current connections: {self.connectedPeers}"
 
     of EVENT_TYPE_RECEIVE:
       var message: ref Message
 
       try:
         message = event.packet[].toString().unpack()
+
       except Exception as exc:
         # do not fail if received malformed message
-        logging.warn &"Could not unpack packet {event.packet[].toString()} from {$(event.peer[])}: {exc.msg}"
+        logging.error &"Could not unpack packet from {event.peer[]}: {exc.msg}"
+        event.packet.packet_destroy()
         return
 
-      # include sender info into the message
-      if self.peersMap.hasKey(event.peer):
-        message.sender = self.peersMap[event.peer]
-        logging.debug &"<-- Received {$(message)} from peer {$(message.sender[])}"
-        self.send(message)  # TODO: event.channelID data is missing in message
-      else:
-        logging.warn &"x<- Received {$(message)} from unregistered peer {$(event.peer[])}, discarding"
+      if event.peer notin self.connectedPeers:
+        logging.warn &"x<- Received {message} from unregistered peer {event.peer[]}, discarding"
+        event.packet.packet_destroy()
+        return
 
-      enet.packet_destroy(event.packet)
+      if message of ref NetworkMessage:
+        # include sender info into the message
+        ((ref NetworkMessage) message).peer = event.peer
+
+      logging.debug &"<-- Received {message} from peer {event.peer[]}"
+      self.send(message)  # TODO: event.channelID data is missing in message
+
+      event.packet.packet_destroy()
 
     of EVENT_TYPE_DISCONNECT:
-      logging.info &"-x- Connection closed: {$(event.peer[])}"
-      self.send((ref ConnectionClosedMessage)(peer: self.peersMap[event.peer]))
-      self.peersMap.del(event.peer)
+      if event.peer notin self.connectedPeers:
+        logging.warn &"Disconnecting peer {event.peer[]} not in connected peers set"
+
+      else:
+        logging.debug &"-x- Disconnecting existing peer {event.peer[]}"
+        self.connectedPeers.excl(peer)
+        self.send((ref ConnectionClosedMessage)(peer: peer))
+
       event.peer.peer_reset()
+      logging.debug &"-x- Connection closed: {event.peer[]}"
 
     else:
       discard
 
-proc connect*(self: var NetworkSystem, address: Address, numChannels = 1) =
-  var enetAddress: enet.Address
-  discard enet.address_set_host(enetAddress.addr, address.host.cstring)
-  enetAddress.port = address.port
+proc connect*(self: var NetworkSystem, host: string, port: Port, numChannels = 1) =
+  var address: Address
+  discard address_set_host(address.addr, host)
+  address.port = port.uint16
 
-  if enet.host_connect(self.host, enetAddress.addr, numChannels.csize_t, 0.uint32).isNil:
+  if self.host.host_connect(address.addr, numChannels.csize_t, 0.uint32).isNil:
     raise newException(LibraryError, "Could not establish connection")
 
   # further connection success / failure is handled by ``handle`` method
 
-proc disconnect*(self: var NetworkSystem, peer: ptr enet.Peer, force = false, timeout = 1000) {.gcsafe.} =
+proc disconnect*(self: var NetworkSystem, peer: ptr Peer, force = false, timeout = 1000) {.gcsafe.} =
   if not force:
-    enet.peer_disconnect(peer, 0)
+    peer.peer_disconnect(0)
 
     var event: Event
-    while enet.host_service(self.host, addr(event), timeout.uint32) != 0:
+    while self.host.host_service(event.addr, timeout.uint32) != 0:
       self.handle(event)
 
-  if not self.peersMap.hasKey(peer):  # if successfully disconnected from peer
+  if peer notin self.connectedPeers:  # if successfully disconnected from peer
     return
 
   if not force:
-    logging.warn "Soft disconnection from {peer[]} failed"
-  logging.debug &"-x- Force disconnected from {$(peer[])}"
-  self.peersMap.del(peer)
+    logging.warn &"Soft disconnection from {peer[]} failed"
+
+  logging.debug &"-x- Force disconnected from {peer[]}"
+  self.connectedPeers.excl(peer)
   peer.peer_reset()
 
 proc disconnect*(self: var NetworkSystem, force = false) =
-  for peer in self.peersMap.keys:
+  for peer in self.connectedPeers:
     self.disconnect(peer, force)
 
 proc poll*(self: var NetworkSystem) =
@@ -249,14 +263,20 @@ proc poll*(self: var NetworkSystem) =
   ## - poll the connection: receive and store incoming messages and send outgoing messages;
   ## - process all stored messages by calling ``process`` method on each message.
 
-  var event: enet.Event
+  var event: Event
 
-  while enet.host_service(self.host, addr(event), 0.uint32) != 0:
-    self.handle(event)
+  while true:  # TODO: maybe add limit to number of processed events
+    let status = self.host.host_service(event.addr, 0.uint32)
+    if status > 0:
+      self.handle(event)
+    elif status == 0:
+      break
+    else:
+      logging.error &"Error while polling for new event"
 
 proc dispose*(self: var NetworkSystem) =
   ## Destroy current host and deinitialize enet.
-  enet.host_destroy(self.host)
+  self.host.host_destroy()
   enet.deinitialize()
 
 

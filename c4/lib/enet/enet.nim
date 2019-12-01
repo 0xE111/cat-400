@@ -370,7 +370,7 @@ type
 
   Peer* {.bycopy.} = object
     dispatchList*: ListNode
-    host*: pointer  # _Host
+    host*: ptr Host
     outgoingPeerID*: uint16
     incomingPeerID*: uint16
     connectID*: uint32
