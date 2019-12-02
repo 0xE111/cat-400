@@ -21,8 +21,10 @@ type
 
   NameDuplicationError* = object of Exception
 
-
-var threads = initTable[ThreadName, ThreadInfo]()  # table of all known threads
+# table of all known threads;
+# setting initial size will prevent from allocating additional space from non-main thread
+# (required until sharedtables module is fixed)
+var threads = initTable[ThreadName, ThreadInfo](initialSize=16)
 let threadsPtr = threads.addr  # ptr to threads table, in order to avoid shared memory restrictions
 var threadsLock: Lock
 threadsLock.initLock()
