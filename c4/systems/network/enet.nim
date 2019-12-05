@@ -9,7 +9,6 @@ import unittest
 import os
 import net
 import sets
-import options
 import sequtils
 
 import ../../lib/enet/enet
@@ -93,24 +92,14 @@ proc `$`*(self: Packet): string =
 proc `$`*(self: Peer): string =
   $self.address
 
-proc isLocal*(self: ref NetworkMessage): bool =
-  ## Check whether this message is local or from external Peer
-  self.peer.isNil
-
 # proc hash*(self: ref Peer): Hash =
 #   result = self[].addr.hash
 #   # result = !$result
 
-# method isReliable*(self: ref Message): bool {.base, inline.} =
-#   ## Whether this message should be sent reliably over the network.
-#   ## - Unreliable messages may be lost, delivery is not guaranteed;
-#   ## - Reliable messages may product overhead to network communication.
-#   false
-
 
 # ---- methods ----
 
-proc send*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
+proc netSend*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
            channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) =
   var
     data: string = pack(message)
@@ -157,8 +146,37 @@ proc init*(self: var NetworkSystem) =
 
   logging.info &"Initialized network system on port {port}"
 
-# forward declaration, needed for ``handle`` method
-proc disconnect*(self: var NetworkSystem, peer: ptr Peer, force = false, timeout = 1000) {.gcsafe.}
+proc connect*(self: var NetworkSystem, host: string, port: Port, numChannels = 1) =
+  var address: Address
+  discard address_set_host(address.addr, host)
+  address.port = port.uint16
+
+  if self.host.host_connect(address.addr, numChannels.csize_t, 0.uint32).isNil:
+    raise newException(LibraryError, "Could not establish connection")
+
+  # further connection success / failure is handled by ``handle`` method
+
+proc disconnect*(self: var NetworkSystem, peer: ptr Peer) {.gcsafe.} =
+  # if not force:
+  #   peer.peer_disconnect(0)
+
+  #   var event: Event
+  #   while self.host.host_service(event.addr, timeout.uint32) != 0:
+  #     self.handle(event)
+
+  # if peer notin self.connectedPeers:  # if successfully disconnected from peer
+  #   return
+
+  # if not force:
+  #   logging.warn &"Soft disconnection from {peer[]} failed"
+
+  logging.debug &"-x- Force disconnected from {peer[]}"
+  self.connectedPeers.excl(peer)
+  peer.peer_reset()
+
+proc disconnect*(self: var NetworkSystem) =
+  for peer in self.connectedPeers:
+    self.disconnect(peer)
 
 proc handle*(self: var NetworkSystem, event: Event) =
   ## Handles Enet events and updates ``peersMap``.
@@ -176,13 +194,13 @@ proc handle*(self: var NetworkSystem, event: Event) =
         logging.debug &"-x- Disconnecting existing peer {peer[]}"
         self.disconnect(peer)
         self.connectedPeers.excl(peer)
-        self.send((ref ConnectionClosedMessage)(peer: peer))
+        (ref ConnectionClosedMessage)(peer: peer).send()
 
       # Now, send ``ConnectionOpenedMessage`` for newly created connection
-      self.connectedPeers.incl(peer)
-      self.send((ref ConnectionOpenedMessage)(peer: event.peer))
+      self.connectedPeers.incl(event.peer)
+      (ref ConnectionOpenedMessage)(peer: event.peer).send()
       logging.info &"--- Connection established: {event.peer[]}"
-      logging.debug &"Current connections: {self.connectedPeers}"
+      logging.debug &"Current connections: {toSeq(self.connectedPeers).mapIt(it[])}"
 
     of EVENT_TYPE_RECEIVE:
       var message: ref Message
@@ -206,7 +224,7 @@ proc handle*(self: var NetworkSystem, event: Event) =
         ((ref NetworkMessage) message).peer = event.peer
 
       logging.debug &"<-- Received {message} from peer {event.peer[]}"
-      self.send(message)  # TODO: event.channelID data is missing in message
+      message.send()  # TODO: event.channelID data is missing in message
 
       event.packet.packet_destroy()
 
@@ -216,8 +234,8 @@ proc handle*(self: var NetworkSystem, event: Event) =
 
       else:
         logging.debug &"-x- Disconnecting existing peer {event.peer[]}"
-        self.connectedPeers.excl(peer)
-        self.send((ref ConnectionClosedMessage)(peer: peer))
+        self.connectedPeers.excl(event.peer)
+        (ref ConnectionClosedMessage)(peer: event.peer).send()
 
       event.peer.peer_reset()
       logging.debug &"-x- Connection closed: {event.peer[]}"
@@ -225,44 +243,8 @@ proc handle*(self: var NetworkSystem, event: Event) =
     else:
       discard
 
-proc connect*(self: var NetworkSystem, host: string, port: Port, numChannels = 1) =
-  var address: Address
-  discard address_set_host(address.addr, host)
-  address.port = port.uint16
-
-  if self.host.host_connect(address.addr, numChannels.csize_t, 0.uint32).isNil:
-    raise newException(LibraryError, "Could not establish connection")
-
-  # further connection success / failure is handled by ``handle`` method
-
-proc disconnect*(self: var NetworkSystem, peer: ptr Peer, force = false, timeout = 1000) {.gcsafe.} =
-  if not force:
-    peer.peer_disconnect(0)
-
-    var event: Event
-    while self.host.host_service(event.addr, timeout.uint32) != 0:
-      self.handle(event)
-
-  if peer notin self.connectedPeers:  # if successfully disconnected from peer
-    return
-
-  if not force:
-    logging.warn &"Soft disconnection from {peer[]} failed"
-
-  logging.debug &"-x- Force disconnected from {peer[]}"
-  self.connectedPeers.excl(peer)
-  peer.peer_reset()
-
-proc disconnect*(self: var NetworkSystem, force = false) =
-  for peer in self.connectedPeers:
-    self.disconnect(peer, force)
-
 proc poll*(self: var NetworkSystem) =
-  ## Network system is updated in 2 steps:
-  ##
-  ## - poll the connection: receive and store incoming messages and send outgoing messages;
-  ## - process all stored messages by calling ``process`` method on each message.
-
+  ## Check for new events and send them to itself
   var event: Event
 
   while true:  # TODO: maybe add limit to number of processed events
@@ -278,6 +260,9 @@ proc dispose*(self: var NetworkSystem) =
   ## Destroy current host and deinitialize enet.
   self.host.host_destroy()
   enet.deinitialize()
+
+method process*(self: var NetworkSystem, message: ref Message) {.base.} =
+  logging.error &"No rule how to process {message}, discarding"
 
 
 # ---- handlers ----
@@ -308,121 +293,121 @@ proc dispose*(self: var NetworkSystem) =
 #     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 
-method process*(self: var NetworkSystem, message: ref Message) {.base.} =
-  if message.isLocal:
-    let recipient = message.recipient
-    message.recipient = nil  # do not send recipient over network
-    self.send(message, recipient, reliable=message.isReliable)
-    # TODO: group and send bulk?
+# # method process*(self: var NetworkSystem, message: ref Message) {.base.} =
+# #   if message.isLocal:
+# #     let recipient = message.recipient
+# #     message.recipient = nil  # do not send recipient over network
+# #     self.send(message, recipient, reliable=message.isReliable)
+# #     # TODO: group and send bulk?
 
-  else:
-    logging.warn &"No rule for processing {message}"
-
-
-method process*(self: var ClientNetworkSystem, message: ref ConnectMessage) =
-  ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
-  ##
-  ## As a most common case, peer may connect to only one another peer (client connects to only one server).Thus all existing connections will be closed before establishing new one. However, if it's not your case and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
-  assert message.isLocal
-
-  logging.debug &"Disconnecting"
-  self.disconnect()
-
-  logging.debug &"Connecting to {$(message.address)}"
-  self.connect(message.address)
+# #   else:
+# #     logging.warn &"No rule for processing {message}"
 
 
-# method store*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
-#   ## ``DisconnectMessage`` may be sent only to client's network system in order to disconnect from server.
-#   if message.isLocal:
-#     procCall self.as(ref System).store(message)  # store message for further processing
-
-#   else:
-#     procCall self.store(message.as(ref Message))  # drop remote message with warning
-
-
-method process*(self: var ClientNetworkSystem, message: ref DisconnectMessage) =
-  ## When receiving ``DisconnectMessage`` from any local system, close all connections.
-  assert message.isLocal
-
-  logging.debug "Disconnecting"
-  self.disconnect()
-
-
-# method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
-#   ## Don't send this message over the network, store and process it instead.
-#   if message.isLocal:
-#     procCall self.as(ref System).store(message)  # store message for further processing
-
-#   else:
-#     procCall self.store(message.as(ref Message))  # drop remote message with warning
-
-
-# method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
-#   ## Don't send this message over the network, store and process it instead.
-#   if message.isLocal:
-#     procCall self.as(ref System).store(message)  # store message for further processing
-
-#   else:
-#     procCall self.store(message.as(ref Message))  # drop remote message with warning
-
-
-method process*(self: var ClientNetworkSystem, message: ref ConnectionClosedMessage) =
-  ## Remove all entity mappings when client disconnects from external peer.
-  assert message.isLocal
-  self.entitiesMap.clear()
-
-
-# method process*(self: ServerNetworkSystem, message: ref SystemReadyMessage) =
-#   ## Print info message
+# method process*(self: var ClientNetworkSystem, message: ref ConnectMessage) =
+#   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
+#   ##
+#   ## As a most common case, peer may connect to only one another peer (client connects to only one server).Thus all existing connections will be closed before establishing new one. However, if it's not your case and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
 #   assert message.isLocal
 
-#   logging.info &"Server listening at localhost:{self.port}"
-
-
-# method process*(self: NetworkSystem, message: ref SystemQuitMessage) =
-#   ## Disconnect from all peers.
-#   assert message.isLocal
-
+#   logging.debug &"Disconnecting"
 #   self.disconnect()
-#   logging.debug "Disconnected"
+
+#   logging.debug &"Connecting to {$(message.address)}"
+#   self.connect(message.address)
 
 
-method process*(self: var ClientNetworkSystem, message: ref EntityMessage) =
-  ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
-  assert(not message.isLocal)
+# # method store*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
+# #   ## ``DisconnectMessage`` may be sent only to client's network system in order to disconnect from server.
+# #   if message.isLocal:
+# #     procCall self.as(ref System).store(message)  # store message for further processing
 
-  # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
-  if not self.entitiesMap.hasKey(message.entity):
-    logging.warn &"No local entity found for remote entity {message.entity} in message {$(message)}"
-    return
-
-  let externalEntity = message.entity
-  message.entity = self.entitiesMap[externalEntity]
-  logging.debug &"Mapped entity: (external) {externalEntity} -> {message.entity} (local)"
+# #   else:
+# #     procCall self.store(message.as(ref Message))  # drop remote message with warning
 
 
-method process*(self: var ClientNetworkSystem, message: ref CreateEntityMessage) =
-  ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
-  assert (not message.isLocal)
-  assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
+# method process*(self: var ClientNetworkSystem, message: ref DisconnectMessage) =
+#   ## When receiving ``DisconnectMessage`` from any local system, close all connections.
+#   assert message.isLocal
 
-  let entity = newEntity()
-  self.entitiesMap[message.entity] = entity
-  logging.debug &"Created new mapping: {message.entity} -> {entity}"
-
-  procCall self.process((ref EntityMessage)message)  # map entity
+#   logging.debug "Disconnecting"
+#   self.disconnect()
 
 
-method process*(self: var ClientNetworkSystem, message: ref DeleteEntityMessage) =
-  ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
-  assert (not message.isLocal)
-  assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
+# # method store*(self: ref NetworkSystem, message: ref ConnectionOpenedMessage) =
+# #   ## Don't send this message over the network, store and process it instead.
+# #   if message.isLocal:
+# #     procCall self.as(ref System).store(message)  # store message for further processing
 
-  let localEntity = self.entitiesMap[message.entity]
-  self.entitiesMap.del(message.entity)
-  localEntity.delete()
-  logging.debug &"Client deleted entity {localEntity}"
+# #   else:
+# #     procCall self.store(message.as(ref Message))  # drop remote message with warning
+
+
+# # method store*(self: ref NetworkSystem, message: ref ConnectionClosedMessage) =
+# #   ## Don't send this message over the network, store and process it instead.
+# #   if message.isLocal:
+# #     procCall self.as(ref System).store(message)  # store message for further processing
+
+# #   else:
+# #     procCall self.store(message.as(ref Message))  # drop remote message with warning
+
+
+# method process*(self: var ClientNetworkSystem, message: ref ConnectionClosedMessage) =
+#   ## Remove all entity mappings when client disconnects from external peer.
+#   assert message.isLocal
+#   self.entitiesMap.clear()
+
+
+# # method process*(self: ServerNetworkSystem, message: ref SystemReadyMessage) =
+# #   ## Print info message
+# #   assert message.isLocal
+
+# #   logging.info &"Server listening at localhost:{self.port}"
+
+
+# # method process*(self: NetworkSystem, message: ref SystemQuitMessage) =
+# #   ## Disconnect from all peers.
+# #   assert message.isLocal
+
+# #   self.disconnect()
+# #   logging.debug "Disconnected"
+
+
+# method process*(self: var ClientNetworkSystem, message: ref EntityMessage) =
+#   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
+#   assert(not message.isLocal)
+
+#   # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
+#   if not self.entitiesMap.hasKey(message.entity):
+#     logging.warn &"No local entity found for remote entity {message.entity} in message {$(message)}"
+#     return
+
+#   let externalEntity = message.entity
+#   message.entity = self.entitiesMap[externalEntity]
+#   logging.debug &"Mapped entity: (external) {externalEntity} -> {message.entity} (local)"
+
+
+# method process*(self: var ClientNetworkSystem, message: ref CreateEntityMessage) =
+#   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
+#   assert (not message.isLocal)
+#   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
+
+#   let entity = newEntity()
+#   self.entitiesMap[message.entity] = entity
+#   logging.debug &"Created new mapping: {message.entity} -> {entity}"
+
+#   procCall self.process((ref EntityMessage)message)  # map entity
+
+
+# method process*(self: var ClientNetworkSystem, message: ref DeleteEntityMessage) =
+#   ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
+#   assert (not message.isLocal)
+#   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
+
+#   let localEntity = self.entitiesMap[message.entity]
+#   self.entitiesMap.del(message.entity)
+#   localEntity.delete()
+#   logging.debug &"Client deleted entity {localEntity}"
 
 
 proc run*(self: var NetworkSystem) =
