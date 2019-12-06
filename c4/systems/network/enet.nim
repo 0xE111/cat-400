@@ -41,7 +41,6 @@ type
 
   ConnectMessage* = object of NetworkMessage
     ## Send this message to network system in order to connect to server.
-    ##
     ## Example: ``(ref ConnectMessage)(address: ("localhost", "1234")).send("network")``
     host*: string
     port*: Port
@@ -57,6 +56,9 @@ type
   ConnectionClosedMessage* = object of NetworkMessage
     ## This message is sent to network system when connection with remote peer is closed.
 
+# there's no sense to pack pointer to Peer, so it will be nil when packed/unpacked
+proc pack_type*[ByteStream](stream: ByteStream, self: ptr Peer) = discard
+proc unpack_type*[ByteStream](stream: ByteStream, self: var ptr Peer) = discard
 
 messages.register(ConnectMessage)
 messages.register(DisconnectMessage)
@@ -430,6 +432,9 @@ proc run*(self: var NetworkSystem) =
 
 when isMainModule:
   suite "System tests":
+    test "Packing NetworkMessage":
+      discard new(NetworkMessage).pack()
+
     test "Running inside thread":
       spawn("thread") do:
         var system = ClientNetworkSystem()
