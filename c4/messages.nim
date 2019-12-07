@@ -34,12 +34,12 @@ var packTableLock: Lock
 initLock(packTableLock)
 
 # -- Message --
-method packId*(self: ref Message): uint8 {.base.} =
-  raise newException(LibraryError, "Trying to pack/unpack base Message type")
-
 method `$`*(self: ref Message): string {.base.} = "Message"
 
-proc pack*(message: ref Message): string {.gcsafe.} =
+method packId*(self: ref Message): uint8 {.base.} =
+  raise newException(LibraryError, "Trying to pack/unpack base Message type, probably forgot to call `register()` on custom message type")
+
+proc msgpack*(message: ref Message): string {.gcsafe.} =
   ## General method which selects appropriate pack method from pack table according to real message runtime type.
   # var packProc: PackProc
   # withLock packTableLock:
@@ -50,7 +50,7 @@ proc pack*(message: ref Message): string {.gcsafe.} =
     withLock packTableLock:
       result = packTablePtr[][message.packId].pack(message)
 
-proc unpack*(data: string): ref Message {.gcsafe.} =
+proc msgunpack*(data: string): ref Message {.gcsafe.} =
   ## General method which selects appropriate unpack method from pack table according to real message runtime type.
   var
     packId: uint8
@@ -74,7 +74,8 @@ template register*(MessageType: typedesc) =
       # pack proc
       proc(message: ref Message): string {.closure.} =
         let packId = messageId
-        var stream = MsgStream.init(sizeof(packId) + sizeof(MessageType))
+        # var stream = MsgStream.init(sizeof(packId) + sizeof(MessageType))
+        var stream = MsgStream.init()
 
         stream.pack packId
         stream.pack (ref MessageType) message
@@ -90,7 +91,7 @@ template register*(MessageType: typedesc) =
 
   method packId*(self: ref MessageType): uint8 = messageId
   method `$`*(self: ref MessageType): string = $(self[].type) & $self[]
-  proc pack*(self: ref MessageType): string = pack((ref Message)self)  # required for instant pack
+  proc msgpack*(self: ref MessageType): string = ((ref Message)self).msgpack()  # required for instant pack
 
 
 when isMainModule:
@@ -116,34 +117,34 @@ when isMainModule:
 
     test "Pack/unpack base Message type":
       expect LibraryError:
-        packed = pack(new(Message))
+        packed = new(Message).msgpack()
 
     test "Pack/unpack Message subtypes":
       var message: ref Message
 
       message = (ref MessageA)(msg: "some message")
-      packed = pack(message)
+      packed = message.msgpack()
       echo "MessageA packed as: " & stringify(packed)
-      unpacked = packed.unpack()
+      unpacked = packed.msgunpack()
 
       check:
         packed.len == 15
         unpacked.getData() == "some message"
 
       message = (ref MessageB)(counter: 42, data: "some data string", is_correct: true)
-      packed = pack(message)
+      packed = message.msgpack()
       echo "MessageB packed as: " & stringify(packed)
-      unpacked = packed.unpack()
+      unpacked = packed.msgunpack()
       check:
         packed.len == 21
         unpacked.getData() == "42"
 
     test "Instant pack":
-      let packedInstant = pack((ref MessageB)(counter: 42))
+      let packedInstant = (ref MessageB)(counter: 42).msgpack()
       echo "Instant packed as: " & stringify(packedInstant)
 
       var msg: ref Message = (ref MessageB)(counter: 42)
-      let packedVariable = pack(msg)
+      let packedVariable = msg.msgpack()
       echo "Var packed as: " & stringify(packedVariable)
 
       check:
@@ -153,6 +154,6 @@ when isMainModule:
       var thread: Thread[void]
 
       thread.createThread(tp = proc() {.thread.} =
-        let packed = pack((ref MessageB)(counter: 42))
-        discard packed.unpack()
+        let packed = (ref MessageB)(counter: 42).msgpack()
+        discard packed.msgunpack()
       )

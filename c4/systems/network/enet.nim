@@ -57,13 +57,20 @@ type
     ## This message is sent to network system when connection with remote peer is closed.
 
 # there's no sense to pack pointer to Peer, so it will be nil when packed/unpacked
-proc pack_type*[ByteStream](stream: ByteStream, self: ptr Peer) = discard
-proc unpack_type*[ByteStream](stream: ByteStream, self: var ptr Peer) = discard
+proc pack_type*[ByteStream](stream: ByteStream, self: ptr Peer) =
+  stream.pack(nil)
 
-messages.register(ConnectMessage)
-messages.register(DisconnectMessage)
-messages.register(ConnectionOpenedMessage)
-messages.register(ConnectionClosedMessage)
+proc unpack_type*[ByteStream](stream: ByteStream, self: var ptr Peer) =
+  self = nil
+  # self = cast[ptr Peer](alloc(sizeof(Peer)))
+
+
+NetworkMessage.register()
+
+ConnectMessage.register()
+DisconnectMessage.register()
+ConnectionOpenedMessage.register()
+ConnectionClosedMessage.register()
 
 
 proc toString(packet: enet.Packet): string =
@@ -104,7 +111,7 @@ proc `$`*(self: Peer): string =
 proc netSend*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
            channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) =
   var
-    data: string = pack(message)
+    data: string = message.msgpack()
     packet = enet.packet_create(
       data.cstring,
       data.len.csize_t,  # do not read trailing \0
@@ -208,7 +215,7 @@ proc handle*(self: var NetworkSystem, event: Event) =
       var message: ref Message
 
       try:
-        message = event.packet[].toString().unpack()
+        message = event.packet[].toString().msgunpack()
 
       except Exception as exc:
         # do not fail if received malformed message
@@ -431,9 +438,23 @@ proc run*(self: var NetworkSystem) =
 
 
 when isMainModule:
+  method getPeer(self: ref Message): ptr Peer {.base.} = raise newException(ValueError, "Getting Peer of base Message type")
+  method getPeer(self: ref NetworkMessage): ptr Peer = self.peer
+
   suite "System tests":
     test "Packing NetworkMessage":
-      discard new(NetworkMessage).pack()
+      var message: ref Message
+
+      let peer = cast[ptr Peer](alloc0(sizeof(Peer)))  # some random peer
+      message = (ref NetworkMessage)(peer: peer)
+
+      assert not message.getPeer.isNil
+      let packed = message.msgpack()
+      echo &"Packed NetworkMessage as '{packed.stringify()}'"
+
+      # var unpacked = packed.msgunpack()
+      message = packed.msgunpack()
+      assert message.getPeer.isNil
 
     test "Running inside thread":
       spawn("thread") do:
