@@ -121,32 +121,6 @@ template `[]=`*(entity: Entity, T: typedesc, value: T) =
   getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
 
 
-# ---- messages ----
-type
-  EntityMessage* = object of Message
-    ## A message that is related to (or affects) an Entity. This message should not be used directly. Instead, inherit your own message type from this one.
-    entity*: Entity
-
-  CreateEntityMessage* = object of EntityMessage
-    ## Message that notifies systems about entity creation.
-    discard
-
-  DeleteEntityMessage* = object of EntityMessage
-    ## Message that notifies systems about entity deletion.
-    discard
-
-messages.register(CreateEntityMessage)
-messages.register(DeleteEntityMessage)
-
-method isReliable*(self: ref CreateEntityMessage): bool {.inline.} =
-  ## This message type is always sent reliably.
-  true
-
-method isReliable*(self: ref DeleteEntityMessage): bool {.inline.} =
-  ## This message type is always sent reliably.
-  true
-
-
 when isMainModule:
   type
     TestComponent = object
