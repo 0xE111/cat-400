@@ -76,15 +76,11 @@ proc unpack_type*[ByteStream](stream: ByteStream, self: var ptr Peer) =
   self = nil
   # self = cast[ptr Peer](alloc(sizeof(Peer)))
 
-
-register NetworkMessage  # TODO: do we need this?
-
 register ConnectMessage
 register DisconnectMessage
 register ConnectionOpenedMessage
 register ConnectionClosedMessage
 
-register EntityMessage  # TODO: do we need this?
 register CreateEntityMessage
 register DeleteEntityMessage
 
