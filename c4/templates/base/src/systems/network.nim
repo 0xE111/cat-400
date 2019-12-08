@@ -7,7 +7,7 @@ type ServerNetworkSystem* = object of enet.ServerNetworkSystem
 type ClientNetworkSystem* = object of enet.ClientNetworkSystem
 
 proc run*(self: var ServerNetworkSystem) =
-  enet.NetworkSystem(self).run()
+  enet.ServerNetworkSystem(self).run()
 
 proc run*(self: var ClientNetworkSystem) =
-  enet.NetworkSystem(self).run()
+  enet.ClientNetworkSystem(self).run()
