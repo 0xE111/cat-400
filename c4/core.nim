@@ -2,14 +2,17 @@ import parseopt
 import logging
 import os
 import osproc
+export osproc
 import tables
 import times
 import strutils
 import strformat
 import sequtils
+import typetraits
+import unittest
 
-import systems
-import utils/loop
+when isMainModule:
+  import namedthreads
 
 
 type Mode = enum client, server, master
@@ -26,7 +29,7 @@ const
   """
 
 
-proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems = initOrderedTable[string, ref System]()) =
+template app*(serverCode: untyped, clientCode: untyped) =
   ## Handles CLI args, sets up logging and runs client / server / overseer process.
   ##
   ## Run this in your main module.
@@ -36,7 +39,6 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
     logLevel = logging.Level.lvlWarn
     mode = Mode.master
 
-  # TODO: use https://github.com/c-blake/cligen?
   for kind, key, value in parseopt.getopt():
     case kind
       of parseopt.cmdLongOption, parseopt.cmdShortOption:
@@ -44,26 +46,28 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
           of "version", "v":
             echo &"Nim {NimVersion}"
             echo &"Compiled @ {CompileDate} {CompileTime}"
-            return
+            quit()
           of "loglevel", "l":
-            logLevel = parseEnum[logging.Level](&"lvl{value}")
+            logLevel = parseEnum[logging.Level]("lvl" & value)
           of "help", "h":
             echo help
-            return
+            quit()
           of "mode", "m":
             mode = parseEnum[Mode](value)
           else:
-            echo &"Unknown option: {key}={value}"
-            return
+            echo "Unknown option: " & key & " = " & value
+            quit(QuitFailure)
       else: discard
 
   # TODO: add logger helper - include file name (and possibly line) in log message
   let
     timestamp = now().format("yyyy-MM-dd-hh-mm-ss")
-    logFile = joinPath(getAppDir(), &"{mode}.{timestamp}.log")
+    logFile = joinPath(getAppDir(), $mode & "." & timestamp & ".log")
   logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr="[$datetime] $levelname: "))
-  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr= &"[$datetime] {mode} $levelname: "))
-  logging.debug(&"Nim version: {NimVersion}")
+  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr= "[$datetime] " & $mode & " $levelname: "))
+  logging.info(&"Nim version: {NimVersion}")
+
+  # TODO: outOfMemHook
 
   # this part of code handles spawning & maintaining client & server subprocesses
   if mode == Mode.master:
@@ -82,43 +86,60 @@ proc run*(serverSystems = initOrderedTable[string, ref System](), clientSystems 
     while serverProcess.running and clientProcess.running:
       sleep(1000)
 
-    logging.debug "Client or server not running -> shutting down"
+    logging.info "Client or server not running -> shutting down"
     if clientProcess.running:
-      logging.debug "Terminating client process"
+      logging.info "Terminating client process"
       clientProcess.kill()
     if serverProcess.running:
-      logging.debug "Terminating server process"
+      logging.info "Terminating server process"
       serverProcess.kill()
 
-    return
+    quit()
 
   ## this part of code initializes systems and runs game loop
-  logging.debug &"Starting {mode} process"
-
-  systemsMap = if mode == Mode.server: serverSystems else: clientSystems
-  logging.debug &"Registered systems: {systemsMap}"
+  logging.debug "Starting " & $mode & " process"
 
   try:
-    for systemName, system in systemsMap.pairs:
-      logging.debug &"Initializing '{systemName}' system"
-      system.init()
-      new(SystemReadyMessage).send(system)
-
-    logging.debug "Starting main loop"
-
-    runLoop(
-      updatesPerSecond = 60,
-      fixedFrequencyCallback = proc(dt: float): bool =  # TODO: maxFrequencyCallback?
-        for system in systemsMap.values():
-          system.update(dt)
-        true  # TODO: how to quit?
-    )
+    case mode
+      of client:
+        clientCode
+      of server:
+        serverCode
+      else:
+        discard
 
   except Exception as exc:
     # log any exception from client/server before dying
-    logging.fatal &"Exception: {exc.msg}\n{exc.getStackTrace()}"
+    logging.fatal "Exception: " & exc.msg & "\n" & exc.getStackTrace()
     raise
 
   # TODO: GC supports real-time mode which this library makes use of. It means the GC will never run during game frames and will use fixed amount of frame idle time to collect garbage. This leads to no stalls and close to zero compromise on performance comparing to native languages with manual memory management.
 
   logging.debug "Finishing process"
+
+
+when isMainModule:
+  suite "Core module":
+    test "Run without threads":
+      app do:  # server code
+        echo "Physics system running"
+      do:  # client code
+        echo "Video system running"
+
+      sleep(1000)
+      assert true
+
+    test "Run with threads":
+      app do:  # server code
+        spawn("physics"):
+          echo "Physics system running"
+
+        joinAll()
+
+      do:  # client code
+        spawn("video"):
+          echo "Video system running"
+
+        joinAll()
+
+      assert true

@@ -40,7 +40,7 @@ threads[currentThreadName].channel.open()
 template spawn*(name: ThreadName, code: untyped) =
   ## Creates a new thread with name `name` and runs `code` inside this thread.
   ## Usage example:
-  ##   spawn("thread1") do:
+  ##   spawn("thread1"):
   ##     echo "This block is executed inside thread"
 
   withLock threadsLock:
@@ -147,7 +147,7 @@ when isMainModule:
     test "Spawning & communication":
       assert "generator" notin runningThreads()
 
-      spawn("generator") do:
+      spawn("generator"):
         # wait for calculator to be available
         assert waitAvailable("calculator")
         assert "calculator" in runningThreads()
@@ -162,7 +162,7 @@ when isMainModule:
       assert waitAvailable("generator")
       assert "generator" in runningThreads()
 
-      spawn("calculator") do:
+      spawn("calculator"):
         assert "generator" in runningThreads()
 
         while true:
@@ -184,7 +184,7 @@ when isMainModule:
 
   test "Communication with master":
 
-    spawn("thread") do:
+    spawn("thread"):
       assert mainThread in runningThreads()
       echo "thread: running"
 
