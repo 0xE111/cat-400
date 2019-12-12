@@ -8,6 +8,8 @@ import messages
 
 when isMainModule:
   import unittest
+  import namedthreads
+  import sequtils
 
 
 type
@@ -65,8 +67,9 @@ proc newTableAndDestructor(T: typedesc): ref Table[Entity, T] =
 
 proc getComponents*(T: typedesc): ref Table[Entity, T] =
   ## Returns a table of components of specific type ``T`` (``Table[Entity, T]``)
-  var table {.global.} = newTableAndDestructor(T)
-  return table
+  {.gcsafe.}:  # TODO: this is a bullshit
+    var table {.global.} = newTableAndDestructor(T)
+    return table
 
   # var table {.global.}: TableRef[Entity, t]
   # if table.isNil:
@@ -123,22 +126,37 @@ template `[]=`*(entity: Entity, T: typedesc, value: T) =
 
 when isMainModule:
   type
-    TestComponent = object
+    PhysicsComponent = object
       value: int
+
+    VideoComponent = object
+      text: string
 
   suite "Entities tests":
     test "Undefined entity":
       var entity: Entity
       expect AssertionError:
-        entity[TestComponent] = TestComponent()
+        entity[PhysicsComponent] = PhysicsComponent(value: 5)
 
     test "Auto-destruction of components":
-      var
-        entity = newEntity()
-        component = TestComponent()
+      let entity = newEntity()
 
-      entity[TestComponent] = component
+      entity[PhysicsComponent] = PhysicsComponent()
       entity.delete()
 
       check:
-        not entity.has(TestComponent)
+        not entity.has(PhysicsComponent)
+
+    test "Multithreading support":
+      discard newEntity()
+
+      spawn("thread1"):
+        let entity2 = newEntity()
+        entity2[PhysicsComponent] = PhysicsComponent(value: 5)
+
+      spawn("thread2"):
+        let entity3 = newEntity()
+        entity3[VideoComponent] = VideoComponent(text: "test")
+
+      joinAll()
+      assert toSeq(items()).len == 3
