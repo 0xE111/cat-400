@@ -1,6 +1,7 @@
 ## Module for easy spawning new threads and sending messages between them.
 
 import tables
+export tables.contains
 import unittest
 import os
 import times

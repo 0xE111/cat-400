@@ -1,5 +1,3 @@
-import tables
-
 import c4/namedthreads
 import c4/core
 
@@ -13,26 +11,26 @@ import src/scenarios/init
 
 when isMainModule:
   app do:
-    spawn("network") do:
+    spawn("network"):
       var network = ServerNetworkSystem()
       network.run()
 
-    spawn("physics") do:
+    spawn("physics"):
       var physics = PhysicsSystem()
       physics.run()
 
     joinAll()
 
   do:
-    spawn("network") do:
+    spawn("network"):
       var network = ClientNetworkSystem()
       network.run()
 
-    spawn("input") do:
+    spawn("input"):
       var input = InputSystem()
       input.run()
 
-    spawn("video") do:
+    spawn("video"):
       var video = VideoSystem()
       video.run()
 
