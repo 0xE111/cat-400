@@ -210,3 +210,70 @@ when isMainModule:
 
     sleep(200)
     assert "thread" notin runningThreads()
+
+  test "Messages lifetime":
+
+    spawn("old thread"):
+      assert waitAvailable("new thread")
+      echo "Sending message"
+      block:
+        (ref NumberMessage)(number: 10).send("new thread")
+      GC_fullCollect()
+
+    spawn("new thread"):
+      var msg: ref Message
+      echo "Waiting for message"
+      while true:
+        msg = tryRecv()
+        if not msg.isNil:
+          echo "Received message"
+          msg.process()
+          break
+
+      GC_fullCollect()
+      for i in 0..<5:
+        echo $i
+        sleep(1000)
+        msg.process()
+        GC_fullCollect()
+
+      assert true
+
+    echo "Waiting for all threads"
+    joinAll()
+
+  test "Messages disposal":
+
+    spawn("sender"):
+      assert waitAvailable("recipient")
+
+      let baseMemory = getOccupiedMem()
+      var currentMemory: type(baseMemory)
+
+      for i in 0..<100000:
+        (ref NumberMessage)(number: 1).send("recipient")
+        currentMemory = getOccupiedMem()
+        echo &"Sender: msg #{i}, mem diff: {(currentMemory - baseMemory) / baseMemory}%"
+        GC_fullCollect()
+
+      assert currentMemory / baseMemory <= 1.1
+
+    spawn("recipient"):
+
+      let baseMemory = getOccupiedMem()
+      var currentMemory: type(baseMemory)
+      var msg: ref Message
+
+      while true:
+        msg = tryRecv()
+        if not msg.isNil:
+          currentMemory = getOccupiedMem()
+          echo &"Recipient: mem diff: {(currentMemory - baseMemory) / baseMemory}%"
+          GC_fullCollect()
+
+        if "sender" notin runningThreads():
+          break
+
+      assert currentMemory / baseMemory <= 1.1
+
+    joinAll()
