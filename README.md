@@ -22,14 +22,7 @@ Key features:
 
 ## Is 2D/3D supported?
 
-3D - out of the box.
-
-2D - yes and no. `C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even [4D](https://www.youtube.com/watch?v=0t4aKJuKP0Q) game.
-
-However, currently only 3D video backend is included by default. If you want 2D you should either:
-* wait till default 2D backend appears;
-* search for third-party backend;
-* write your own one.
+Yes, 2D via SDL, 3D via SDL+Ogre3d. Also note that `C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even [4D](https://www.youtube.com/watch?v=0t4aKJuKP0Q) game using any graphics library of your choice.
 
 ## GUI / Game Engine
 
