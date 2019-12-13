@@ -1,7 +1,8 @@
 import sdl2/sdl as sdllib
 import math
+import net
 
-import c4/systems
+import c4/namedthreads
 import c4/systems/input/sdl
 import c4/systems/network/enet
 
@@ -12,7 +13,7 @@ type
   InputSystem* = object of sdl.InputSystem
 
 
-method handle*(self: ref InputSystem, event: Event) =
+proc handle*(self: InputSystem, event: Event) =
   case event.kind
     of WINDOWEVENT:
       case event.window.event
@@ -34,16 +35,13 @@ method handle*(self: ref InputSystem, event: Event) =
       (ref PlayerRotateMessage)(
         yaw: -x.float * radInPixel,
         pitch: -y.float * radInPixel,
-      ).send(@[
-        "network",
-        # systems.get("video"),  # client-side prediction
-      ])
+      ).send("network")
 
     of KEYDOWN:
       case event.key.keysym.sym
         of K_c:
           # When player presses "C" key, we want to establish connection to remote server. We create new ``ConnectMessage`` (which is already predefined in Enet networking system), set server address and send this message to network system. Default Enet networking system knows that it should connect to the server when receiving this kind of message.
-          (ref ConnectMessage)(address: ("localhost", 11477'u16)).send("network")
+          (ref ConnectMessage)(host: "localhost", port: Port(11477)).send("network")
 
         of K_q:
           # When player presses "Q" key, we want to disconnect from server. We create new ``DisconnectMessage`` (which is already predefined in Enet networking system), and sent this message to network system. Default Enet networking system knows that it should disconnect from the server when receiving this kind of message.
@@ -60,16 +58,16 @@ method handle*(self: ref InputSystem, event: Event) =
       discard
 
   # fallback to default implementation
-  procCall self.as(ref sdl.InputSystem).handle(event)
+  sdl.InputSystem(self).handle(event)
 
 
-method update(self: ref InputSystem, dt: float) =
+proc update(self: InputSystem, dt: float) =
   # when some key is held down, there's usually a delay between first sdl.KEYDOWN event
   # and subsequent ones; so if you want to send some messages constantly when key is pressed
   # (for example, `PlayerMoveMessage`), you shouldn't rely on sdl.KEYDOWN event; instead,
   # you should check whether key is down in `update()` method
 
-  procCall self.as(ref sdl.InputSystem).update(dt)
+  sdl.InputSystem(self).update(dt)
 
   # process long-pressing key by polling keyboard state
   let

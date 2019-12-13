@@ -5,19 +5,19 @@ import logging
 import strformat
 
 import c4/entities
-import c4/systems
+import c4/namedthreads
 import c4/lib/ode/ode
 
 import ../systems/physics
 import ../messages
 
 
-method process*(self: ref PhysicsSystem, message: ref SystemReadyMessage) =
-  # We want to reset our scene when physics system is ready.
-  new(ResetSceneMessage).send(self)
+# method process*(self: PhysicsSystem, message: ref SystemReadyMessage) =
+#   # We want to reset our scene when physics system is ready.
+#   new(ResetSceneMessage).send(self)
 
 
-method process*(self: ref PhysicsSystem, message: ref ResetSceneMessage) =
+method process*(self: var PhysicsSystem, message: ref ResetSceneMessage) =
   logging.debug "Resetting scene"
 
   if not self.plane.isInitialized:

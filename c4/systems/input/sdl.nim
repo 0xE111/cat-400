@@ -54,7 +54,7 @@ proc handle*(self: InputSystem, event: sdl.Event) =
     else:
       discard
 
-proc poll*(self: InputSystem, dt: float) =
+proc update*(self: InputSystem, dt: float) =
   # process all network events
   var event {.global.} = sdl.Event()
 
@@ -75,7 +75,7 @@ proc run*(self: var InputSystem) =
   self.init()
 
   loop(frequency=30) do:
-    self.poll(dt)
+    self.update(dt)
     while true:
       let message = tryRecv()
       if message.isNil:

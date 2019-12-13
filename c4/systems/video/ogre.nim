@@ -39,7 +39,7 @@ type
 
 
 # ---- Component ----
-method init*(self: ref VideoSystem, video: ref Video) {.base.} =
+method init*(self: VideoSystem, video: ref Video) {.base.} =
   video.node = self.sceneManager.getRootSceneNode().createChildSceneNode()
 
 method dispose*(self: ref Video) {.base.} =

@@ -3,7 +3,7 @@ import os
 
 import c4/lib/ogre/ogre as ogrelib
 import c4/systems/video/ogre
-import c4/systems
+import c4/namedthreads
 
 
 type
@@ -14,18 +14,18 @@ type
   PlaneVideo* = object of ogre.Video
 
 
-method init*(self: ref VideoSystem, video: ref BoxVideo) =
-  procCall self.as(ref ogre.VideoSystem).init(video)
+method init*(self: VideoSystem, video: ref BoxVideo) =
+  ogre.VideoSystem(self).init(video)
   video.node.attachObject(self.sceneManager.createEntity("box"))
 
 
-method init*(self: ref VideoSystem, video: ref PlaneVideo) =
-  procCall self.as(ref ogre.VideoSystem).init(video)
+method init*(self: VideoSystem, video: ref PlaneVideo) =
+  ogre.VideoSystem(self).init(video)
   video.node.attachObject(self.sceneManager.createEntity("plane"))
 
 
-method init*(self: ref VideoSystem) =
-  procCall self.as(ref ogre.VideoSystem).init()
+proc init*(self: var VideoSystem) =
+  ogre.VideoSystem(self).init()
   logging.debug "Loading custom video resources"
 
   self.resourceManager.addResourceLocation(defaultMediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")

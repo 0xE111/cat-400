@@ -5,8 +5,9 @@ include "c4/lib/ogre/ogre_sdl.nims"
 
 const buildDir = thisDir() / "build"
 
-# Compilter switches
+switch("threads", "on")
+switch("multimethods", "on")
 switch("nimcache", buildDir / "nimcache")
 switch("out", buildDir / projectName())
 switch("debugger", "native")
-switch("threads", "on")
+

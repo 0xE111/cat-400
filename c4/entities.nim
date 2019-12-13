@@ -157,6 +157,8 @@ when isMainModule:
       spawn("thread2"):
         let entity3 = newEntity()
         entity3[VideoComponent] = VideoComponent(text: "test")
+        for entity, video in getComponents(VideoComponent).pairs:
+          echo $entity
 
       joinAll()
       assert toSeq(items()).len == 3

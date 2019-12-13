@@ -2,9 +2,10 @@ import logging
 import tables
 
 import c4/lib/ode/ode as odelib
+import c4/lib/enet/enet
 
-import c4/systems
 import c4/entities
+import c4/namedthreads
 import c4/messages as c4messages
 import c4/systems/physics/ode
 
@@ -13,7 +14,7 @@ import ../messages
 
 type
   PhysicsSystem* = object of ode.PhysicsSystem
-    impersonationsMap*: Table[ref Peer, Entity] ## Mapping from remote Peer to an Entity it's controlling
+    impersonationsMap*: Table[ptr Peer, Entity] ## Mapping from remote Peer to an Entity it's controlling
 
     boxes*: seq[Entity]
     plane*: Entity
@@ -40,8 +41,8 @@ const
 
 # ---- Component ----
 
-method init*(self: ref PhysicsSystem, physics: ref Physics) =
-  procCall self.as(ref ode.PhysicsSystem).init(physics)
+method init*(self: PhysicsSystem, physics: ref Physics) =
+  ode.PhysicsSystem(self).init(physics)
 
   physics.prevPosition = physics.body.bodyGetPosition()[]
   physics.prevRotation = physics.body.bodyGetQuaternion()[]
@@ -53,8 +54,8 @@ proc startMovement*(self: ref Physics) =
   self.movementDurationElapsed = movementDuration
 
 
-method init*(self: ref PhysicsSystem, physics: ref BoxPhysics) =
-  procCall self.init(physics.as(ref Physics))
+method init*(self: PhysicsSystem, physics: ref BoxPhysics) =
+  procCall self.init((ref Physics)physics)
 
   let geometry = createBox(self.space, 1, 1, 1)
   geometry.geomSetBody(physics.body)
@@ -92,15 +93,15 @@ method init*(self: ref PhysicsSystem, physics: ref BoxPhysics) =
 #   # }
 
 
-method init*(self: ref PhysicsSystem) =
-  procCall self.as(ref ode.PhysicsSystem).init()
+proc init*(self: var PhysicsSystem) =
+  ode.PhysicsSystem(self).init()
   self.world.worldSetGravity(0, -G, 0)
   # self.nearCallback = nearCallback
 
-method update*(self: ref PhysicsSystem, dt: float) =
-  procCall self.as(ref ode.PhysicsSystem).update(dt)
+proc update*(self: var PhysicsSystem, dt: float) =
+  ode.PhysicsSystem(self).update(dt)
 
-  for entity, physics in getComponents(ref Physics).pairs:
+  for entity, physics in getComponents(ref Physics):
     ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.
     let position = physics.body.bodyGetPosition()[]
     for dimension in 0..2:
