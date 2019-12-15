@@ -2,7 +2,7 @@ import sdl2/sdl as sdllib
 import math
 import net
 
-import c4/namedthreads
+import c4/threads
 import c4/systems/input/sdl
 import c4/systems/network/enet
 

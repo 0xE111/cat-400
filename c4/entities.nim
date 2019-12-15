@@ -8,7 +8,7 @@ import messages
 
 when isMainModule:
   import unittest
-  import namedthreads
+  import threads
   import sequtils
 
 

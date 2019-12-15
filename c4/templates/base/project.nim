@@ -1,4 +1,4 @@
-import c4/namedthreads
+import c4/threads
 import c4/core
 
 import src/systems/network

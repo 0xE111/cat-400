@@ -12,7 +12,7 @@ import typetraits
 import unittest
 
 when isMainModule:
-  import namedthreads
+  import threads
 
 
 type Mode = enum client, server, master

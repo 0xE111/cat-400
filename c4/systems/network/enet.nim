@@ -12,10 +12,10 @@ import sequtils
 
 import ../../lib/enet/enet
 
-import ../../namedthreads
+import ../../threads
 import ../../entities
 import ../../messages
-import ../../utils/loop
+import ../../loop
 
 
 type

@@ -1,6 +1,6 @@
 import tables
 
-import c4/namedthreads
+import c4/threads
 import c4/systems/network/enet
 import c4/utils/stringify
 

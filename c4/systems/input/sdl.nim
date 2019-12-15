@@ -5,9 +5,9 @@ import strformat
 import unittest
 import os
 
-import ../../namedthreads
+import ../../threads
 import ../../messages
-import ../../utils/loop
+import ../../loop
 
 
 type InputSystem* {.inheritable.} = object
@@ -56,7 +56,7 @@ proc handle*(self: InputSystem, event: sdl.Event) =
 
 proc update*(self: InputSystem, dt: float) =
   # process all network events
-  var event {.global.} = sdl.Event()
+  var event = sdl.Event()
 
   while sdl.pollEvent(event.addr) != 0:
     self.handle(event)

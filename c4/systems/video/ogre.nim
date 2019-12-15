@@ -7,8 +7,8 @@ import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/ogre/ogre
 import ../../messages
-import ../../namedthreads
-import ../../utils/loop
+import ../../threads
+import ../../loop
 
 
 type

@@ -5,7 +5,7 @@ import c4/lib/ode/ode as odelib
 import c4/lib/enet/enet
 
 import c4/entities
-import c4/namedthreads
+import c4/threads
 import c4/messages as c4messages
 import c4/systems/physics/ode
 

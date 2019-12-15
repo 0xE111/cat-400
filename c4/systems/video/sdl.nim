@@ -4,7 +4,7 @@ import os
 
 import sdl2/sdl
 
-import c4/namedthreads
+import c4/threads
 import c4/messages
 import c4/loop
 

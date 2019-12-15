@@ -7,10 +7,10 @@ import os
 
 import ../../lib/ode/ode
 
-import ../../namedthreads
+import ../../threads
 import ../../messages
 import ../../entities
-import ../../utils/loop
+import ../../loop
 
 
 const simulationStep = 1 / 30
