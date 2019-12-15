@@ -346,22 +346,22 @@ when isMainModule:
 
     test "SDL+Ogre3d":
       # ---- SDL initialization ----
-      if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
+      if initSubSystem(INIT_VIDEO) != 0:
         raise newException(LibraryError, "Could not init SDL video subsystem")
 
-      var window = sdl.createWindow(
+      var window = createWindow(
         "Ogre3d test", 100, 100, 800, 600,
-        (sdl.WINDOW_SHOWN or sdl.WINDOW_RESIZABLE).uint32,  # seems like WINDOW_OPENGL is not necessary
+        (WINDOW_SHOWN or WINDOW_RESIZABLE).uint32,  # seems like WINDOW_OPENGL is not necessary
       )
       if window == nil:
         raise newException(LibraryError, "Could not create SDL window")
 
-      if sdl.setRelativeMouseMode(true) != 0:
+      if setRelativeMouseMode(true) != 0:
         raise newException(LibraryError, "Could not enable relative mouse mode")
 
       # ---- Getting native window handle ----
       var info: sdl_syswm.SysWMinfo
-      sdl.version(info.version)
+      version(info.version)
       assert sdl_syswm.getWindowWMInfo(window, info.addr)
       var nativeWindowHandle = info.info.x11.window  # culong
 

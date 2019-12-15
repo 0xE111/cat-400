@@ -16,7 +16,7 @@ import ../../loop
 const simulationStep = 1 / 30
 
 type
-  PhysicsSystem* {.inheritable.} = object
+  OdePhysicsSystem* {.inheritable.} = object
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
@@ -29,7 +29,7 @@ type
 
 # ---- Component ----
 
-method init*(self: PhysicsSystem, physics: ref Physics) {.base.} =
+method init*(self: OdePhysicsSystem, physics: ref Physics) {.base.} =
   logging.debug &"{self}: initializing component"
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
@@ -42,7 +42,7 @@ method dispose*(self: ref Physics) {.base.} =
 # ---- System ----
 proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   let
-    self = cast[ptr PhysicsSystem](data)[]
+    self = cast[ptr OdePhysicsSystem](data)[]
     body1 = geom1.geomGetBody()
     body2 = geom2.geomGetBody()
 
@@ -65,7 +65,7 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     contact.jointAttach(body1, body2)
 
 
-proc init*(self: var PhysicsSystem) =
+proc init*(self: var OdePhysicsSystem) =
   ode.initODE()
   self.world = worldCreate()
   # self.world.worldSetAutoDisableFlag(1)
@@ -77,7 +77,7 @@ proc init*(self: var PhysicsSystem) =
   logging.debug "ODE initialized"
 
 
-proc update*(self: var PhysicsSystem, dt: float) =
+proc update*(self: var OdePhysicsSystem, dt: float) =
   let
     dt = dt + self.simulationStepRemains
     nSteps = (dt / simulationStep).int
@@ -91,7 +91,7 @@ proc update*(self: var PhysicsSystem, dt: float) =
     self.contactGroup.jointGroupEmpty()
 
 
-proc dispose*(self: var PhysicsSystem) =
+proc dispose*(self: var OdePhysicsSystem) =
   self.contactGroup.jointGroupDestroy()
   self.space.spaceDestroy()
   self.world.worldDestroy()
@@ -99,11 +99,11 @@ proc dispose*(self: var PhysicsSystem) =
   logging.debug "ODE destroyed"
 
 
-method process*(self: PhysicsSystem, message: ref Message) {.base.} =
+method process*(self: OdePhysicsSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 
-proc run*(self: var PhysicsSystem) =
+proc run*(self: var OdePhysicsSystem) =
   self.init()
 
   loop(frequency=30) do:
@@ -123,7 +123,7 @@ when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
-        var system = PhysicsSystem()
+        var system = OdePhysicsSystem()
         system.run()
 
       sleep 1000

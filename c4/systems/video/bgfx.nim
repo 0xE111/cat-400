@@ -11,8 +11,8 @@ import ../../systems
 
 
 type
-  VideoSystem* = object of System
-    window: sdl.Window
+  BgfxVideoSystem* = object
+    window: Window
 
   Video* {.inheritable.} = object
 
@@ -20,39 +20,39 @@ type
 # let assetsDir = getAppDir() / "assets" / "video"
 
 # ---- System ----
-proc init*(self: var VideoSystem) =
+proc init*(self: var BgfxVideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
   try:
-    if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
+    if initSubSystem(INIT_VIDEO) != 0:
       raise newException(LibraryError, "Could not init SDL video subsystem")
 
-    # var displayMode: sdl.DisplayMode
-    # if sdl.getCurrentDisplayMode(0, displayMode.addr) != 0:
-    #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
+    # var displayMode: DisplayMode
+    # if getCurrentDisplayMode(0, displayMode.addr) != 0:
+    #   raise newException(LibraryError, "Could not get current display mode: " & $getError())
 
-    self.window = sdl.createWindow(
+    self.window = createWindow(
       &"Title",
       100,  # window.x,
       100,  # window.y,
       800,  # window.width,
       600,  # window.height,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_OPENGL or sdl.WINDOW_RESIZABLE or sdl.WINDOW_FULLSCREEN_DESKTOP).uint32,
+      (WINDOW_SHOWN or WINDOW_OPENGL or WINDOW_RESIZABLE or WINDOW_FULLSCREEN_DESKTOP).uint32,
     )
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
 
     # -- no need to call this when using bgfx --
-    # if sdl.glCreateContext(self.window) == nil:
+    # if glCreateContext(self.window) == nil:
     #   raise newException(LibraryError, "Could not create SDL OpenGL context")
 
-    if sdl.setRelativeMouseMode(true) != 0:
+    if setRelativeMouseMode(true) != 0:
       raise newException(LibraryError, "Could not enable relative mouse mode")
 
   except LibraryError:
-    logging.fatal getCurrentExceptionMsg() & ": " & $sdl.getError()
-    sdl.quitSubSystem(sdl.INIT_VIDEO)
+    logging.fatal getCurrentExceptionMsg() & ": " & $getError()
+    quitSubSystem(INIT_VIDEO)
     raise
 
   logging.debug "SDL video system initialized"
@@ -66,7 +66,7 @@ proc init*(self: var VideoSystem) =
 
   # populate info
   var info: sdl_syswm.SysWMinfo
-  sdl.version(info.version)
+  version(info.version)
   assert sdl_syswm.getWindowWMInfo(self.window, info.addr)
 
   # ---- init bgfx ----
@@ -97,7 +97,7 @@ proc init*(self: var VideoSystem) =
 
   # discard bgfx.frame(false)
   # if not bgfx.init(bgfxConfig.addr):
-  #   sdl.quitSubSystem(sdl.INIT_VIDEO)
+  #   quitSubSystem(INIT_VIDEO)
   #   raise newException(LibraryError, "Could not initialize BGFX")
 
   # bgfx.reset(

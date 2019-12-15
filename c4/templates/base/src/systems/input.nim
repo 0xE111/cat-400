@@ -5,11 +5,11 @@ import c4/systems/input/sdl
 import ../messages
 
 
-type InputSystem* = object of sdl.InputSystem
+type InputSystem* = object of SdlInputSystem
 
 # TODO: make this unneeded
 proc run*(self: var InputSystem) =
-  sdl.InputSystem(self).run()
+  SdlInputSystem(self).run()
 
 # redefine input system methods below
 
@@ -19,7 +19,7 @@ proc run*(self: var InputSystem) =
 #       new(SystemQuitMessage).send(@["video", "network"])
 #     of WINDOWEVENT:
 #       case event.window.event
-#         of sdl.WINDOWEVENT_SIZE_CHANGED:
+#         of WINDOWEVENT_SIZE_CHANGED:
 #           (ref WindowResizeMessage)(
 #             width: event.window.data1,
 #             height: event.window.data2,
@@ -27,4 +27,4 @@ proc run*(self: var InputSystem) =
 #         else:
 #           discard
 #     else:
-#       procCall self.as(ref sdl.InputSystem).handle(event)
+#       procCall self.as(ref SdlInputSystem).handle(event)

@@ -21,7 +21,7 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* = object of System
+  Horde3dVideoSystem* = object of System
     camera*: horde3d.Node
     window: sdllib.Window
     pipelineResource, fontResource, panelResource: horde3d.Res
@@ -41,7 +41,7 @@ method dispose*(self: ref Video) {.base.} =
 
 
 # ---- System ----
-proc updateViewport*(self: var VideoSystem, width, height: int) =
+proc updateViewport*(self: var Horde3dVideoSystem, width, height: int) =
   ## Updates camera viewport
   # TODO: no hardcoding
   self.camera.setNodeParamI(horde3d.Camera.ViewportXI, 0)
@@ -52,7 +52,7 @@ proc updateViewport*(self: var VideoSystem, width, height: int) =
 
   self.pipelineResource.resizePipelineBuffers(width, height)
 
-proc loadResources*(self: var VideoSystem) =
+proc loadResources*(self: var Horde3dVideoSystem) =
   # TODO: think of better resource management
   logging.debug "Loading resources from " & assetsDir
   if not utLoadResourcesFromDisk(assetsDir):
@@ -70,7 +70,7 @@ proc loadResources*(self: var VideoSystem) =
 #     result = horde3d.AddResource(self.kind, self.path, 0)
 #     logging.debug "LOADED RES: " & $result
 
-proc init*(self: var VideoSystem) =
+proc init*(self: var Horde3dVideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
@@ -139,11 +139,8 @@ proc init*(self: var VideoSystem) =
 
   logging.debug "Horde3d initialized"
 
-  procCall self.as(ref System).init()
 
-method update*(self: ref VideoSystem, dt: float) =
-  procCall self.as(ref System).update(dt)
-
+method update*(self: ref Horde3dVideoSystem, dt: float) =
   # if logLevel <= lvlDebug:
   horde3d.utShowFrameStats(self.fontResource, self.panelResource, 1)
 
@@ -153,7 +150,7 @@ method update*(self: ref VideoSystem, dt: float) =
   horde3d.finalizeFrame()  # TODO: is this needed?
   horde3d.clearOverlays()
 
-proc `=destroy`*(self: var VideoSystem) =
+proc `=destroy`*(self: var Horde3dVideoSystem) =
   horde3d.release()
   quitSubSystem(INIT_VIDEO)
   logging.debug "Video system unloaded"
@@ -173,6 +170,5 @@ method transform*(
 
 
 # ---- handlers ----
-method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
-
+method process*(self: ref Horde3dVideoSystem, message: ref WindowResizeMessage) =
   self.updateViewport(message.width, message.height)

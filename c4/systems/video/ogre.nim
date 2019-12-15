@@ -17,8 +17,8 @@ type
     fullscreen: bool,
   ]
 
-  VideoSystem* {.inheritable.} = object
-    window*: sdl.Window
+  OgreVideoSystem* {.inheritable.} = object
+    window*: Window
     windowConfig*: tuple[
       title: string,
       x, y: int,
@@ -34,20 +34,20 @@ type
     camera*: ptr Camera
     viewport*: ptr Viewport
 
-  Video* {.inheritable.} = object
+  OgreVideo* {.inheritable.} = object
     node*: ptr SceneNode
 
 
 # ---- Component ----
-method init*(self: VideoSystem, video: ref Video) {.base.} =
+method init*(self: OgreVideoSystem, video: ref OgreVideo) {.base.} =
   video.node = self.sceneManager.getRootSceneNode().createChildSceneNode()
 
-method dispose*(self: ref Video) {.base.} =
+method dispose*(self: ref OgreVideo) {.base.} =
   self.node.destroy()
 
 
 # ---- System ----
-proc init*(self: var VideoSystem) =
+proc init*(self: var OgreVideoSystem) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
@@ -62,30 +62,30 @@ proc init*(self: var VideoSystem) =
   )
 
   try:
-    if sdl.initSubSystem(sdl.INIT_VIDEO) != 0:
+    if initSubSystem(INIT_VIDEO) != 0:
       raise newException(LibraryError, "Could not init SDL video subsystem")
 
-    # var displayMode: sdl.DisplayMode
-    # if sdl.getCurrentDisplayMode(0, displayMode.addr) != 0:
-    #   raise newException(LibraryError, "Could not get current display mode: " & $sdl.getError())
+    # var displayMode: DisplayMode
+    # if getCurrentDisplayMode(0, displayMode.addr) != 0:
+    #   raise newException(LibraryError, "Could not get current display mode: " & $getError())
 
-    self.window = sdl.createWindow(
+    self.window = createWindow(
       self.windowConfig.title,
       self.windowConfig.x,
       self.windowConfig.y,
       self.windowConfig.width,
       self.windowConfig.height,
-      (sdl.WINDOW_SHOWN or sdl.WINDOW_RESIZABLE or (if self.windowConfig.fullscreen: sdl.WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
+      (WINDOW_SHOWN or WINDOW_RESIZABLE or (if self.windowConfig.fullscreen: WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
     )
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
 
-    if sdl.setRelativeMouseMode(true) != 0:
+    if setRelativeMouseMode(true) != 0:
       raise newException(LibraryError, "Could not enable relative mouse mode")
 
   except LibraryError:
-    logging.fatal getCurrentExceptionMsg() & ": " & $sdl.getError()
-    sdl.quitSubSystem(sdl.INIT_VIDEO)
+    logging.fatal getCurrentExceptionMsg() & ": " & $getError()
+    quitSubSystem(INIT_VIDEO)
     raise
 
   logging.debug "SDL video system initialized"
@@ -107,7 +107,7 @@ proc init*(self: var VideoSystem) =
 
   # ---- Getting native window handle ----
   var info: sdl_syswm.SysWMinfo
-  sdl.version(info.version)
+  version(info.version)
   assert sdl_syswm.getWindowWMInfo(self.window, info.addr)
 
   when defined(windows):
@@ -149,7 +149,7 @@ proc init*(self: var VideoSystem) =
   logging.debug "Ogre initialized"
 
 
-proc update*(self: VideoSystem, dt: float) =
+proc update*(self: OgreVideoSystem, dt: float) =
   # if logLevel <= lvlDebug:
   #   show stats?
 
@@ -158,9 +158,9 @@ proc update*(self: VideoSystem, dt: float) =
   # self.window.glSwapWindow()
 
 
-proc dispose*(self: var VideoSystem) =
+proc dispose*(self: var OgreVideoSystem) =
   # TODO: shutdown
-  sdl.quitSubSystem(sdl.INIT_VIDEO)
+  quitSubSystem(INIT_VIDEO)
   logging.debug "Video system unloaded"
 
 # ---- component ----
@@ -178,14 +178,14 @@ proc dispose*(self: var VideoSystem) =
 
 
 # ---- handlers ----
-method process*(self: VideoSystem, message: ref Message) {.base.} =
+method process*(self: OgreVideoSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
-# method process*(self: ref VideoSystem, message: ref WindowResizeMessage) =
+# method process*(self: ref OgreVideoSystem, message: ref WindowResizeMessage) =
 
 #   self.updateViewport(message.width, message.height)
 
-proc run*(self: var VideoSystem) =
+proc run*(self: var OgreVideoSystem) =
   self.init()
 
   loop(frequency=30) do:
@@ -204,7 +204,7 @@ when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
-        var system = VideoSystem()
+        var system = OgreVideoSystem()
         system.run()
 
       sleep 1000

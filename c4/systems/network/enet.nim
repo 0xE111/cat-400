@@ -19,14 +19,14 @@ import ../../loop
 
 
 type
-  NetworkSystem* {.inheritable.} = object
+  EnetNetworkSystem* {.inheritable.} = object
     host*: ptr Host
     connectedPeers*: HashSet[ptr Peer]
 
-  ClientNetworkSystem* = object of NetworkSystem
+  EnetClientNetworkSystem* = object of EnetNetworkSystem
     entitiesMap: Table[Entity, Entity]  # table for converting remote Entity to local one
 
-  ServerNetworkSystem* = object of NetworkSystem
+  EnetServerNetworkSystem* = object of EnetNetworkSystem
 
 
 # ---- messages ----
@@ -120,7 +120,7 @@ proc `$`*(self: Peer): string =
 
 # ---- methods ----
 
-proc netSend*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
+proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = nil,
            channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) =
   var
     data: string = message.msgpack()
@@ -144,7 +144,7 @@ proc netSend*(self: NetworkSystem, message: ref Message, peer: ptr Peer = nil,
   if immediate:
     self.host.host_flush()
 
-proc init*(self: var ServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
+proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
   outBandwidth: uint32 = 0, port: Port = Port(11477)) =
 
   if enet.initialize() != 0:
@@ -160,7 +160,7 @@ proc init*(self: var ServerNetworkSystem, numConnections: csize_t = 32, numChann
 
   logging.debug &"Server network system initialized on port {port}"
 
-proc init*(self: var ClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
+proc init*(self: var EnetClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
 outBandwidth: uint32 = 0) =
   if enet.initialize() != 0:
     const err = "An error occurred during initialization"
@@ -173,7 +173,7 @@ outBandwidth: uint32 = 0) =
 
   logging.debug &"Client network system initialized"
 
-proc connect*(self: var NetworkSystem, host: string, port: Port, numChannels = 1) =
+proc connect*(self: var EnetNetworkSystem, host: string, port: Port, numChannels = 1) =
   var address: Address
   discard address_set_host(address.addr, host)
   address.port = port.uint16
@@ -183,7 +183,7 @@ proc connect*(self: var NetworkSystem, host: string, port: Port, numChannels = 1
 
   # further connection success / failure is handled by ``handle`` method
 
-proc disconnect*(self: var NetworkSystem, peer: ptr Peer) {.gcsafe.} =
+proc disconnect*(self: var EnetNetworkSystem, peer: ptr Peer) {.gcsafe.} =
   # if not force:
   #   peer.peer_disconnect(0)
 
@@ -201,22 +201,22 @@ proc disconnect*(self: var NetworkSystem, peer: ptr Peer) {.gcsafe.} =
   self.connectedPeers.excl(peer)
   peer.peer_reset()
 
-proc disconnect*(self: var NetworkSystem) =
+proc disconnect*(self: var EnetNetworkSystem) =
   for peer in self.connectedPeers:
     self.disconnect(peer)
 
-method processLocal*(self: var NetworkSystem, message: ref Message) {.base.} =
+method processLocal*(self: var EnetNetworkSystem, message: ref Message) {.base.} =
   ## Process message from any local system.
   logging.warn &"No rule for processing local {message}, discarding"
 
-method processLocal*(self: var NetworkSystem, message: ref NetworkMessage) =
+method processLocal*(self: var EnetNetworkSystem, message: ref NetworkMessage) =
   ## Any NetworkMessage from local system is sent to peer, or broadcasted if peer is nil.
   self.netSend(message, peer=message.peer)
 
-method processRemote*(self: var NetworkSystem, message: ref NetworkMessage) {.base.} =
+method processRemote*(self: var EnetNetworkSystem, message: ref NetworkMessage) {.base.} =
   logging.warn &"No rule for processing remote {message}, discarding"
 
-proc handle*(self: var NetworkSystem, event: Event) =
+proc handle*(self: var EnetNetworkSystem, event: Event) =
   ## Handles Enet events.
   ##
   ## - EVENT_TYPE_CONNECT: If peer with this address is already connected, then first disconnects this peer and sends ``ConnectionClosedMessage`` to self,  then sends ``ConnectionOpenedMessage`` to self;`.
@@ -284,7 +284,7 @@ proc handle*(self: var NetworkSystem, event: Event) =
     else:
       discard
 
-proc poll*(self: var NetworkSystem) =
+proc poll*(self: var EnetNetworkSystem) =
   ## Check for new events and process them
   var event: Event
 
@@ -297,7 +297,7 @@ proc poll*(self: var NetworkSystem) =
     else:
       logging.error &"Error while polling for new event"
 
-proc dispose*(self: var NetworkSystem) =
+proc dispose*(self: var EnetNetworkSystem) =
   ## Destroy current host and deinitialize enet.
   self.disconnect()
   self.host.host_destroy()
@@ -312,7 +312,7 @@ proc dispose*(self: var NetworkSystem) =
 ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
 
-method processLocal*(self: var ClientNetworkSystem, message: ref ConnectMessage) =
+method processLocal*(self: var EnetClientNetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
   ##
   ## As a most common case, peer may connect to only one another peer (client connects to only one server). Thus all existing connections will be closed before establishing new one. However, if it's not your case and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
@@ -324,18 +324,18 @@ method processLocal*(self: var ClientNetworkSystem, message: ref ConnectMessage)
   self.connect(message.host, message.port)
 
 
-method processLocal*(self: var NetworkSystem, message: ref DisconnectMessage) =
+method processLocal*(self: var EnetNetworkSystem, message: ref DisconnectMessage) =
   ## When receiving ``DisconnectMessage`` from any local system, close all connections.
   logging.debug "Disconnecting"
   self.disconnect()
 
 
-method processLocal*(self: var ClientNetworkSystem, message: ref ConnectionClosedMessage) =
+method processLocal*(self: var EnetClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Remove all entity mappings when client disconnects from external peer.
   self.entitiesMap.clear()
 
 
-method processRemote*(self: var ClientNetworkSystem, message: ref EntityMessage) =
+method processRemote*(self: var EnetClientNetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
 
   # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
@@ -346,7 +346,7 @@ method processRemote*(self: var ClientNetworkSystem, message: ref EntityMessage)
   message.entity = self.entitiesMap[message.entity]
 
 
-method processRemote*(self: var ClientNetworkSystem, message: ref CreateEntityMessage) =
+method processRemote*(self: var EnetClientNetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
@@ -357,7 +357,7 @@ method processRemote*(self: var ClientNetworkSystem, message: ref CreateEntityMe
   procCall self.processRemote((ref EntityMessage)message)  # map entity
 
 
-method processRemote*(self: var ClientNetworkSystem, message: ref DeleteEntityMessage) =
+method processRemote*(self: var EnetClientNetworkSystem, message: ref DeleteEntityMessage) =
   ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
 
@@ -367,7 +367,7 @@ method processRemote*(self: var ClientNetworkSystem, message: ref DeleteEntityMe
   logging.debug &"Client deleted entity {localEntity}"
 
 
-proc run*(self: var ClientNetworkSystem) =
+proc run*(self: var EnetClientNetworkSystem) =
   self.init()
 
   loop(frequency=30) do:
@@ -387,7 +387,7 @@ proc run*(self: var ClientNetworkSystem) =
   self.dispose()
 
 
-proc run*(self: var ServerNetworkSystem) =
+proc run*(self: var EnetServerNetworkSystem) =
   self.init()
 
   loop(frequency=30) do:
@@ -431,11 +431,11 @@ when isMainModule:
 
     test "Running inside thread":
       spawn("client") do:
-        var system = ClientNetworkSystem()
+        var system = EnetClientNetworkSystem()
         system.run()
 
       spawn("server") do:
-        var system = ServerNetworkSystem()
+        var system = EnetServerNetworkSystem()
         system.run()
 
       sleep 1000

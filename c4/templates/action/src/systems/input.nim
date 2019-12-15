@@ -10,7 +10,7 @@ import ../messages
 
 
 type
-  InputSystem* = object of sdl.InputSystem
+  InputSystem* = object of SdlInputSystem
 
 
 proc handle*(self: InputSystem, event: Event) =
@@ -58,16 +58,16 @@ proc handle*(self: InputSystem, event: Event) =
       discard
 
   # fallback to default implementation
-  sdl.InputSystem(self).handle(event)
+  InputSystem(self).handle(event)
 
 
 proc update(self: InputSystem, dt: float) =
-  # when some key is held down, there's usually a delay between first sdl.KEYDOWN event
+  # when some key is held down, there's usually a delay between first KEYDOWN event
   # and subsequent ones; so if you want to send some messages constantly when key is pressed
-  # (for example, `PlayerMoveMessage`), you shouldn't rely on sdl.KEYDOWN event; instead,
+  # (for example, `PlayerMoveMessage`), you shouldn't rely on KEYDOWN event; instead,
   # you should check whether key is down in `update()` method
 
-  sdl.InputSystem(self).update(dt)
+  InputSystem(self).update(dt)
 
   # process long-pressing key by polling keyboard state
   let
