@@ -23,10 +23,17 @@ const
   modes = Mode.mapIt($it).join("|")
   help = &"""
     -v, --version - print version
-    -l, --loglevel=[{logLevels}] - specify log level
     -h, --help - print help
     -m, --mode=[{modes}] - launch server/client/both
   """
+
+
+proc getCmdLogLevel*(): logging.Level =
+  for kind, key, value in parseopt.getopt():
+    if (kind == cmdLongOption and key == "loglevel") or (kind == cmdShortOption and key == "l"):
+      return parseEnum[logging.Level]("lvl" & value)
+
+  return logging.Level.lvlWarn
 
 
 template app*(serverCode: untyped, clientCode: untyped) =
@@ -35,9 +42,7 @@ template app*(serverCode: untyped, clientCode: untyped) =
   ## Run this in your main module.
 
   # default values
-  var
-    logLevel = logging.Level.lvlWarn
-    mode = Mode.master
+  var mode = Mode.master
 
   for kind, key, value in parseopt.getopt():
     case kind
@@ -47,25 +52,16 @@ template app*(serverCode: untyped, clientCode: untyped) =
             echo &"Nim {NimVersion}"
             echo &"Compiled @ {CompileDate} {CompileTime}"
             quit()
-          of "loglevel", "l":
-            logLevel = parseEnum[logging.Level]("lvl" & value)
+
           of "help", "h":
             echo help
             quit()
           of "mode", "m":
             mode = parseEnum[Mode](value)
           else:
-            echo "Unknown option: " & key & " = " & value
-            quit(QuitFailure)
-      else: discard
-
-  # TODO: add logger helper - include file name (and possibly line) in log message
-  let
-    timestamp = now().format("yyyy-MM-dd-hh-mm-ss")
-    logFile = joinPath(getAppDir(), $mode & "." & timestamp & ".log")
-  logging.addHandler(logging.newRollingFileLogger(logFile, maxLines=1000000, levelThreshold=logLevel, fmtStr="[$datetime] $levelname: "))
-  logging.addHandler(logging.newConsoleLogger(levelThreshold=logLevel, fmtStr= "[$datetime] " & $mode & " $levelname: "))
-  logging.info(&"Nim version: {NimVersion}")
+            discard
+      else:
+        discard
 
   # TODO: outOfMemHook
 

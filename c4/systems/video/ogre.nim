@@ -186,8 +186,6 @@ method process*(self: OgreVideoSystem, message: ref Message) {.base.} =
 #   self.updateViewport(message.width, message.height)
 
 proc run*(self: var OgreVideoSystem) =
-  self.init()
-
   loop(frequency=30) do:
     while true:
       let message = tryRecv()
@@ -197,14 +195,14 @@ proc run*(self: var OgreVideoSystem) =
   do:
     self.update(dt)
 
-  self.dispose()
-
 
 when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
         var system = OgreVideoSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       sleep 1000

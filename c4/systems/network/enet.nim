@@ -131,7 +131,7 @@ proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = ni
     )
 
   let sendSign = if reliable: "==>" else: "-->"
-  logging.debug &"{sendSign} Network: sending {$(message)} (packed as \"{data.stringify}\", len={data.len})"
+  logging.debug &"{sendSign} Sending {$(message)} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer.isNil:
     self.host.host_broadcast(channelId, packet)
@@ -144,8 +144,7 @@ proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = ni
   if immediate:
     self.host.host_flush()
 
-proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
-  outBandwidth: uint32 = 0, port: Port = Port(11477)) =
+proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0, outBandwidth: uint32 = 0, port: Port = Port(11477)) =
 
   if enet.initialize() != 0:
     const err = "An error occurred during initialization"
@@ -158,7 +157,7 @@ proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numC
   if self.host == nil:
     raise newException(LibraryError, &"An error occured while trying to init host; maybe port {port} is already in use?")
 
-  logging.debug &"Server network system initialized on port {port}"
+  logging.debug &"{self} initialized on port {port}"
 
 proc init*(self: var EnetClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
 outBandwidth: uint32 = 0) =
@@ -171,7 +170,7 @@ outBandwidth: uint32 = 0) =
   if self.host == nil:
     raise newException(LibraryError, "An error occured while trying to init host")
 
-  logging.debug &"Client network system initialized"
+  logging.debug &"{self} initialized"
 
 proc connect*(self: var EnetNetworkSystem, host: string, port: Port, numChannels = 1) =
   var address: Address
@@ -367,9 +366,7 @@ method processRemote*(self: var EnetClientNetworkSystem, message: ref DeleteEnti
   logging.debug &"Client deleted entity {localEntity}"
 
 
-proc run*(self: var EnetClientNetworkSystem) =
-  self.init()
-
+proc run*(self: var EnetNetworkSystem) =
   loop(frequency=30) do:
     discard
   do:
@@ -383,28 +380,6 @@ proc run*(self: var EnetClientNetworkSystem) =
 
     # retrieve and process remote messages
     self.poll()
-
-  self.dispose()
-
-
-proc run*(self: var EnetServerNetworkSystem) =
-  self.init()
-
-  loop(frequency=30) do:
-    discard
-  do:
-    # process (send) local messages
-    while true:
-      let message = tryRecv()
-      if message.isNil:
-        break
-
-      self.processLocal(message)
-
-    # retrieve and process remote messages
-    self.poll()
-
-  self.dispose()
 
 
 when isMainModule:
@@ -432,10 +407,14 @@ when isMainModule:
     test "Running inside thread":
       spawn("client") do:
         var system = EnetClientNetworkSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       spawn("server") do:
         var system = EnetServerNetworkSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       sleep 1000

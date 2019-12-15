@@ -7,7 +7,6 @@ import strformat
 import sdl2/sdl, sdl2/sdl_syswm
 
 import ../../lib/bgfx/bgfx
-import ../../systems
 
 
 type

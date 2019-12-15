@@ -1,5 +1,5 @@
 import c4/core
-import c4/namedthreads
+import c4/threads
 
 import src/systems/physics
 import src/systems/input

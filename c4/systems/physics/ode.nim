@@ -104,8 +104,6 @@ method process*(self: OdePhysicsSystem, message: ref Message) {.base.} =
 
 
 proc run*(self: var OdePhysicsSystem) =
-  self.init()
-
   loop(frequency=30) do:
     self.update(dt)
     while true:
@@ -116,14 +114,14 @@ proc run*(self: var OdePhysicsSystem) =
   do:
     discard
 
-  self.dispose()
-
 
 when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
         var system = OdePhysicsSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       sleep 1000

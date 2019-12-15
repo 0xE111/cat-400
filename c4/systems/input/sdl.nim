@@ -26,11 +26,11 @@ register WindowQuitMessage
 
 # ---- workflow methods ----
 proc init*(self: var SdlInputSystem) =
-  logging.debug("Initializing input system")
+  logging.debug &"Initializing {self}"
 
   try:
     if initSubSystem(INIT_EVENTS) != 0:
-      raise newException(LibraryError, "Could not init SDL input subsystem" & $getError())
+      raise newException(LibraryError, &"Could not init {self}: {getError()}")
 
   except LibraryError:
     quitSubSystem(INIT_EVENTS)
@@ -64,7 +64,7 @@ proc update*(self: SdlInputSystem, dt: float) =
 
 proc dispose*(self: var SdlInputSystem) =
   quitSubSystem(INIT_EVENTS)  # TODO: destroying single SdlInputSystem will destroy events for all other InputSystems
-  logging.debug "Input system destroyed"
+  logging.debug &"{self} destroyed"
 
 
 method process*(self: SdlInputSystem, message: ref Message) {.base.} =
@@ -72,8 +72,6 @@ method process*(self: SdlInputSystem, message: ref Message) {.base.} =
 
 
 proc run*(self: var SdlInputSystem) =
-  self.init()
-
   loop(frequency=30) do:
     self.update(dt)
     while true:
@@ -84,14 +82,14 @@ proc run*(self: var SdlInputSystem) =
   do:
     discard
 
-  self.dispose()
-
 
 when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
         var system = SdlInputSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       sleep 1000

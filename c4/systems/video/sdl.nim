@@ -61,8 +61,6 @@ proc dispose*(self: var SdlVideoSystem) =
 
 
 proc run*(self: var SdlVideoSystem) =
-  self.init()
-
   loop(frequency=30) do:
     while true:
       let message = tryRecv()
@@ -73,14 +71,14 @@ proc run*(self: var SdlVideoSystem) =
   do:
     discard
 
-  self.dispose()
-
 
 when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
         var system = SdlVideoSystem()
+        system.init()
         system.run()
+        system.dispose()
 
       sleep 2000
