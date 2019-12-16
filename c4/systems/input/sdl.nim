@@ -11,6 +11,7 @@ import ../../loop
 
 
 type SdlInputSystem* {.inheritable.} = object
+  event: Event  # temporarily stores event
 
 proc `$`*(event: Event): string = $event.kind
 
@@ -27,6 +28,7 @@ register WindowQuitMessage
 # ---- workflow methods ----
 proc init*(self: var SdlInputSystem) =
   logging.debug &"Initializing {self}"
+  self.event = Event()
 
   try:
     if initSubSystem(INIT_EVENTS) != 0:
@@ -56,10 +58,8 @@ proc handle*(self: SdlInputSystem, event: Event) =
 
 proc update*(self: SdlInputSystem, dt: float) =
   # process all network events
-  var event = Event()
-
-  while pollEvent(event.addr) != 0:
-    self.handle(event)
+  while pollEvent(self.event.unsafeAddr) != 0:
+    self.handle(self.event)
 
 
 proc dispose*(self: var SdlInputSystem) =
