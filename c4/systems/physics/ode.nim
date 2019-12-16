@@ -111,8 +111,6 @@ proc run*(self: var OdePhysicsSystem) =
       if message.isNil:
         break
       self.process(message)
-  do:
-    discard
 
 
 when isMainModule:

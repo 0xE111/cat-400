@@ -367,9 +367,7 @@ method processRemote*(self: var EnetClientNetworkSystem, message: ref DeleteEnti
 
 
 proc run*(self: var EnetNetworkSystem) =
-  loop(frequency=30) do:
-    discard
-  do:
+  loop(frequency=60) do:
     # process (send) local messages
     while true:
       let message = tryRecv()

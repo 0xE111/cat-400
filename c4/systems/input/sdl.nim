@@ -79,8 +79,6 @@ proc run*(self: var SdlInputSystem) =
       if message.isNil:
         break
       self.process(message)
-  do:
-    discard
 
 
 when isMainModule:

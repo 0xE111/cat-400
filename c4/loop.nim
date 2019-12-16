@@ -1,11 +1,35 @@
 import times
+import os
+when isMainModule:
+  import unittest
 
 
 type
   Callback* = proc(dt: float): bool {.closure.}
 
 
-# TODO: make async?
+template loop*(frequency: int = 30, code: untyped) =
+  let skipSeconds = 1 / frequency
+
+  var
+    now = epochTime()
+    lastUpdateTime = now
+    dt {.inject.}: type(now)
+    sleepTime: type(now)
+
+  while true:
+    now = epochTime()
+    dt = now - lastUpdateTime
+    lastUpdateTime = now
+
+    code
+
+    now = epochTime()
+    sleepTime = lastUpdateTime + skipSeconds - now
+    if sleepTime > 0:
+      sleep(int(sleepTime * 1000))
+
+
 template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCode: untyped) =
   # handlers will receive dt - delta time between two last calls (in seconds, floating point)
   let
@@ -37,3 +61,18 @@ template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCod
       let dt {.inject.} = now - lastMaxUpdateTime
       maxFrequencyCode
     lastMaxUpdateTime = now
+
+
+when isMainModule:
+  suite "Loop":
+    test "Base loop frequency":
+      var i = 0
+      loop(30) do:
+        echo $i & " " & $dt
+        if i == 0:
+          assert dt < 0.01
+        else:
+          assert dt < 0.035 and dt > 0.025
+        inc i
+        if i > 30:
+          break

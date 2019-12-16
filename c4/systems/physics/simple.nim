@@ -55,8 +55,6 @@ proc run*(self: var SimplePhysicsSystem) =
       if message.isNil:
         break
       self.process(message)
-  do:
-    discard
 
 
 when isMainModule:

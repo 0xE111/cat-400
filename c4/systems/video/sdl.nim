@@ -68,8 +68,6 @@ proc run*(self: var SdlVideoSystem) =
         break
       self.process(message)
     self.update(dt)
-  do:
-    discard
 
 
 when isMainModule:
