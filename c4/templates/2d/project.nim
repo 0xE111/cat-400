@@ -1,5 +1,6 @@
 import logging
 import net
+import strformat
 
 import c4/threads
 import c4/core
@@ -39,6 +40,8 @@ when isMainModule:
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] client $levelname: "))
       var network = ClientNetworkSystem()
       network.init()
+      if not waitAvailable("input") or not waitAvailable("video"):
+        raise newException(LibraryError, &"Input or Video system unavailable")
       network.connect(host="localhost", port=Port(9000))
       network.run()
       network.dispose()

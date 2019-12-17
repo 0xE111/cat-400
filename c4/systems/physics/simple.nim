@@ -17,9 +17,9 @@ type
   Vector* = tuple[x: float, y: float]
 
   Physics* {.inheritable.} = object
-    position: Vector
-    width*, height*: int
-    speed: Vector  # defines direction & speed
+    position*: Vector
+    width*, height*: float
+    speed*: Vector  # defines direction & speed
 
 
 proc `+`*(v1: Vector, v2: Vector): Vector =

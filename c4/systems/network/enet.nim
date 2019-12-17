@@ -211,7 +211,8 @@ method processLocal*(self: var EnetNetworkSystem, message: ref Message) {.base.}
 
 method processLocal*(self: var EnetNetworkSystem, message: ref NetworkMessage) =
   ## Any NetworkMessage from local system is sent to peer, or broadcasted if peer is nil.
-  self.netSend(message, peer=message.peer)
+  ## Pay attention that by default messages are sent reliably which adds overhead.
+  self.netSend(message, peer=message.peer, reliable=true)
 
 method processRemote*(self: var EnetNetworkSystem, message: ref NetworkMessage) {.base.} =
   logging.warn &"No rule for processing remote {message}, discarding"
