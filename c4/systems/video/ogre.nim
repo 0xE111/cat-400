@@ -12,11 +12,6 @@ import ../../loop
 
 
 type
-  Window* = tuple[
-    x, y, width, height: int,
-    fullscreen: bool,
-  ]
-
   OgreVideoSystem* {.inheritable.} = object
     window*: Window
     windowConfig*: tuple[
@@ -47,19 +42,9 @@ method dispose*(self: ref OgreVideo) {.base.} =
 
 
 # ---- System ----
-proc init*(self: var OgreVideoSystem) =
+proc init*(self: var OgreVideoSystem, title: string = "Game", x: int = 200, y: int = 400, width: int = 800, height: int = 600, fullscreen: bool = false) =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
-
-  # initialization
-  self.windowConfig = (
-    title: "Cat 400",
-    x: 200,
-    y: 400,
-    width: 800,
-    height: 600,
-    fullscreen: false,
-  )
 
   try:
     if initSubSystem(INIT_VIDEO) != 0:
@@ -69,14 +54,7 @@ proc init*(self: var OgreVideoSystem) =
     # if getCurrentDisplayMode(0, displayMode.addr) != 0:
     #   raise newException(LibraryError, "Could not get current display mode: " & $getError())
 
-    self.window = createWindow(
-      self.windowConfig.title,
-      self.windowConfig.x,
-      self.windowConfig.y,
-      self.windowConfig.width,
-      self.windowConfig.height,
-      (WINDOW_SHOWN or WINDOW_RESIZABLE or (if self.windowConfig.fullscreen: WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32,
-    )
+    self.window = createWindow(title, x, y, width, height, (WINDOW_SHOWN or WINDOW_RESIZABLE or (if fullscreen: WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32)
     if self.window == nil:
       raise newException(LibraryError, "Could not create SDL window")
 
