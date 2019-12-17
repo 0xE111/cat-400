@@ -7,10 +7,6 @@ import ../messages
 
 type InputSystem* = object of SdlInputSystem
 
-# TODO: make this unneeded
-proc run*(self: var InputSystem) =
-  SdlInputSystem(self).run()
-
 # redefine input system methods below
 
 # method handle*(self: ref InputSystem, event: Event) =
