@@ -28,7 +28,6 @@ register WindowQuitMessage
 # ---- workflow methods ----
 proc init*(self: var SdlInputSystem) =
   logging.debug &"Initializing {self}"
-  self.event = Event()
 
   try:
     if initSubSystem(INIT_EVENTS) != 0:
