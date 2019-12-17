@@ -4,6 +4,7 @@ import tables
 import strformat
 import unittest
 import os
+import typetraits
 
 import ../../threads
 import ../../messages
@@ -27,11 +28,11 @@ register WindowQuitMessage
 
 # ---- workflow methods ----
 proc init*(self: var SdlInputSystem) =
-  logging.debug &"Initializing {self}"
+  logging.debug &"Initializing {self.type.name}"
 
   try:
     if initSubSystem(INIT_EVENTS) != 0:
-      raise newException(LibraryError, &"Could not init {self}: {getError()}")
+      raise newException(LibraryError, &"Could not init {self.type.name}: {getError()}")
 
   except LibraryError:
     quitSubSystem(INIT_EVENTS)
@@ -63,7 +64,7 @@ proc update*(self: SdlInputSystem, dt: float) =
 
 proc dispose*(self: var SdlInputSystem) =
   quitSubSystem(INIT_EVENTS)  # TODO: destroying single SdlInputSystem will destroy events for all other InputSystems
-  logging.debug &"{self} destroyed"
+  logging.debug &"{self.type.name} destroyed"
 
 
 method process*(self: SdlInputSystem, message: ref Message) {.base.} =

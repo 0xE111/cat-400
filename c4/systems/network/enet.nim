@@ -9,6 +9,7 @@ import os
 import net
 import sets
 import sequtils
+import typetraits
 
 import ../../lib/enet/enet
 
@@ -157,7 +158,7 @@ proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numC
   if self.host == nil:
     raise newException(LibraryError, &"An error occured while trying to init host; maybe port {port} is already in use?")
 
-  logging.debug &"{self} initialized on port {port}"
+  logging.debug &"{self.type.name} initialized on port {port}"
 
 proc init*(self: var EnetClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
 outBandwidth: uint32 = 0) =
@@ -170,7 +171,7 @@ outBandwidth: uint32 = 0) =
   if self.host == nil:
     raise newException(LibraryError, "An error occured while trying to init host")
 
-  logging.debug &"{self} initialized"
+  logging.debug &"{self.type.name} initialized"
 
 proc connect*(self: var EnetNetworkSystem, host: string, port: Port, numChannels = 1) =
   var address: Address

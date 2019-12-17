@@ -4,6 +4,7 @@ import math
 import system
 import unittest
 import os
+import typetraits
 
 import ../../lib/ode/ode
 
@@ -30,12 +31,12 @@ type
 # ---- Component ----
 
 method init*(self: OdePhysicsSystem, physics: ref Physics) {.base.} =
-  logging.debug &"{self}: initializing component"
+  logging.debug &"{self.type.name}: initializing component"
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
 
 method dispose*(self: ref Physics) {.base.} =
-  logging.debug &"Physics system: destroying component"
+  logging.debug &"{self.type.name}: destroying component"
   self.body.bodyDestroy()
 
 
