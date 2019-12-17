@@ -4,10 +4,6 @@ when isMainModule:
   import unittest
 
 
-type
-  Callback* = proc(dt: float): bool {.closure.}
-
-
 template loop*(frequency: int = 30, code: untyped) =
   let skipSeconds = 1 / frequency
 
