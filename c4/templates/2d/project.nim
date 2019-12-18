@@ -14,7 +14,7 @@ import src/systems/physics
 import src/systems/input
 import src/systems/video
 
-import src/scenarios/init
+import src/scenarios/connection
 
 
 when isMainModule:
@@ -22,6 +22,8 @@ when isMainModule:
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] server $levelname: "))
       var network = ServerNetworkSystem()
+      if not waitAvailable("physics"):
+         raise newException(LibraryError, &"Physics system unavailable")
       network.init(port=Port(9000))
       network.run()
       network.dispose()
