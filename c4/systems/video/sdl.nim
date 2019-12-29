@@ -14,14 +14,30 @@ when isMainModule:
 
 type
   SdlVideoSystem* {.inheritable.} = object
-    window: Window
-    renderer: Renderer
+    window*: Window
+    renderer*: Renderer
 
-  Video* {.inheritable.} = object
-    x, y: int
+  SdlVideo* {.inheritable.} = object
+    x*, y*: float
 
 
-proc init*(self: var SdlVideoSystem, windowTitle: string = "Game", windowX: int = 100, windowY: int = 100, windowWidth: int = 640, windowHeight: int = 480, fullscreen: bool = false) =
+# ---- Component ----
+method render*(self: ref SdlVideoSystem, video: ref SdlVideo) {.base.} =
+  discard self.renderer.setRenderDrawColor(Color(r: 255, g: 255, b: 255))
+
+  var windowWidth, windowHeight: cint
+  self.window.getWindowSize(windowWidth.addr, windowHeight.addr)
+
+  var rect = Rect(
+    x: int(windowWidth.float * video.x),
+    y: int(windowHeight.float * video.y),
+    w: int(windowWidth.float * 0.01),
+    h: int(windowHeight.float * 0.01),
+  )
+  discard self.renderer.renderFillRect(rect.addr)
+
+
+method init*(self: ref SdlVideoSystem, windowTitle: string = "Game", windowX: int = 100, windowY: int = 100, windowWidth: int = 640, windowHeight: int = 480, fullscreen: bool = false) {.base.} =
 
   logging.debug &"Initializing SdlVideoSystem"
 
@@ -43,24 +59,24 @@ proc init*(self: var SdlVideoSystem, windowTitle: string = "Game", windowX: int 
     raise newException(LibraryError, &"Could not clear renderer: {getError()}")
 
 
-method update*(self: var SdlVideoSystem, dt: float) {.base.} =
+method update*(self: ref SdlVideoSystem, dt: float) {.base.} =
   if self.renderer.renderClear() != 0:
     raise newException(LibraryError, &"Could not clear renderer: {getError()}")
   self.renderer.renderPresent()
 
 
-method process*(self: SdlVideoSystem, message: ref Message) {.base.} =
+method process*(self: ref SdlVideoSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 
-proc dispose*(self: var SdlVideoSystem) =
+method dispose*(self: ref SdlVideoSystem) {.base.} =
   self.renderer.destroyRenderer()
   self.window.destroyWindow()
   quitSubSystem(INIT_VIDEO)
   logging.debug "SdlVideoSystem unloaded"
 
 
-proc run*(self: var SdlVideoSystem) =
+method run*(self: ref SdlVideoSystem) {.base.} =
   loop(frequency=30) do:
     while true:
       let message = tryRecv()

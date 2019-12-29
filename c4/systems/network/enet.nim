@@ -4,12 +4,13 @@
 import logging
 import tables
 import strformat
-import unittest
 import os
 import net
 import sets
 import sequtils
 import typetraits
+when isMainModule:
+  import unittest
 
 import ../../lib/enet/enet
 
@@ -121,8 +122,8 @@ proc `$`*(self: Peer): string =
 
 # ---- methods ----
 
-proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = nil,
-           channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) =
+method netSend*(self: ref EnetNetworkSystem, message: ref Message, peer: ptr Peer = nil,
+           channelId: uint8 = 0, reliable: bool = false, immediate: bool = false) {.base.} =
   var
     data: string = message.msgpack()
     packet = enet.packet_create(
@@ -132,7 +133,7 @@ proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = ni
     )
 
   let sendSign = if reliable: "==>" else: "-->"
-  logging.debug &"{sendSign} Sending {$(message)} (packed as \"{data.stringify}\", len={data.len})"
+  logging.debug &"{sendSign} Sending {message} (packed as \"{data.stringify}\", len={data.len})"
 
   if peer.isNil:
     self.host.host_broadcast(channelId, packet)
@@ -145,7 +146,7 @@ proc netSend*(self: EnetNetworkSystem, message: ref Message, peer: ptr Peer = ni
   if immediate:
     self.host.host_flush()
 
-proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0, outBandwidth: uint32 = 0, port: Port = Port(11477)) =
+method init*(self: ref EnetServerNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0, outBandwidth: uint32 = 0, port: Port = Port(11477)) {.base.} =
 
   if enet.initialize() != 0:
     const err = "An error occurred during initialization"
@@ -158,10 +159,9 @@ proc init*(self: var EnetServerNetworkSystem, numConnections: csize_t = 32, numC
   if self.host == nil:
     raise newException(LibraryError, &"An error occured while trying to init host; maybe port {port} is already in use?")
 
-  logging.debug &"{self.type.name} initialized on port {port}"
+  logging.debug &"{self[].type.name} initialized on port {port}"
 
-proc init*(self: var EnetClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0,
-outBandwidth: uint32 = 0) =
+method init*(self: ref EnetClientNetworkSystem, numConnections: csize_t = 32, numChannels: csize_t = 1, inBandwidth: uint32 = 0, outBandwidth: uint32 = 0) {.base.} =
   if enet.initialize() != 0:
     const err = "An error occurred during initialization"
     logging.fatal(err)
@@ -171,9 +171,9 @@ outBandwidth: uint32 = 0) =
   if self.host == nil:
     raise newException(LibraryError, "An error occured while trying to init host")
 
-  logging.debug &"{self.type.name} initialized"
+  logging.debug &"{self[].type.name} initialized"
 
-proc connect*(self: var EnetNetworkSystem, host: string, port: Port, numChannels = 1) =
+method connect*(self: ref EnetNetworkSystem, host: string, port: Port, numChannels = 1) {.base.} =
   var address: Address
   discard address_set_host(address.addr, host)
   address.port = port.uint16
@@ -183,7 +183,7 @@ proc connect*(self: var EnetNetworkSystem, host: string, port: Port, numChannels
 
   # further connection success / failure is handled by ``handle`` method
 
-proc disconnect*(self: var EnetNetworkSystem, peer: ptr Peer) {.gcsafe.} =
+method disconnect*(self: ref EnetNetworkSystem, peer: ptr Peer) {.base, gcsafe.} =
   # if not force:
   #   peer.peer_disconnect(0)
 
@@ -201,23 +201,23 @@ proc disconnect*(self: var EnetNetworkSystem, peer: ptr Peer) {.gcsafe.} =
   self.connectedPeers.excl(peer)
   peer.peer_reset()
 
-proc disconnect*(self: var EnetNetworkSystem) =
+method disconnect*(self: ref EnetNetworkSystem) {.base.} =
   for peer in self.connectedPeers:
     self.disconnect(peer)
 
-method processLocal*(self: var EnetNetworkSystem, message: ref Message) {.base.} =
+method processLocal*(self: ref EnetNetworkSystem, message: ref Message) {.base.} =
   ## Process message from any local system.
   logging.warn &"No rule for processing local {message}, discarding"
 
-method processLocal*(self: var EnetNetworkSystem, message: ref NetworkMessage) =
+method processLocal*(self: ref EnetNetworkSystem, message: ref NetworkMessage) =
   ## Any NetworkMessage from local system is sent to peer, or broadcasted if peer is nil.
   ## Pay attention that by default messages are sent reliably which adds overhead.
   self.netSend(message, peer=message.peer, reliable=true)
 
-method processRemote*(self: var EnetNetworkSystem, message: ref NetworkMessage) {.base.} =
+method processRemote*(self: ref EnetNetworkSystem, message: ref NetworkMessage) {.base.} =
   logging.warn &"No rule for processing remote {message}, discarding"
 
-proc handle*(self: var EnetNetworkSystem, event: Event) =
+method handle*(self: ref EnetNetworkSystem, event: Event) {.base.} =
   ## Handles Enet events.
   ##
   ## - EVENT_TYPE_CONNECT: If peer with this address is already connected, then first disconnects this peer and sends ``ConnectionClosedMessage`` to self,  then sends ``ConnectionOpenedMessage`` to self;`.
@@ -285,7 +285,7 @@ proc handle*(self: var EnetNetworkSystem, event: Event) =
     else:
       discard
 
-proc poll*(self: var EnetNetworkSystem) =
+method poll*(self: ref EnetNetworkSystem) {.base.} =
   ## Check for new events and process them
   var event: Event
 
@@ -298,7 +298,7 @@ proc poll*(self: var EnetNetworkSystem) =
     else:
       logging.error &"Error while polling for new event"
 
-proc dispose*(self: var EnetNetworkSystem) =
+method dispose*(self: ref EnetNetworkSystem) {.base.} =
   ## Destroy current host and deinitialize enet.
   self.disconnect()
   self.host.host_destroy()
@@ -313,7 +313,7 @@ proc dispose*(self: var EnetNetworkSystem) =
 ## Security note: all external messages from other peers are discarded by default. This prevents hackers from sending control messages (like ``ConnectMessage``) to remote peers. All network protection should be done inside ``store`` methods, thus ``process`` method receives only trusted messages.
 
 
-method processLocal*(self: var EnetClientNetworkSystem, message: ref ConnectMessage) =
+method processLocal*(self: ref EnetClientNetworkSystem, message: ref ConnectMessage) =
   ## When receiving ``ConnectMessage`` from any local system, try to connect to the address specified.
   ##
   ## As a most common case, peer may connect to only one another peer (client connects to only one server). Thus all existing connections will be closed before establishing new one. However, if it's not your case and you want to connect to multiple servers simultaneously, you can dismiss this restriction by overriding this method.
@@ -325,29 +325,29 @@ method processLocal*(self: var EnetClientNetworkSystem, message: ref ConnectMess
   self.connect(message.host, message.port)
 
 
-method processLocal*(self: var EnetNetworkSystem, message: ref DisconnectMessage) =
+method processLocal*(self: ref EnetNetworkSystem, message: ref DisconnectMessage) =
   ## When receiving ``DisconnectMessage`` from any local system, close all connections.
   logging.debug "Disconnecting"
   self.disconnect()
 
 
-method processLocal*(self: var EnetClientNetworkSystem, message: ref ConnectionClosedMessage) =
+method processLocal*(self: ref EnetClientNetworkSystem, message: ref ConnectionClosedMessage) =
   ## Remove all entity mappings when client disconnects from external peer.
   self.entitiesMap.clear()
 
 
-method processRemote*(self: var EnetClientNetworkSystem, message: ref EntityMessage) =
+method processRemote*(self: ref EnetClientNetworkSystem, message: ref EntityMessage) =
   ## Every entity message requires converting remote Entity to local one. Call this in every method which processes ``EntityMessage`` subtypes.
 
   # TODO: When client just connected, it may receive entities messages _before_ those entities were actualy created, thus producing this warning. State management system would fix this.
   if not self.entitiesMap.hasKey(message.entity):
-    logging.warn &"No local entity found for remote entity {message.entity} in message {$(message)}"
+    logging.warn &"No local entity found for remote entity {message.entity} in message {message}"
     return
 
   message.entity = self.entitiesMap[message.entity]
 
 
-method processRemote*(self: var EnetClientNetworkSystem, message: ref CreateEntityMessage) =
+method processRemote*(self: ref EnetClientNetworkSystem, message: ref CreateEntityMessage) =
   ## When client's network system receives this message, it creates an ``Entity`` and updates remote-local entity conversion table.
   assert(not self.entitiesMap.hasKey(message.entity), &"Local entity already exists for this remote entity: {message.entity}")
 
@@ -358,7 +358,7 @@ method processRemote*(self: var EnetClientNetworkSystem, message: ref CreateEnti
   procCall self.processRemote((ref EntityMessage)message)  # map entity
 
 
-method processRemote*(self: var EnetClientNetworkSystem, message: ref DeleteEntityMessage) =
+method processRemote*(self: ref EnetClientNetworkSystem, message: ref DeleteEntityMessage) =
   ## When client's network system receives this message, it removes the entity and updates remote-local entity conversion table.
   assert(self.entitiesMap.hasKey(message.entity), &"No local entity found for this remote entity: {message.entity}")
 
@@ -368,7 +368,7 @@ method processRemote*(self: var EnetClientNetworkSystem, message: ref DeleteEnti
   logging.debug &"Client deleted entity {localEntity}"
 
 
-proc run*(self: var EnetNetworkSystem) =
+method run*(self: ref EnetNetworkSystem) {.base.} =
   loop(frequency=60) do:
     # process (send) local messages
     while true:
@@ -406,13 +406,13 @@ when isMainModule:
 
     test "Running inside thread":
       spawn("client") do:
-        var system = EnetClientNetworkSystem()
+        let system = new(EnetClientNetworkSystem)
         system.init()
         system.run()
         system.dispose()
 
       spawn("server") do:
-        var system = EnetServerNetworkSystem()
+        let system = new(EnetServerNetworkSystem)
         system.init()
         system.run()
         system.dispose()

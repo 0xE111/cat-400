@@ -34,7 +34,7 @@ type
 
 
 # ---- Component ----
-method init*(self: OgreVideoSystem, video: ref OgreVideo) {.base.} =
+method init*(self: ref OgreVideoSystem, video: ref OgreVideo) {.base.} =
   video.node = self.sceneManager.getRootSceneNode().createChildSceneNode()
 
 method dispose*(self: ref OgreVideo) {.base.} =
@@ -42,7 +42,7 @@ method dispose*(self: ref OgreVideo) {.base.} =
 
 
 # ---- System ----
-proc init*(self: var OgreVideoSystem, title: string = "Game", x: int = 200, y: int = 400, width: int = 800, height: int = 600, fullscreen: bool = false) =
+method init*(self: ref OgreVideoSystem, title: string = "Game", x: int = 200, y: int = 400, width: int = 800, height: int = 600, fullscreen: bool = false) {.base.} =
   # ---- SDL ----
   logging.debug "Initializing SDL video system"
 
@@ -127,7 +127,7 @@ proc init*(self: var OgreVideoSystem, title: string = "Game", x: int = 200, y: i
   logging.debug "Ogre initialized"
 
 
-proc update*(self: OgreVideoSystem, dt: float) =
+method update*(self: ref OgreVideoSystem, dt: float) {.base.} =
   # if logLevel <= lvlDebug:
   #   show stats?
 
@@ -136,7 +136,7 @@ proc update*(self: OgreVideoSystem, dt: float) =
   # self.window.glSwapWindow()
 
 
-proc dispose*(self: var OgreVideoSystem) =
+method dispose*(self: ref OgreVideoSystem) {.base.} =
   # TODO: shutdown
   quitSubSystem(INIT_VIDEO)
   logging.debug "Video system unloaded"
@@ -156,14 +156,14 @@ proc dispose*(self: var OgreVideoSystem) =
 
 
 # ---- handlers ----
-method process*(self: OgreVideoSystem, message: ref Message) {.base.} =
+method process*(self: ref OgreVideoSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 # method process*(self: ref OgreVideoSystem, message: ref WindowResizeMessage) =
 
 #   self.updateViewport(message.width, message.height)
 
-proc run*(self: var OgreVideoSystem) =
+method run*(self: ref OgreVideoSystem) {.base.} =
   loop(frequency=30) do:
     while true:
       let message = tryRecv()

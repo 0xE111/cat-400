@@ -30,7 +30,7 @@ type
 
 # ---- Component ----
 
-method init*(self: OdePhysicsSystem, physics: ref Physics) {.base.} =
+method init*(self: ref OdePhysicsSystem, physics: ref Physics) {.base.} =
   logging.debug &"{self.type.name}: initializing component"
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
@@ -66,7 +66,7 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     contact.jointAttach(body1, body2)
 
 
-proc init*(self: var OdePhysicsSystem) =
+method init*(self: ref OdePhysicsSystem) {.base.} =
   ode.initODE()
   self.world = worldCreate()
   # self.world.worldSetAutoDisableFlag(1)
@@ -78,7 +78,7 @@ proc init*(self: var OdePhysicsSystem) =
   logging.debug "ODE initialized"
 
 
-proc update*(self: var OdePhysicsSystem, dt: float) =
+method update*(self: ref OdePhysicsSystem, dt: float) {.base.} =
   let
     dt = dt + self.simulationStepRemains
     nSteps = (dt / simulationStep).int
@@ -86,13 +86,13 @@ proc update*(self: var OdePhysicsSystem, dt: float) =
   self.simulationStepRemains = dt.mod(simulationStep)
 
   for i in 0..<nSteps:
-    self.space.spaceCollide(cast[pointer](self.addr), cast[ptr dNearCallback](self.nearCallback.rawProc))
+    self.space.spaceCollide(cast[pointer](self[].addr), cast[ptr dNearCallback](self.nearCallback.rawProc))
     if self.world.worldStep(simulationStep) == 0:
       raise newException(LibraryError, "Error while simulating world")
     self.contactGroup.jointGroupEmpty()
 
 
-proc dispose*(self: var OdePhysicsSystem) =
+method dispose*(self: ref OdePhysicsSystem) {.base.} =
   self.contactGroup.jointGroupDestroy()
   self.space.spaceDestroy()
   self.world.worldDestroy()
@@ -100,11 +100,11 @@ proc dispose*(self: var OdePhysicsSystem) =
   logging.debug "ODE destroyed"
 
 
-method process*(self: OdePhysicsSystem, message: ref Message) {.base.} =
+method process*(self: ref OdePhysicsSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 
-proc run*(self: var OdePhysicsSystem) =
+method run*(self: ref OdePhysicsSystem) {.base.} =
   loop(frequency=30) do:
     self.update(dt)
     while true:

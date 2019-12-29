@@ -27,7 +27,7 @@ register WindowQuitMessage
 
 
 # ---- workflow methods ----
-proc init*(self: var SdlInputSystem) =
+method init*(self: ref SdlInputSystem) {.base.} =
   logging.debug &"Initializing {self.type.name}"
 
   try:
@@ -39,7 +39,7 @@ proc init*(self: var SdlInputSystem) =
     logging.fatal(getCurrentExceptionMsg())
     raise
 
-proc handle*(self: SdlInputSystem, event: Event) =
+method handle*(self: ref SdlInputSystem, event: Event) {.base.} =
   ## Handling of basic event. These are pretty reasonable defaults.
   case event.kind
     of QUIT:
@@ -53,25 +53,29 @@ proc handle*(self: SdlInputSystem, event: Event) =
           ).send("video")
         else:
           discard
+    # of KEYDOWN:
+    #   case event.key.keysym.sym
+    #     of K_c:
+    #       ...
     else:
       discard
 
-proc update*(self: SdlInputSystem, dt: float) =
+method update*(self: ref SdlInputSystem, dt: float) {.base.} =
   # process all network events
   while pollEvent(self.event.unsafeAddr) != 0:
     self.handle(self.event)
 
 
-proc dispose*(self: var SdlInputSystem) =
+method dispose*(self: ref SdlInputSystem) {.base.} =
   quitSubSystem(INIT_EVENTS)  # TODO: destroying single SdlInputSystem will destroy events for all other InputSystems
   logging.debug &"{self.type.name} destroyed"
 
 
-method process*(self: SdlInputSystem, message: ref Message) {.base.} =
+method process*(self: ref SdlInputSystem, message: ref Message) {.base.} =
   logging.warn &"No rule for processing {message}"
 
 
-proc run*(self: var SdlInputSystem) =
+method run*(self: ref SdlInputSystem) {.base.} =
   loop(frequency=30) do:
     self.update(dt)
     while true:
