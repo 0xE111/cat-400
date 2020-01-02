@@ -1,6 +1,7 @@
 ## This module contains ECS (Entity-Component-System) implementation.
 
 import tables
+export tables
 import strformat
 import logging
 
@@ -45,45 +46,26 @@ iterator items*(): Entity =
 # When Entity is deleted, call all destructors from that sequence.
 # The idea is quite simple, but ``{.global.}`` variables have a bit complicated behaviour. In order tomake it working we need to make destructors sequence ``{.global.}`` too.
 
-type ComponentDestructor = proc(entity: Entity) {.nimcall.}
+var destructors {.global.}: seq[proc(entity: Entity)] = @[]
 
-proc getComponentDestructors(): var seq[ComponentDestructor] =
-  # Returns a sequence of destructors, one for each component
-  var destructors {.global.}: seq[ComponentDestructor] = @[]
-  return destructors
 
-proc getComponents*(T: typedesc): ref Table[Entity, T]
-
-# proc deleteComponent[t: typedesc](entity: Entity) {.nimcall.} =
-#   let component = getComponents(t)[entity]
-#   getComponents(t).del(entity)
-
-proc newTableAndDestructor(T: typedesc): ref Table[Entity, T] =
+proc initComponentTable(T: typedesc): Table[Entity, T] =
   # Creates a components table for specific type, as well as destructor proc for that type
-  result = newTable[Entity, T]()
-  getComponentDestructors().add(
+  destructors.add(
     proc(entity: Entity) = entity.del(T)
   )
+  initTable[Entity, T]()
 
-proc getComponents*(T: typedesc): ref Table[Entity, T] =
+
+proc getComponents*(T: typedesc): var Table[Entity, T] =
   ## Returns a table of components of specific type ``T`` (``Table[Entity, T]``)
   {.gcsafe.}:  # TODO: this is a bullshit
-    var table {.global.} = newTableAndDestructor(T)
+    var table {.global.} = initComponentTable(T)
     return table
-
-  # var table {.global.}: TableRef[Entity, t]
-  # if table.isNil:
-  #   table = newTable[Entity, t]()
-  #   if destructors.isNil:  # this line may be called even earlier than `var` declarations of this file
-  #     destructors = @[]  # thus we need to init whatever we need
-  #   destructors.add(proc(entity: Entity) {.closure.} = echo "Destroyed " & $t & " for entity " & $entity)
-  #   # destructors.add(proc(entity: Entity) {.closure.} = discard getComponents(t); echo "OK")
-  #   echo "Table just initialized for type " & $t
-  # return table
 
 proc delete*(entity: Entity) =
   ## Delete the Entity and all its components. Each component will be deleted as well.
-  for destructor in getComponentDestructors():
+  for destructor in destructors:
     destructor(entity)
 
   if not entity in entities:
@@ -106,22 +88,20 @@ template del*(entity: Entity, T: typedesc) =
   ## Deletes component ``T`` from ``entity``, or does nothing if ``entity`` doesn't have such a component
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
-  var components = getComponents(T)
-  if components.hasKey(entity):
-    components.del(entity)
+  getComponents(T).del(entity)
 
 template `[]`*(entity: Entity, T: typedesc): var typed =
   ## Returns ``T`` component for ``entity``. Make sure the component exists before retrieving it.
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
-  getComponents(T)[entity]
+  tables.`[]`(getComponents(T), entity)
 
 template `[]=`*(entity: Entity, T: typedesc, value: T) =
   ## Attaches new component ``T`` to an ``entity``. Previous component (if exists) will be deleted.
   assert entity.isInitialized, "Entity is not initialized, possibly forgot to call `newEntity()`"
 
   entity.del(T)
-  getComponents(T)[entity] = value  # N.B. non-ref ``value`` is copied!
+  tables.`[]=`(getComponents(T), entity, value)  # N.B. non-ref ``value`` is copied!
 
 
 when isMainModule:
@@ -129,14 +109,35 @@ when isMainModule:
     PhysicsComponent = object
       value: int
 
-    VideoComponent = object
-      text: string
-
   suite "Entities tests":
     test "Undefined entity":
-      var entity: Entity
       expect AssertionError:
+        var entity: Entity
         entity[PhysicsComponent] = PhysicsComponent(value: 5)
+
+    test "Basic usage":
+      let
+        entity1 = newEntity()
+        entity2 = newEntity()
+
+      entity1[PhysicsComponent] = PhysicsComponent(value: 3)
+      let componentTableAddr1 = getComponents(PhysicsComponent).addr
+      entity2[PhysicsComponent] = PhysicsComponent(value: 10)
+      let componentTableAddr2 = getComponents(PhysicsComponent).addr
+
+      check:
+        entity1[PhysicsComponent].value == 3
+        componentTableAddr1 == componentTableAddr2
+
+      entity1.del(PhysicsComponent)
+      check:
+        not entity1.has(PhysicsComponent)
+      entity1.delete()
+      check:
+        entity1 notin entities
+
+      entity2.del(PhysicsComponent)
+      entity2.delete()
 
     test "Auto-destruction of components":
       let entity = newEntity()
@@ -156,9 +157,8 @@ when isMainModule:
 
       spawn("thread2"):
         let entity3 = newEntity()
-        entity3[VideoComponent] = VideoComponent(text: "test")
-        for entity, video in getComponents(VideoComponent).pairs:
-          echo $entity
+        entity3[int] = 3
 
       joinAll()
-      assert toSeq(items()).len == 3
+      check:
+        toSeq(items()).len == 3
