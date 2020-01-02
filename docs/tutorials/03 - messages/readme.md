@@ -2,6 +2,8 @@
 Messages
 ========
 
+> WARNING: This tutorial is currently outdated.
+
 > Attention! Before reading this tutorial, it's highly recommended to read [the "Command" chapter](https://gameprogrammingpatterns.com/command.html) of Bob Nystrom's awesome "Game Programming Patterns" book.
 
 ---------------

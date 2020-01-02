@@ -1,5 +1,7 @@
 # Video system
 
+> WARNING: This tutorial is currently outdated.
+
 While you can create your own systems for every aspect of your game, `C4` comes with some default ones for physics, video, network etc. They are extremely handy for quick start, but you are free to replace any of them with your favorite one.
 
 This tutorial will cover built-in video system.

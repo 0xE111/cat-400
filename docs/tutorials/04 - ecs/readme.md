@@ -1,6 +1,8 @@
 Entity-component system
 -----------------------
 
+> WARNING: This tutorial is currently outdated.
+
 > Attention! Before reading this tutorial, it's highly recommended to read [the "Component" chapter](https://gameprogrammingpatterns.com/component.html) of Bob Nystrom's awesome "Game Programming Patterns" book.
 
 ECS is one of core parts of `C4`. It allows you to have entities and attach both predefined and custom components (objects) to it.
@@ -68,11 +70,11 @@ It's recommended to define components as objects. Here health is just `uint8`, b
 
 On the other hand, nothing restricts you from defining `Health` as `ref object`, which may be handy if you want to inherit `Health` and redefine some of its methods.
 
-> Implementation details: for each component type a separate ``Table[Entity, <component type>]`` is created. 
+> Implementation details: for each component type a separate ``Table[Entity, <component type>]`` is created.
 
 Each component should define `attach()` and `detach()` procs:
 * `attach()` is called automatically when component is attached to any entity - you may use it to init values of object;
-* `detach()` is called automatically when component is detached from any entity, which happens when component is deleted, replaced by other component instance, or when entire entity is deleted - use it to free resources which are held by this component (i.e. "dispose" a component). 
+* `detach()` is called automatically when component is detached from any entity, which happens when component is deleted, replaced by other component instance, or when entire entity is deleted - use it to free resources which are held by this component (i.e. "dispose" a component).
 
 ```nim
 proc attach(self: var Health) =
@@ -101,7 +103,7 @@ To check whether some entity has a specific component, use `has(entity, <compone
 proc printHealth(self: Entity) =
   if self.has(Health):
     echo &"Entity {self} health: {self[Health].value}"
-  
+
   else:
     echo &"Entity {self} has no <Health> component!"
 ```

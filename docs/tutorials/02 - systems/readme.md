@@ -2,6 +2,8 @@
 Tutorial 2 - systems
 ====================
 
+> WARNING: This tutorial is currently outdated.
+
 What is a system?
 -----------------
 
