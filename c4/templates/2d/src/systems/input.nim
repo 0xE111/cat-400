@@ -11,15 +11,12 @@ type InputSystem* = object of SdlInputSystem
 
 # redefine input system methods below
 
-method handle*(self: ref InputSystem, event: Event) =
-  case event.kind
-  of KEYDOWN:
-    case event.key.keysym.sym
-      of K_LEFT:
-        (ref MoveMessage)(direction: left).send("network")
-      of K_RIGHT:
-        (ref MoveMessage)(direction: right).send("network")
-      else:
-        discard
-  else:
-    discard
+method handle*(self: ref InputSystem, keyboard: ptr array[NUM_SCANCODES.int, uint8]) =
+  let
+    leftPressed = keyboard[SCANCODE_LEFT].bool
+    rightPressed = keyboard[SCANCODE_RIGHT].bool
+
+  if leftPressed and not rightPressed:
+    (ref MoveMessage)(direction: left).send("network")
+  elif rightPressed and not leftPressed:
+    (ref MoveMessage)(direction: right).send("network")

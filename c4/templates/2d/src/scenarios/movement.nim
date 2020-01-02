@@ -13,10 +13,11 @@ method processRemote*(self: ref ServerNetworkSystem, message: ref MoveMessage) =
 
 method process*(self: ref PhysicsSystem, message: ref MoveMessage) =
   let
-    paddle = self.paddles[0]
+    paddle = self.paddles[1]
     physics = paddle[ref Physics]
 
-  if message.direction == left:
-    physics.speed = (x: -0.02, y: 0.0)
-  else:
-    physics.speed = (x: 0.02, y: 0.0)
+  physics.speed = (
+    x: (if message.direction == left: -1 else: 1) * paddleMovementSpeed,
+    y: 0.0,
+  )
+  physics.movementRemains = movementQuant

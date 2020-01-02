@@ -60,11 +60,14 @@ method handle*(self: ref SdlInputSystem, event: Event) {.base.} =
     else:
       discard
 
+method handle*(self: ref SdlInputSystem, keyboard: ptr array[NUM_SCANCODES.int, uint8]) {.base.} =
+  discard
+
 method update*(self: ref SdlInputSystem, dt: float) {.base.} =
-  # process all network events
   while pollEvent(self.event.unsafeAddr) != 0:
     self.handle(self.event)
 
+  self.handle(getKeyboardState(nil))
 
 method dispose*(self: ref SdlInputSystem) {.base.} =
   quitSubSystem(INIT_EVENTS)  # TODO: destroying single SdlInputSystem will destroy events for all other InputSystems
@@ -89,7 +92,7 @@ when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawn("thread") do:
-        var system = SdlInputSystem()
+        let system = new(SdlInputSystem)
         system.init()
         system.run()
         system.dispose()

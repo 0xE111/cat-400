@@ -80,7 +80,10 @@ method processRemote*(self: ref ClientNetworkSystem, message: ref CreateTypedEnt
 
 
 method processRemote*(self: ref ClientNetworkSystem, message: ref SetDimensionMessage) =
-  procCall (ref EnetClientNetworkSystem)(self).processRemote(message)
+  try:
+    procCall (ref EnetClientNetworkSystem)(self).processRemote(message)
+  except KeyError:
+    return
 
   let video = message.entity[ref Video]
   video.width = message.width
@@ -88,7 +91,10 @@ method processRemote*(self: ref ClientNetworkSystem, message: ref SetDimensionMe
 
 
 method processRemote*(self: ref ClientNetworkSystem, message: ref SetPositionMessage) =
-  procCall (ref EnetClientNetworkSystem)(self).processRemote(message)
+  try:
+    procCall (ref EnetClientNetworkSystem)(self).processRemote(message)
+  except KeyError:
+    return
 
   let video = message.entity[ref Video]
   video.x = message.x

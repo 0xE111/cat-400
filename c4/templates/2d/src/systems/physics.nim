@@ -7,7 +7,9 @@ import c4/entities
 import ../messages
 
 
-const movementQuant* = 0.1
+const
+  movementQuant* = 0.02
+  paddleMovementSpeed* = 0.5
 
 type
   PhysicsSystem* = object of SimplePhysicsSystem
@@ -46,11 +48,18 @@ method init*(self: ref PhysicsSystem) =
   rightWall[ref Physics] = (ref Physics)(position: (x: 1.0, y: 0.5), width: 0.01, height: 1.0)
   self.walls.add(rightWall)
 
-
 method update*(self: ref PhysicsSystem, dt: float) =
   for entity, physics in getComponents(ref Physics):
-    (ref SetPositionMessage)(
-      entity: entity,
-      x: physics.position.x,
-      y: physics.position.y,
-    ).send("network")
+    physics.update(dt)
+
+    physics.movementRemains -= dt
+    if physics.movementRemains < 0:
+      physics.movementRemains = 0
+      physics.speed = (x: 0.0, y: 0.0)
+
+    if physics.position != physics.previousPosition:
+      (ref SetPositionMessage)(
+        entity: entity,
+        x: physics.position.x,
+        y: physics.position.y,
+      ).send("network")
