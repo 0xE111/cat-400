@@ -27,25 +27,25 @@ method init*(self: ref PhysicsSystem) =
   self.ball = newEntity()
   self.ball[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.5), width: 0.01, height: 0.01)
 
-  # bottom paddle & gate
+  # paddles
   self.paddles[0] = newEntity()
   self.paddles[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.05), width: 0.25, height: 0.01)
-  self.gates[0] = newEntity()
-  self.gates[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.0), width: 0.25, height: 0.01)
-
-  # top paddle & gate
   self.paddles[1] = newEntity()
   self.paddles[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.95), width: 0.25, height: 0.01)
+
+  # gates
+  self.gates[0] = newEntity()
+  self.gates[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.0), width: 1.0, height: 0.02)
   self.gates[1] = newEntity()
-  self.gates[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 1.0), width: 0.25, height: 0.01)
+  self.gates[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 1.0), width: 1.0, height: 0.02)
 
   # walls
   let leftWall = newEntity()
-  leftWall[ref Physics] = (ref Physics)(position: (x: 0.0, y: 0.5), width: 0.01, height: 1.0)
+  leftWall[ref Physics] = (ref Physics)(position: (x: 0.0, y: 0.5), width: 0.02, height: 1.0)
   self.walls.add(leftWall)
 
   let rightWall = newEntity()
-  rightWall[ref Physics] = (ref Physics)(position: (x: 1.0, y: 0.5), width: 0.01, height: 1.0)
+  rightWall[ref Physics] = (ref Physics)(position: (x: 1.0, y: 0.5), width: 0.02, height: 1.0)
   self.walls.add(rightWall)
 
 method update*(self: ref PhysicsSystem, dt: float) =

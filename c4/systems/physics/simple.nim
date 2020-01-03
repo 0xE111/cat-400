@@ -40,9 +40,8 @@ proc handleCollision*(entity1: Entity, entity2: Entity, jointPoint: Vector) =
 
 method update*(self: ref SimplePhysics, dt: float) {.base.} =
   # calculate new position for every Physics instance
-  if self.speed.x != 0 or self.speed.y != 0:
-    self.previousPosition = self.position
-    self.position = self.position + self.speed * dt
+  self.previousPosition = self.position
+  self.position = self.position + self.speed * dt
 
 method update*(self: ref SimplePhysicsSystem, dt: float) {.base.} =
   for physics in getComponents(ref SimplePhysics).mvalues():

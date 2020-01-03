@@ -71,10 +71,10 @@ method processRemote*(self: ref ClientNetworkSystem, message: ref CreateTypedEnt
   # when entity is created, draw it on screen
   procCall (ref EnetClientNetworkSystem)(self).processRemote(message)  # create entity, generate mapping
   let color = case message.kind
-    of wall: Color(r: 0, g: 0, b: 0, a: uint8.high)
-    of gate: Color(r: 0, g: 0, b: 0, a: uint8.high)
-    of paddle: Color(r: 0, g: uint8.high, b: 0, a: uint8.high)
-    of ball: Color(r: uint8.high, g: 0, b: 0, a: uint8.high)
+    of wall: wallColor
+    of gate: wallColor
+    of paddle: paddleColor
+    of ball: ballColor
 
   message.entity[ref Video] = (ref Video)(color: color)
 
