@@ -46,6 +46,8 @@ method init*(self: ref SdlVideoSystem, windowTitle: string = "Game", windowX: in
 
   # create window
   self.window = createWindow(windowTitle, windowX, windowY, windowWidth, windowHeight, (WINDOW_SHOWN or WINDOW_RESIZABLE or (if fullscreen: WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32)
+  if self.window.isNil:
+    raise newException(LibraryError, &"Could not create window: {getError()}")
 
   # initialize renderer
   self.renderer = self.window.createRenderer(-1, RENDERER_ACCELERATED)

@@ -8,7 +8,7 @@ import ../messages
 
 
 const
-  movementQuant* = 0.02
+  movementQuant* = 0.03
   paddleMovementSpeed* = 0.5
 
 type
@@ -22,10 +22,13 @@ type
     movementRemains*: float
 
 
+method getComponents*(self: ref PhysicsSystem): Table[Entity, ref SimplePhysics] =
+  cast[Table[Entity, ref SimplePhysics]](getComponents(ref Physics))
+
 method init*(self: ref PhysicsSystem) =
   # ball
   self.ball = newEntity()
-  self.ball[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.5), width: 0.01, height: 0.01)
+  self.ball[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.5), width: 0.02, height: 0.02)
 
   # paddles
   self.paddles[0] = newEntity()
@@ -49,13 +52,14 @@ method init*(self: ref PhysicsSystem) =
   self.walls.add(rightWall)
 
 method update*(self: ref PhysicsSystem, dt: float) =
-  for entity, physics in getComponents(ref Physics):
-    physics.update(dt)
+  procCall (ref SimplePhysicsSystem)(self).update(dt)
 
-    physics.movementRemains -= dt
-    if physics.movementRemains < 0:
-      physics.movementRemains = 0
-      physics.speed = (x: 0.0, y: 0.0)
+  for entity, physics in getComponents(ref Physics):
+    if physics.movementRemains > 0:
+      physics.movementRemains -= dt
+      if physics.movementRemains < 0:
+        physics.movementRemains = 0
+        physics.speed = (x: 0.0, y: 0.0)
 
     if physics.position != physics.previousPosition:
       (ref SetPositionMessage)(

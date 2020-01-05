@@ -23,6 +23,19 @@ type
     speed*: Vector  # defines direction & speed
 
 
+proc topLeft*(self: SimplePhysics): Vector = (x: self.position.x - self.width/2, y: self.position.y + self.height/2)
+proc bottomRight*(self: SimplePhysics): Vector = (x: self.position.x + self.width/2, y: self.position.y - self.height/2)
+
+proc overlap*(self: SimplePhysics, other: SimplePhysics): bool =
+  if self.topLeft.x > other.bottomRight.x or other.topLeft.x > self.bottomRight.x:
+    return false
+
+  if self.topLeft.y < other.bottomRight.y or other.topLeft.y < self.bottomRight.y:
+    return false
+
+  true
+
+
 proc `+`*(v1: Vector, v2: Vector): Vector =
   result.x = v1.x + v2.x
   result.y = v1.y + v2.y
@@ -35,8 +48,15 @@ proc `*`*(v: Vector, mul: float): Vector =
 method init*(self: ref SimplePhysicsSystem) {.base.} =
   discard
 
-proc handleCollision*(entity1: Entity, entity2: Entity, jointPoint: Vector) =
-  discard
+method handleCollision*(self: ref SimplePhysicsSystem, physics1: ref SimplePhysics, physics2: ref SimplePhysics) =
+  physics1.position = physics1.previousPosition
+  physics1.speed = (x: 0.0, y: 0.0)
+
+  physics2.position = physics2.previousPosition
+  physics2.speed = (x: 0.0, y: 0.0)
+
+method getComponents*(self: ref SimplePhysicsSystem): Table[Entity, ref SimplePhysics] {.base.} =
+  getComponents(ref SimplePhysics)
 
 method update*(self: ref SimplePhysics, dt: float) {.base.} =
   # calculate new position for every Physics instance
@@ -44,8 +64,24 @@ method update*(self: ref SimplePhysics, dt: float) {.base.} =
   self.position = self.position + self.speed * dt
 
 method update*(self: ref SimplePhysicsSystem, dt: float) {.base.} =
-  for physics in getComponents(ref SimplePhysics).mvalues():
+  let components = self.getComponents()
+
+  for entity, physics in components:
     physics.update(dt)
+
+  let
+    entities = toSeq(components.keys)
+    length = entities.len
+
+  for i in 0..<length-1:
+    for j in i+1..length-1:
+      let
+        physics1 = components[entities[i]]
+        physics2 = components[entities[j]]
+
+      if overlap(physics1[], physics2[]):
+        self.handleCollision(physics1, physics2)
+
 
 method dispose*(self: ref SimplePhysicsSystem) {.base.} =
   discard
