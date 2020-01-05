@@ -1,10 +1,16 @@
 {.used.}
+import random
+import math
+
 import c4/threads
 import c4/entities
 import c4/systems/physics/simple
 
 import ../systems/[network, physics]
 import ../messages
+
+
+randomize()
 
 
 method processRemote*(self: ref ServerNetworkSystem, message: ref MoveMessage) =
@@ -25,4 +31,5 @@ method process*(self: ref PhysicsSystem, message: ref MoveMessage) =
   # start game when movement starts
   let ballPhysics = self.ball[ref Physics]
   if ballPhysics.speed == (0.0, 0.0):
-    ballPhysics.speed = (0.0, ballSpeed)
+    let angle = Pi / 180 * random(65..75).float  # rad
+    ballPhysics.speed = (cos(angle) * ballSpeed, sin(angle) * ballSpeed)

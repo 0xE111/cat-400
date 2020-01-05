@@ -55,10 +55,10 @@ method handleCollision*(self: ref SimplePhysicsSystem, entity1: Entity, entity2:
     physics1 = self.getComponents()[entity1]
     physics2 = self.getComponents()[entity2]
 
-  const eps = 0.001
+  const eps = 0.02
 
   # objects are collided using their horizontal edges
-  if physics1[].bottomRight.y - physics2[].topLeft.y < eps or physics1[].topLeft.y - physics2[].bottomRight.y < eps:
+  if abs(physics1[].bottomRight.y - physics2[].topLeft.y) < eps or abs(physics1[].topLeft.y - physics2[].bottomRight.y) < eps:
     physics1.speed = (physics1.speed.x, -physics1.speed.y)
     physics2.speed = (physics2.speed.x, -physics2.speed.y)
 
