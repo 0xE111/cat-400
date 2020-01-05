@@ -10,6 +10,7 @@ import ../messages
 const
   movementQuant* = 0.03
   paddleMovementSpeed* = 0.5
+  ballSpeed* = 1.0
 
 type
   PhysicsSystem* = object of SimplePhysicsSystem
@@ -54,13 +55,15 @@ method init*(self: ref PhysicsSystem) =
 method update*(self: ref PhysicsSystem, dt: float) =
   procCall (ref SimplePhysicsSystem)(self).update(dt)
 
-  for entity, physics in getComponents(ref Physics):
+  for entity in self.paddles:
+    let physics = entity[ref Physics]
     if physics.movementRemains > 0:
       physics.movementRemains -= dt
       if physics.movementRemains < 0:
         physics.movementRemains = 0
         physics.speed = (x: 0.0, y: 0.0)
 
+  for entity, physics in getComponents(ref Physics):
     if physics.position != physics.previousPosition:
       (ref SetPositionMessage)(
         entity: entity,

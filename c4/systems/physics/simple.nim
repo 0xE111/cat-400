@@ -44,19 +44,31 @@ proc `*`*(v: Vector, mul: float): Vector =
   result.x = v.x * mul
   result.y = v.y * mul
 
+method getComponents*(self: ref SimplePhysicsSystem): Table[Entity, ref SimplePhysics] {.base.} =
+  getComponents(ref SimplePhysics)
 
 method init*(self: ref SimplePhysicsSystem) {.base.} =
   discard
 
-method handleCollision*(self: ref SimplePhysicsSystem, physics1: ref SimplePhysics, physics2: ref SimplePhysics) =
+method handleCollision*(self: ref SimplePhysicsSystem, entity1: Entity, entity2: Entity) =
+  let
+    physics1 = self.getComponents()[entity1]
+    physics2 = self.getComponents()[entity2]
+
+  const eps = 0.001
+
+  # objects are collided using their horizontal edges
+  if physics1[].bottomRight.y - physics2[].topLeft.y < eps or physics1[].topLeft.y - physics2[].bottomRight.y < eps:
+    physics1.speed = (physics1.speed.x, -physics1.speed.y)
+    physics2.speed = (physics2.speed.x, -physics2.speed.y)
+
+  else:
+    physics1.speed = (-physics1.speed.x, physics1.speed.y)
+    physics2.speed = (-physics2.speed.x, physics2.speed.y)
+
   physics1.position = physics1.previousPosition
-  physics1.speed = (x: 0.0, y: 0.0)
-
   physics2.position = physics2.previousPosition
-  physics2.speed = (x: 0.0, y: 0.0)
 
-method getComponents*(self: ref SimplePhysicsSystem): Table[Entity, ref SimplePhysics] {.base.} =
-  getComponents(ref SimplePhysics)
 
 method update*(self: ref SimplePhysics, dt: float) {.base.} =
   # calculate new position for every Physics instance
@@ -80,7 +92,7 @@ method update*(self: ref SimplePhysicsSystem, dt: float) {.base.} =
         physics2 = components[entities[j]]
 
       if overlap(physics1[], physics2[]):
-        self.handleCollision(physics1, physics2)
+        self.handleCollision(entities[i], entities[j])
 
 
 method dispose*(self: ref SimplePhysicsSystem) {.base.} =

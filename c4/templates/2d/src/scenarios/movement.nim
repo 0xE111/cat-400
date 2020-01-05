@@ -21,3 +21,8 @@ method process*(self: ref PhysicsSystem, message: ref MoveMessage) =
     y: 0.0,
   )
   physics.movementRemains = movementQuant
+
+  # start game when movement starts
+  let ballPhysics = self.ball[ref Physics]
+  if ballPhysics.speed == (0.0, 0.0):
+    ballPhysics.speed = (0.0, ballSpeed)
