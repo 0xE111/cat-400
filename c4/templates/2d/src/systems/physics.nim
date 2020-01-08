@@ -1,5 +1,6 @@
 import tables
 import strformat
+import sequtils
 
 import c4/threads
 import c4/systems/physics/simple
@@ -23,7 +24,7 @@ type
   Physics* = object of SimplePhysics
     movementRemains*: float
 
-  Control* = object {.inheritable.}
+  Control* {.inheritable.} = object
   PlayerControl* = object of Control
   AIControl* = object of Control
 
@@ -59,6 +60,7 @@ method init*(self: ref PhysicsSystem) =
   rightWall[ref Physics] = (ref Physics)(position: (x: 1.0, y: 0.5), width: 0.02, height: 1.0)
   self.walls.add(rightWall)
 
+
 method update*(self: ref PhysicsSystem, dt: float) =
   procCall (ref SimplePhysicsSystem)(self).update(dt)
 
@@ -77,3 +79,11 @@ method update*(self: ref PhysicsSystem, dt: float) =
         x: physics.position.x,
         y: physics.position.y,
       ).send("network")
+
+  # simple AI logic
+  for entity in toSeq(getComponents(ref Control).pairs).filterIt(it[1] of ref AIControl).mapIt(it[0]):
+    let physics = entity[ref Physics]
+    if physics.position.x < self.ball[ref Physics].position.x:
+      (ref MoveMessage)(direction: right).send()
+    else:
+      (ref MoveMessage)(direction: left).send()

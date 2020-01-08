@@ -2,6 +2,7 @@ import tables
 import logging
 import strformat
 import os
+import sequtils
 when isMainModule:
   import unittest
 

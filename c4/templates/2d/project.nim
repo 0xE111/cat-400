@@ -48,7 +48,7 @@ when isMainModule:
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] video $levelname: "))
       let video = new(VideoSystem)
       video.init(windowX=300, windowY=300, windowWidth=640, windowHeight=640)
-      video.run(frequency=60)
+      video.run()
       video.dispose()
 
     spawn("input"):
