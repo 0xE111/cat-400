@@ -44,18 +44,19 @@ when isMainModule:
       network.run()
       network.dispose()
 
-    spawn("input"):
-      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] input $levelname: "))
-      let input = new(InputSystem)
-      input.init()
-      input.run()
-      input.dispose()
-
     spawn("video"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] video $levelname: "))
       let video = new(VideoSystem)
       video.init(windowX=300, windowY=300, windowWidth=640, windowHeight=640)
-      video.run()
+      video.run(frequency=60)
       video.dispose()
+
+    spawn("input"):
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] input $levelname: "))
+      discard waitAvailable("video")
+      let input = new(InputSystem)
+      input.init()
+      input.run()
+      input.dispose()
 
     joinAll()
