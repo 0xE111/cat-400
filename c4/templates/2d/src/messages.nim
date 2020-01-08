@@ -30,3 +30,6 @@ type MoveMessage* = object of NetworkMessage
   ## Client sends to server when arrow is pressed
   direction*: MovementDirection
 register MoveMessage
+
+type StartGameMessage* = object of NetworkMessage
+register StartGameMessage

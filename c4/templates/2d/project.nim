@@ -10,7 +10,7 @@ import c4/systems/input/sdl
 import c4/systems/video/sdl as sdlvideo
 
 import src/systems/[network, physics, input, video]
-import src/scenarios/[connection, movement]
+import src/scenarios/[connection, movement, start]
 
 
 when isMainModule:

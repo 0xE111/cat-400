@@ -9,7 +9,13 @@ import ../messages
 type InputSystem* = object of SdlInputSystem
 
 
-# redefine input system methods below
+method handle*(self: ref InputSystem, event: Event) =
+  ## Handling of basic event. These are pretty reasonable defaults.
+  procCall (ref SdlInputSystem)(self).handle(event)
+
+  if event.kind == KEYDOWN and event.key.keysym.sym == K_SPACE:
+    new(StartGameMessage).send("network")
+
 
 method handle*(self: ref InputSystem, keyboard: ptr array[NUM_SCANCODES.int, uint8]) =
   let
