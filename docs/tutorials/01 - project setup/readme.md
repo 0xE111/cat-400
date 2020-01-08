@@ -14,7 +14,7 @@ Project setup
 
 This library doesn't require some special software. You can replace almost all its parts with your own implementations, so there are no external dependencies for new empty project. So, unlike other game frameworks, there is no strict `bgfx` or `sdl` requirements.
 
-However, `Cat 400` ships with some default systems which you may choose and use. For example, you may use `sdl` system for user input handling, which I believe is fine for almost all projects. If you do so, there appears a requirement to install `sdl` shared library into your system. Same for other systems, each of them have its own requirements. We'll cover this in depth later.
+However, `Cat 400` ships with some default systems which you may choose and use. For example, you may use `sdl` system for user input handling, which I believe is fine for almost all projects. If you do so, there appears a requirement to install `sdl` shared library into your system, as well as nim-sdl bindings. Same for other systems, each of them has its own requirements. We'll cover this in depth later.
 
 Let's ensure that we can run just empty project.
 
@@ -31,50 +31,11 @@ If you query for installed packages, you will see that `Cat 400` is named as `c4
 c4  [#head]
 ```
 
-Now create a simple file:
+It's important to mention that you don't have to start each project from scratch - `cat 400` is shipped with some templates which allow you to immediately start coding your game without setting up a project. However, for learning purposes we'll cover creating brand new game from scratch. After this tutorial you should understand how the framework works and that there's no magic inside.
 
-```nim
-# main.nim
-import c4/core
-
-when isMainModule:
-  core.run()
-```
-
-Compile the file and run it:
-
-```
-nim c -r main.nim
-```
-
-You may think that nothing happens and the program is stuck, and it's true - it's stuck in an empty infinite game loop. Let's kill the process (`Ctrl` + `C`) and ensure it's true - but for that we need to discover how to change log level. Let's ask for help:
-
-```
-> ./main -h
-    -v, --version - print version
-    -l, --loglevel=[all|debug|info|notice|warn|error|fatal|none] - specify log level
-    -h, --help - print help
-    -m, --mode=[client|server|multi] - launch server/client/both
-```
-
-Ok, it seems that `-l` flag is what we want. By default the framework sets `info` log level, but it's highly recommended to use `debug` during development.
-
-```
-> ./main -l=debug
-[2019-04-18T23:32:26] multi DEBUG: Version 0.1.1-221
-[2019-04-18T23:32:26] server DEBUG: Version 0.1.1-221
-[2019-04-18T23:32:26] server DEBUG: Starting server process
-[2019-04-18T23:32:26] server DEBUG: Starting main loop
-[2019-04-18T23:32:26] client DEBUG: Version 0.1.1-221
-[2019-04-18T23:32:26] client DEBUG: Starting client process
-[2019-04-18T23:32:26] client DEBUG: Starting main loop
-```
-
-Great, we just got a plenty of useful information. First, we know that I made at least 221 commits in order to make this thing work, so put a star to this repo. Second, you may see that there are `server` and `client` records, which means that this framework uses "client-server" architecture (we'll learn about it later). Third, we see that both client and server successfully entered the main game loop. Awesome.
-
-If you inspect the folder with executable, you will find separate `.log` files for client and server.
+In these tutorials we'll develop a small 2d game - "Ping Pong", which is simple enough to understand and hard enough to code.
 
 Sources
 -------
 
-You will find sources for this and other tutorials in [src](src/) folder.
+For every tutorial, you will find sources in [src](src/) folder.
