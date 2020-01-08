@@ -1,4 +1,5 @@
 import tables
+import strformat
 
 import c4/threads
 import c4/systems/physics/simple
@@ -22,6 +23,10 @@ type
   Physics* = object of SimplePhysics
     movementRemains*: float
 
+  Control* = object {.inheritable.}
+  PlayerControl* = object of Control
+  AIControl* = object of Control
+
 
 method getComponents*(self: ref PhysicsSystem): Table[Entity, ref SimplePhysics] =
   cast[Table[Entity, ref SimplePhysics]](getComponents(ref Physics))
@@ -34,8 +39,10 @@ method init*(self: ref PhysicsSystem) =
   # paddles
   self.paddles[0] = newEntity()
   self.paddles[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.05), width: 0.25, height: 0.01)
+  self.paddles[0][ref Control] = new(AIControl)
   self.paddles[1] = newEntity()
   self.paddles[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.95), width: 0.25, height: 0.01)
+  self.paddles[1][ref Control] = new(PlayerControl)
 
   # gates
   self.gates[0] = newEntity()
