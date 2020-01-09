@@ -82,8 +82,14 @@ method update*(self: ref PhysicsSystem, dt: float) =
 
   # simple AI logic
   for entity in toSeq(getComponents(ref Control).pairs).filterIt(it[1] of ref AIControl).mapIt(it[0]):
-    let physics = entity[ref Physics]
-    if physics.position.x < self.ball[ref Physics].position.x:
-      (ref MoveMessage)(direction: right).send()
-    else:
-      (ref MoveMessage)(direction: left).send()
+    let
+      entityX = entity[ref Physics].position.x
+      ballX = self.ball[ref Physics].position.x
+
+    const delta = 0.02
+
+    if abs(entityX - ballX) > delta:
+      if entityX < ballX:
+        (ref MoveMessage)(direction: right).send()
+      else:
+        (ref MoveMessage)(direction: left).send()
