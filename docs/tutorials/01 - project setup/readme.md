@@ -9,8 +9,8 @@ Introduction
 
 However, `Cat 400` is not an _engine_ - there is no visual editor, no blueprints or whatever. Everything is done in code, and it's up to you to program your game. Of course there is a possibility to build an engine on top of this library, but it's not even in plans. `Cat 400` is a low-level thing, and it will remain like this.
 
-Project setup
--------------
+Installing the framework
+------------------------
 
 This library doesn't require some special software. You can replace almost all its parts with your own implementations, so there are no external dependencies for new empty project. So, unlike other game frameworks, there is no strict `bgfx` or `sdl` requirements.
 
@@ -31,11 +31,23 @@ If you query for installed packages, you will see that `Cat 400` is named as `c4
 c4  [#head]
 ```
 
-It's important to mention that you don't have to start each project from scratch - `cat 400` is shipped with some templates which allow you to immediately start coding your game without setting up a project. However, for learning purposes we'll cover creating brand new game from scratch. After this tutorial you should understand how the framework works and that there's no magic inside.
+Creating project files
+----------------------
 
 In these tutorials we'll develop a small 2d game - "Ping Pong", which is simple enough to understand and hard enough to code.
 
-Sources
--------
+> It's important to mention that you don't have to start each project from scratch - `cat 400` is shipped with some templates which allow you to immediately start coding your game without setting up a project. However, for learning purposes we'll cover creating brand new game from scratch. After this tutorial you should understand how the framework works and that there's no magic inside.
 
-For every tutorial, you will find sources in [src](src/) folder.
+First, create a working directory for the new project, and create a main `.nim` file inside which will be an entrypoint for the game:
+
+```sh
+mkdir ping-pong
+cd ping-pong
+touch pingpong.nim
+```
+
+In next lessons we'll cover basic concepts of `Cat 400` which will allow us to write something better than just an empty file.
+
+> For every tutorial, you will find sources in [src](src/) folder.
+
+> Everything mentioned in the tutorials is a subject to change until v1.0 is released. Please open an issue if you find inconsistencies.
