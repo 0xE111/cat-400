@@ -125,6 +125,7 @@ By default, `msgpack4nim` does not include object type into serialized message, 
 `Cat 400` solves this problem by introducing `register` template. This template defines all required methods and procs for including message type into serialized string. Use `msgpack` and `msgunpack` procedures to serialize/deserialize messages:
 
 ```nim
+# src/messages.nim
 import c4/messages
 
 
@@ -156,3 +157,5 @@ assert unpacked.name == "RunMessage"
 ```
 
 > Don't forget to call `register CustomMessageType` on message types if you want to be able to resialize it.
+
+Now that you know how to work with messages, it's time to send them! Continue to [next tutorial](../03%20-%20processes%20and%20threads/readme.md).
