@@ -46,8 +46,21 @@ cd ping-pong
 touch pingpong.nim
 ```
 
-In next lessons we'll cover basic concepts of `Cat 400` which will allow us to write something better than just an empty file.
+In next lessons we'll cover basic concepts of `Cat 400` which will allow us to write something better than just an empty file. For now, let's just ensure that the framework can be successfully imported:
+
+```nim
+# pingpong.nim
+import c4/core
+
+
+when isMainModule:
+  echo "C4 was successfully imported"
+```
+
+Compile the code with `nim c -r pingpong` and ensure the message is successfully printed.
 
 > For every tutorial, you will find sources in [src](src/) folder.
 
 > Everything mentioned in the tutorials is a subject to change until v1.0 is released. Please open an issue if you find inconsistencies.
+
+Now you are ready for [Messages tutorial](../02%20-%20messages/readme.md)
