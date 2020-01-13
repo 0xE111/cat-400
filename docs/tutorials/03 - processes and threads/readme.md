@@ -106,6 +106,42 @@ when isMainModule:
   joinAll()  # wait for all threads
 ```
 
+Main thread
+-----------
+
+Main program thread is nothing different from any of `spawn`ed threads. Its name can be accessed using `mainThread` const, and you may communicate with main thread from any other thread as usual:
+
+```nim
+# threads_main.nim
+import c4/threads
+import c4/messages
+
+
+when isMainModule:
+  spawn("thread1") do:
+    # just send dummy message to main thread
+    new(Message).send(mainThread)
+
+  # wait for message from thread1
+  let msg = recv()
+  echo "Main thread: received message from thread1"
+```
+
+Other functions
+---------------
+
+```nim
+message.send("thread1")  # send message to thread1
+
+message.send()  # send message to current thread itself (loopback)
+
+exists("thread1")  # whether thread1 is currently running
+
+runningThreads()  # sequence of currently running threads' names
+```
+
+Inspect [c4/threads](../../../c4/threads.nim) or auto-generated docs for complete threads API reference.
+
 Processes
 =========
 
