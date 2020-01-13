@@ -31,8 +31,10 @@ var threadsLock: Lock
 threadsLock.initLock()
 var currentThreadName {.threadvar.}: string
 
+proc threadName*(): ThreadName = currentThreadName
+
 # main thread setup
-const mainThread = "main"
+const mainThread* = "main"
 currentThreadName = mainThread
 threads[currentThreadName] = ThreadInfo()
 threads[currentThreadName].channel.open()
@@ -68,6 +70,14 @@ proc tryRecv*(): ref Message =
   withLock threadsLock:
     let res = threadsPtr[][currentThreadName].channel.tryRecv()
     result = if res.dataAvailable: res.msg else: nil
+
+proc recv*(): ref Message =
+  ## Tries to receive a message. Blocks until message is received.
+  # var channel: Channel[ref Message]
+  # withLock threadsLock:
+  #   channel = threadsPtr[][currentThreadName].channel
+  # result = channel.recv()
+  result = threadsPtr[][currentThreadName].channel.recv()
 
 proc peek*(): int =
   ## Returns number of unread messages for current thread
