@@ -15,7 +15,7 @@ Threads creation
 Create new thread with `spawn` template:
 
 ```nim
-# 01_threads_creation.nim
+# threads_creation.nim
 import c4/threads
 
 
@@ -51,7 +51,10 @@ import c4/messages
 type DataMessage = object of Message
   data: int
 
-# `recv()` and `tryRecv()` return `ref Message` type, not `ref DataMessage` -> we need to use methods to perform runtime type-specific actions, thus we define `process()` and `value()` methods
+# `recv()` and `tryRecv()` return `ref Message` type,
+# not `ref DataMessage` -> we need to use methods to
+# perform runtime type-specific actions, thus we define
+# `process()` and `value()` methods
 method value(msg: ref Message): int {.base.} = 0
 method process(msg: ref Message) {.base.} = discard
 
@@ -61,8 +64,10 @@ method process(msg: ref DataMessage) = msg.data += 1
 
 when isMainModule:
   spawn("thread1") do:
-    # thread1 will wait for thread2 to appear by calling `waitAvailable`;
-    # `waitAvailable` may accept `timeout` arg (how many seconds to wait) and `interval` arg (how often to check for thread)
+    # thread1 will wait for thread2 to appear by calling
+    # `waitAvailable`; `waitAvailable` may accept `timeout`
+    # arg (how many seconds to wait) and `interval` arg
+    # (how often to check for thread)
     if not waitAvailable("thread2"):
       echo "Error: thread2 is not available"
       return
@@ -73,7 +78,10 @@ when isMainModule:
 
     # wait for new message from thread2
     while true:
-      let msg = recv()  # this will block execution until message received; for non-blocking behaviour use `tryRecv()`
+      # this will block execution until message received;
+      # for non-blocking behaviour use `tryRecv()`
+      let msg = recv()
+
       echo &"{threadName()}: {msg.value}"  # print current thread name and message value
 
       msg.process()  # increment message value
