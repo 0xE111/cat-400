@@ -187,6 +187,8 @@ dieTogether()
 
 Pay a lot of attention that everyting before `run()` call (except another process run) will be executed in main and subprocesses. Use it to initialize something common for al processes, for example logging.
 
+> Only main process can run subprocesses and wait for them.
+
 Processes communication
 -----------------------
 

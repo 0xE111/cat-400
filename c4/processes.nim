@@ -30,6 +30,7 @@ for kind, key, value in parseopt.getopt():
 
 template run*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
+  assert currentProcessName == mainProcessName
 
   if processes.hasKey(name):
     raise newException(KeyError, "Process with name '" & name & "' already exists")
