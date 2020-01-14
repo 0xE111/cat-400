@@ -1,7 +1,7 @@
 Threads
 =======
 
-> `c4/threads` may be used separately from `cat 400` framework,
+> `c4/threads` may be used separately from `cat 400` framework.
 
 Originally, `Cat 400` was single-threaded, like most of existing nim game engines. However, this is very inefficient: every personal computer has at least couple cores, and you should use all of them for best performance of our app, making calculations as parallel as possible. Even if number of threads is greater than number of cores, [it's still fine](https://stackoverflow.com/questions/3126154/multithreading-what-is-the-point-of-more-threads-than-cores). Also, running different parts of application inside separate threads is a good way of decoupling things.
 
@@ -145,3 +145,49 @@ Inspect [c4/threads](../../../c4/threads.nim) or auto-generated docs for complet
 Processes
 =========
 
+> `c4/processes` may be used separately from `cat 400` framework.
+
+Dealing with processes has a bit similar syntax, but the logic is quite different.
+
+Processes creation
+------------------
+
+To create a process, use `run(<process name>)` template:
+
+```nim
+# processes_creation.nim
+import strformat
+
+import c4/processes
+
+
+echo "This piece of code is executed in every process (master, subprocess1, subprocess2)"
+
+echo &"Current process name: {processName()}"  # for each process this will have its unique value
+
+# at this point we start new subprocess;
+# as mentioned earlier, every code before this line
+# will be executed in every subprocess
+run("subprocess1") do:
+  for _ in 0..10:
+    echo processName()  # print current process name
+    sleep 1000
+
+# everything before this line (except run("subprocess1") block)
+# will be executed in "subprocess2" process
+run("subprocess2") do:
+  for _ in 0..10:
+    echo processName()
+    sleep 1000
+
+# wait for the processes to complete;
+# if one process is not running, others are force shut down
+dieTogether()
+```
+
+Pay a lot of attention that everyting before `run()` call (except another process run) will be executed in main and subprocesses. Use it to initialize something common for al processes, for example logging.
+
+Processes communication
+-----------------------
+
+There's no built-in opportunity to send messages across processes. However, since messages may be easily serialized to msgpack format, one can easily implement message passing between processes if needed.

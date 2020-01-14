@@ -20,8 +20,6 @@ type
     thread: Thread[ThreadName]  # thread object itself
     channel: Channel[ref Message]  # channel for sending messages into the thread
 
-  NameDuplicationError* = object of Exception
-
 # table of all known threads;
 # setting initial size will prevent from allocating additional space from non-main thread
 # (required until sharedtables module is fixed)
@@ -48,7 +46,7 @@ template spawn*(name: ThreadName, code: untyped) =
 
   withLock threadsLock:
     if name in threads:
-      raise newException(NameDuplicationError, "Thread with name '" & name & "' was already registered")
+      raise newException(KeyError, "Thread with name '" & name & "' already exists")
 
     threads[name] = ThreadInfo()
     threads[name].channel.open()
