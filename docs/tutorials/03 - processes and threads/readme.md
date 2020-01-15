@@ -193,7 +193,61 @@ Pay a lot of attention that everyting before `run()` call (except another proces
 
 > Under the hood, when you call `run(...)`, the same executable as currently running one is called, with exactly the same args, plus a special arg `--process=<process name>`. The latter defines which `run(...)` code to execute.
 
+Inspect [c4/processes](../../../c4/processes.nim) or auto-generated docs for complete processes API reference.
+
 Processes communication
 -----------------------
 
 There's no built-in opportunity to send messages across processes. However, since messages may be easily serialized to msgpack format, one can easily implement message passing between processes if needed.
+
+Wrapping it up
+==============
+
+Running client and server with multiple threads inside each:
+
+```nim
+# processes_and_threads.nim
+import strformat
+
+import c4/[processes, threads]
+
+
+when isMainModule:
+  echo &"Running {processName()} process"
+
+  run("server") do:
+    spawn("physics") do:
+      echo &" - Thread {threadName()}"
+      sleep 2000
+
+    spawn("network") do:
+      echo &" - Thread {threadName()}"
+      sleep 2000
+
+    threads.joinAll()  # let's specify module explicitly to not get confused
+
+  run("client") do:
+    spawn("video") do:
+      echo &" - Thread {threadName()}"
+      sleep 2000
+
+    spawn("network") do:
+      echo &" - Thread {threadName()}"
+      sleep 2000
+
+    threads.joinAll()
+
+  processes.dieTogether()  # let's specify module explicitly to not get confused
+```
+
+```sh
+Running master process
+Running server process
+ - Thread physics
+ - Thread network
+Running client process
+ - Thread video
+ - Thread network
+ ```
+
+Now you know how to start games using `Cat 400`. Time for [ECS](../04%20-%20ecs/readme.md).
