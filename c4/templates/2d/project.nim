@@ -2,19 +2,20 @@ import logging
 import net
 import strformat
 
+import c4/processes
 import c4/threads
-import c4/core
 import c4/systems/network/enet
 import c4/systems/physics/simple
 import c4/systems/input/sdl
 import c4/systems/video/sdl as sdlvideo
+import c4/utils/loglevel
 
 import src/systems/[network, physics, input, video]
 import src/scenarios/[connection, movement, start]
 
 
 when isMainModule:
-  app do:
+  run("server") do:
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] server $levelname: "))
       let network = new(ServerNetworkSystem)
@@ -33,7 +34,7 @@ when isMainModule:
 
     joinAll()
 
-  do:
+  run("client") do:
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] client $levelname: "))
       let network = new(ClientNetworkSystem)
@@ -60,3 +61,5 @@ when isMainModule:
       input.dispose()
 
     joinAll()
+
+  dieTogether()

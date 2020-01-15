@@ -45,9 +45,14 @@ template run*(name: ProcessName, code: untyped) =
 
   elif currentProcessName == name:
     logging.debug "Running '" & name & "' process"
-    code
-    quit()
 
+    try:
+      code
+      quit()
+    except Exception as exc:
+      # log any exception before dying
+      logging.fatal "Exception: " & exc.msg & "\n" & exc.getStackTrace()
+      raise
 
 proc dieTogether*(checkInterval: int = 1000) =
   ## Monitors existing processes. If one process is not running anymore, terminates all other processes as well.
@@ -71,7 +76,6 @@ proc dieTogether*(checkInterval: int = 1000) =
 
 
 when isMainModule:
-
   suite "processes":
     run("process1") do:
       for _ in 0..10:
