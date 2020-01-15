@@ -9,6 +9,8 @@ Running code inside separate thread and sending messages to other threads may be
 
 > Using `c4/threads` does not dismiss basic multithreading usage rules. Please refer to official Nim docs on threads to understand how it works.
 
+> Using threads requires adding `--threads:on` compiler option. Without it, you'll get "Error: undeclared identifier: 'Thread'".
+
 Threads creation
 -------
 
@@ -240,7 +242,10 @@ when isMainModule:
   processes.dieTogether()  # let's specify module explicitly to not get confused
 ```
 
+Now start master process:
+
 ```sh
+> nim c --threads:on -r processes_and_threads.nim
 Running master process
 Running server process
  - Thread physics
@@ -249,5 +254,15 @@ Running client process
  - Thread video
  - Thread network
  ```
+
+Or you may start only specific process:
+
+```sh
+> nim c --threads:on -r processes_and_threads.nim --process="client"
+
+Running client process
+ - Thread video
+ - Thread network
+```
 
 Now you know how to start games using `Cat 400`. Time for [ECS](../04%20-%20ecs/readme.md).

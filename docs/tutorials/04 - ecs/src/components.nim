@@ -1,7 +1,7 @@
 import strformat
 import c4/entities
 
-#
+
 type Health = object
   value: uint8
 
@@ -27,6 +27,9 @@ player.printHealth()  # Entity -32768 health: 90
 
 player[Health].value = 100
 player.printHealth()
+
+for entity, health in getComponents(Health):
+  echo &"Entity {entity} has health component with value {health.value}"
 
 # player[Health] = Health()
 # or
