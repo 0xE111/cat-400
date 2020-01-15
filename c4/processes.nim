@@ -30,14 +30,12 @@ for kind, key, value in parseopt.getopt():
 
 template run*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
-  assert currentProcessName == mainProcessName
-
-  if processes.hasKey(name):
-    raise newException(KeyError, "Process with name '" & name & "' already exists")
-
-  assert name.match(re"\w+").isSome
-
   if currentProcessName == mainProcessName:
+    assert name.match(re"\w+").isSome
+
+    if processes.hasKey(name):
+      raise newException(KeyError, "Process with name '" & name & "' already exists")
+
     logging.debug "Starting '" & name & "' process"
     processes[name] = startProcess(
       command=getAppFilename(),

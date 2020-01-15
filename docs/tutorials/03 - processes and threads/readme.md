@@ -169,25 +169,29 @@ echo &"Current process name: {processName()}"  # for each process this will have
 # as mentioned earlier, every code before this line
 # will be executed in every subprocess
 run("subprocess1") do:
-  for _ in 0..10:
+  for _ in 0..5:
     echo processName()  # print current process name
     sleep 1000
 
 # everything before this line (except run("subprocess1") block)
 # will be executed in "subprocess2" process
 run("subprocess2") do:
-  for _ in 0..10:
+  for _ in 0..100:
     echo processName()
     sleep 1000
+
+echo "Only main process reaches this place"
 
 # wait for the processes to complete;
 # if one process is not running, others are force shut down
 dieTogether()
 ```
 
-Pay a lot of attention that everyting before `run()` call (except another process run) will be executed in main and subprocesses. Use it to initialize something common for al processes, for example logging.
+Pay a lot of attention that everyting before `run()` call (except another process run) will be executed in main process and subprocesses. Use it to initialize something common for all processes, for example logging.
 
 > Only main process can run subprocesses and wait for them.
+
+> Under the hood, when you call `run(...)`, the same executable as currently running one is called, with exactly the same args, plus a special arg `--process=<process name>`. The latter defines which `run(...)` code to execute.
 
 Processes communication
 -----------------------
