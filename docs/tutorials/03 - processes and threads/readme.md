@@ -21,18 +21,18 @@ Create new thread with `spawn` template:
 import c4/threads
 
 
-spawn("thread1") do:  # launches a new thread called "thread1"
+spawn("thread1"):  # launches a new thread called "thread1"
   for _ in 0..100:
     echo threadName()  # call `threadName()` to get name of currently running thread
 
-spawn("thread2") do:
+spawn("thread2"):
   for _ in 0..100:
     echo threadName()
 
 joinAll()  # call this to wait for all threads to complete
 ```
 
-As you may see, you just write your code inside `do:` statement, and that's all!
+As you may see, you just write your code after `spawn` statement, and that's all!
 
 Threads communication
 ----
@@ -65,7 +65,7 @@ method process(msg: ref DataMessage) = msg.data += 1
 
 
 when isMainModule:
-  spawn("thread1") do:
+  spawn("thread1"):
     # thread1 will wait for thread2 to appear by calling
     # `waitAvailable`; `waitAvailable` may accept `timeout`
     # arg (how many seconds to wait) and `interval` arg
@@ -92,7 +92,7 @@ when isMainModule:
       if msg.value > 100:
         return  # quit on condition
 
-  spawn("thread2") do:
+  spawn("thread2"):
     # this thread is spawned after thread1
 
     while true:
@@ -120,7 +120,7 @@ import c4/messages
 
 
 when isMainModule:
-  spawn("thread1") do:
+  spawn("thread1"):
     # just send dummy message to main thread
     new(Message).send(mainThread)
 
@@ -170,14 +170,14 @@ echo &"Current process name: {processName()}"  # for each process this will have
 # at this point we start new subprocess;
 # as mentioned earlier, every code before this line
 # will be executed in every subprocess
-run("subprocess1") do:
+run("subprocess1"):
   for _ in 0..5:
     echo processName()  # print current process name
     sleep 1000
 
 # everything before this line (except run("subprocess1") block)
 # will be executed in "subprocess2" process
-run("subprocess2") do:
+run("subprocess2"):
   for _ in 0..100:
     echo processName()
     sleep 1000
@@ -217,23 +217,23 @@ import c4/[processes, threads]
 when isMainModule:
   echo &"Running {processName} process"
 
-  run("server") do:
-    spawn("physics") do:
+  run("server"):
+    spawn("physics"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
-    spawn("network") do:
+    spawn("network"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
     threads.joinAll()  # let's specify module explicitly to not get confused
 
-  run("client") do:
-    spawn("video") do:
+  run("client"):
+    spawn("video"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
-    spawn("network") do:
+    spawn("network"):
       echo &" - Thread {threadName()}"
       sleep 2000
 

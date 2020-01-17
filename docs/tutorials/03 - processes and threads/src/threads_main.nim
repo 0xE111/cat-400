@@ -4,7 +4,7 @@ import c4/messages
 
 
 when isMainModule:
-  spawn("thread1") do:
+  spawn("thread1"):
     # just send dummy message to main thread
     new(Message).send(mainThread)
 

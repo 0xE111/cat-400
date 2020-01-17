@@ -11,14 +11,14 @@ echo &"Current process name: {processName()}"  # for each process this will have
 # at this point we start new subprocess;
 # as mentioned earlier, every code before this line
 # will be executed in every subprocess
-run("subprocess1") do:
+run("subprocess1"):
   for _ in 0..5:
     echo processName()  # print current process name
     sleep 1000
 
 # everything before this line (except run("subprocess1") block)
 # will be executed in "subprocess2" process
-run("subprocess2") do:
+run("subprocess2"):
   for _ in 0..100:
     echo processName()
     sleep 1000

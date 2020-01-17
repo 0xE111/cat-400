@@ -2,11 +2,11 @@
 import c4/threads
 
 
-spawn("thread1") do:  # launches a new thread called "thread1"
+spawn("thread1"):  # launches a new thread called "thread1"
   for _ in 0..100:
     echo threadName()  # call `threadName()` to get name of currently running thread
 
-spawn("thread2") do:
+spawn("thread2"):
   for _ in 0..100:
     echo threadName()
 

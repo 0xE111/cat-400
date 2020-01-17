@@ -7,23 +7,23 @@ import c4/[processes, threads]
 when isMainModule:
   echo &"Running {processName} process"
 
-  run("server") do:
-    spawn("physics") do:
+  run("server"):
+    spawn("physics"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
-    spawn("network") do:
+    spawn("network"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
     threads.joinAll()  # let's specify module explicitly to not get confused
 
-  run("client") do:
-    spawn("video") do:
+  run("client"):
+    spawn("video"):
       echo &" - Thread {threadName()}"
       sleep 2000
 
-    spawn("network") do:
+    spawn("network"):
       echo &" - Thread {threadName()}"
       sleep 2000
 

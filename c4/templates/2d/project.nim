@@ -15,7 +15,7 @@ import src/scenarios/[connection, movement, start]
 
 
 when isMainModule:
-  run("server") do:
+  run("server"):
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] server $levelname: "))
       let network = new(ServerNetworkSystem)
@@ -34,7 +34,7 @@ when isMainModule:
 
     joinAll()
 
-  run("client") do:
+  run("client"):
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] client $levelname: "))
       let network = new(ClientNetworkSystem)

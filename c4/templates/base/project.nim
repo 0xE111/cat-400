@@ -1,8 +1,9 @@
 import net
 import logging
 
+import c4/processes
 import c4/threads
-import c4/core
+import c4/utils/loglevel
 
 import c4/systems/network/enet
 import c4/systems/physics/ode
@@ -18,7 +19,7 @@ import src/scenarios/init
 
 
 when isMainModule:
-  app do:
+  run("server"):
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] server $levelname: "))
       let network = new(ServerNetworkSystem)
@@ -35,7 +36,7 @@ when isMainModule:
 
     joinAll()
 
-  do:
+  run("client"):
     spawn("network"):
       logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] client $levelname: "))
       let network = new(ClientNetworkSystem)
@@ -59,3 +60,5 @@ when isMainModule:
       video.dispose()
 
     joinAll()
+
+  processes.dieTogether()

@@ -20,7 +20,7 @@ method process(msg: ref DataMessage) = msg.data += 1
 
 
 when isMainModule:
-  spawn("thread1") do:
+  spawn("thread1"):
     # thread1 will wait for thread2 to appear by calling
     # `waitAvailable`; `waitAvailable` may accept `timeout`
     # arg (how many seconds to wait) and `interval` arg
@@ -47,7 +47,7 @@ when isMainModule:
       if msg.value > 100:
         return  # quit on condition
 
-  spawn("thread2") do:
+  spawn("thread2"):
     # this thread is spawned after thread1
 
     while true:
