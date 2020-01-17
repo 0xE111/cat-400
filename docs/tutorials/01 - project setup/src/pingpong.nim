@@ -1,5 +1,5 @@
 # pingpong.nim
-import c4/core
+import c4/processes
 
 
 when isMainModule:

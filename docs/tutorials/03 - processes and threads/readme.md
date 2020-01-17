@@ -200,7 +200,7 @@ Inspect [c4/processes](../../../c4/processes.nim) or auto-generated docs for com
 Processes communication
 -----------------------
 
-There's no built-in opportunity to send messages across processes. However, since messages may be easily serialized to msgpack format, one can easily implement message passing between processes if needed.
+There's no built-in proc to send messages across processes. However, since messages may be easily serialized to msgpack format, one can easily implement message passing between processes by some network library or message broker.
 
 Wrapping it up
 ==============
@@ -215,7 +215,7 @@ import c4/[processes, threads]
 
 
 when isMainModule:
-  echo &"Running {processName()} process"
+  echo &"Running {processName} process"
 
   run("server") do:
     spawn("physics") do:

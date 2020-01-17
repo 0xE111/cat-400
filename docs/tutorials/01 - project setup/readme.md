@@ -50,7 +50,7 @@ In next lessons we'll cover basic concepts of `Cat 400` which will allow us to w
 
 ```nim
 # pingpong.nim
-import c4/core
+import c4/processes
 
 
 when isMainModule:

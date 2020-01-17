@@ -5,7 +5,7 @@ import c4/[processes, threads]
 
 
 when isMainModule:
-  echo &"Running {processName()} process"
+  echo &"Running {processName} process"
 
   run("server") do:
     spawn("physics") do:

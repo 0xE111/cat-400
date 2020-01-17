@@ -18,19 +18,22 @@ type
 
 var processes = initTable[ProcessName, Process]()
 const mainProcessName* = "master"
-var currentProcessName: ProcessName = mainProcessName
 
-proc processName*(): string = currentProcessName
 
-for kind, key, value in parseopt.getopt():
-  if kind == parseopt.cmdLongOption and key == "process":
-    currentProcessName = value
-    break
+proc getProcessName(): string =
+  for kind, key, value in parseopt.getopt():
+    if kind == parseopt.cmdLongOption and key == "process":
+      return value
+
+  mainProcessName
+
+
+let processName*: ProcessName = getProcessName()
 
 
 template run*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
-  if currentProcessName == mainProcessName:
+  if processName == mainProcessName:
     assert name.match(re"\w+").isSome
 
     if processes.hasKey(name):
@@ -43,7 +46,7 @@ template run*(name: ProcessName, code: untyped) =
       options={poParentStreams},
     )
 
-  elif currentProcessName == name:
+  elif processName == name:
     logging.debug "Running '" & name & "' process"
 
     try:
@@ -56,7 +59,7 @@ template run*(name: ProcessName, code: untyped) =
 
 proc dieTogether*(checkInterval: int = 1000) =
   ## Monitors existing processes. If one process is not running anymore, terminates all other processes as well.
-  assert currentProcessName == mainProcessName
+  assert processName == mainProcessName
   var shutdown = false
 
   while true:
@@ -79,12 +82,12 @@ when isMainModule:
   suite "processes":
     run("process1") do:
       for _ in 0..10:
-        echo processName()
+        echo processName
         sleep 100
 
     run("process2") do:
       for _ in 0..10:
-        echo processName()
+        echo processName
         sleep 100
 
     dieTogether()
