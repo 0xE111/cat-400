@@ -13,12 +13,10 @@ when isMainModule:
   import sequtils
 
 
-type
-  Entity* = int16  ## Entity is just an int which may have components of any type. Zero entity is reserved as "not initialized"
+type Entity* = int16  ## Entity is just an int which may have components of any type. Zero entity is reserved as "not initialized"
   # uint doesn't check boundaries
 
-
-var entities: set[Entity] = {}  # set[int32] won't compile
+var entities: set[Entity]  # set[int32] won't compile
 
 
 # ---- Entity ----

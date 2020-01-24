@@ -1,6 +1,7 @@
 {.used.}
 import sequtils
 import tables
+import math
 
 import c4/threads
 import c4/entities
@@ -12,19 +13,18 @@ import ../messages
 
 
 method processRemote*(self: ref ServerNetworkSystem, message: ref MoveMessage) =
+  message.entity = 0  # dismiss entity when message is non-local
   message.send("physics")
 
 
 method process*(self: ref PhysicsSystem, message: ref MoveMessage) =
-  let isRemote = not message.peer.isNil
+  if not message.entity.isInitialized:
+    message.entity = self.player
 
-  for entity in toSeq(getComponents(ref Control).pairs).filterIt(
-    (if isRemote: it[1] of ref PlayerControl else: it[1] of ref AIControl)
-  ).mapIt(it[0]):
-    let physics = entity[ref Physics]
+  let physics = message.entity[ref Physics]
 
-    physics.speed = (
-      x: (if message.direction == left: -1 else: 1) * paddleMovementSpeed,
-      y: 0.0,
-    )
-    physics.movementRemains = movementQuant
+  physics.speed = (
+    x: cos(message.direction) * movementSpeed,
+    y: sin(message.direction) * movementSpeed,
+  )
+  physics.movementRemains = movementQuant

@@ -1,10 +1,11 @@
+import c4/entities
 import c4/messages
 import c4/systems/network/enet
 import c4/systems/physics/simple
 
 
 type EntityKind* = enum
-  wall, gate, paddle, ball
+  wall, player, enemy
 
 type CreateTypedEntityMessage* = object of CreateEntityMessage
   kind*: EntityKind
@@ -23,12 +24,10 @@ type SetPositionMessage* = object of EntityMessage
   y*: float
 register SetPositionMessage
 
-type MovementDirection* = enum
-  left, right
-
 type MoveMessage* = object of NetworkMessage
   ## Client sends to server when arrow is pressed
-  direction*: MovementDirection
+  entity*: Entity
+  direction*: float  # just angle in rad
 register MoveMessage
 
 type StartGameMessage* = object of NetworkMessage

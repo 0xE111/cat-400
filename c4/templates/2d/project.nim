@@ -11,7 +11,7 @@ import c4/systems/video/sdl as sdlvideo
 import c4/utils/loglevel
 
 import src/systems/[network, physics, input, video]
-import src/scenarios/[connection, movement, start]
+import src/scenarios/[connection, movement, collision]
 
 
 when isMainModule:

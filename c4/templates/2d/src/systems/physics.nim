@@ -1,5 +1,6 @@
 import tables
 import strformat
+import math
 import sequtils
 
 import c4/threads
@@ -10,15 +11,14 @@ import ../messages
 
 
 const
-  movementQuant* = 0.03
-  paddleMovementSpeed* = 0.5
-  ballSpeed* = 1.0
+  movementQuant* = 1/30  # synced with physics FPS
+  movementSpeed* = 0.5
+  numEnemies = 4
 
 type
   PhysicsSystem* = object of SimplePhysicsSystem
-    ball*: Entity
-    paddles*: array[2, Entity]
-    gates*: array[2, Entity]
+    player*: Entity
+    enemies*: seq[Entity]
     walls*: seq[Entity]
 
   Physics* = object of SimplePhysics
@@ -33,23 +33,18 @@ method getComponents*(self: ref PhysicsSystem): Table[Entity, ref SimplePhysics]
   cast[Table[Entity, ref SimplePhysics]](getComponents(ref Physics))
 
 method init*(self: ref PhysicsSystem) =
-  # ball
-  self.ball = newEntity()
-  self.ball[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.5), width: 0.02, height: 0.02)
+  # player
+  self.player = newEntity()
+  self.player[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.9), width: 0.02, height: 0.02)
+  self.player[ref Control] = new(PlayerControl)
 
-  # paddles
-  self.paddles[0] = newEntity()
-  self.paddles[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.05), width: 0.25, height: 0.01)
-  self.paddles[0][ref Control] = new(AIControl)
-  self.paddles[1] = newEntity()
-  self.paddles[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.95), width: 0.25, height: 0.01)
-  self.paddles[1][ref Control] = new(PlayerControl)
+  # enemies
 
-  # gates
-  self.gates[0] = newEntity()
-  self.gates[0][ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.0), width: 1.0, height: 0.02)
-  self.gates[1] = newEntity()
-  self.gates[1][ref Physics] = (ref Physics)(position: (x: 0.5, y: 1.0), width: 1.0, height: 0.02)
+  for i in 0..<numEnemies:
+    let enemy = newEntity()
+    enemy[ref Physics] = (ref Physics)(position: (x: (i+1)*1/(numEnemies+1), y: 0.1), width: 0.02, height: 0.02)
+    enemy[ref Control] = new(AIControl)
+    self.enemies.add(enemy)
 
   # walls
   let leftWall = newEntity()
@@ -60,11 +55,23 @@ method init*(self: ref PhysicsSystem) =
   rightWall[ref Physics] = (ref Physics)(position: (x: 1.0, y: 0.5), width: 0.02, height: 1.0)
   self.walls.add(rightWall)
 
+  let bottomWall = newEntity()
+  bottomWall[ref Physics] = (ref Physics)(position: (x: 0.5, y: 0.0), width: 1.0, height: 0.02)
+  self.walls.add(bottomWall)
+
+  let upperWall = newEntity()
+  upperWall[ref Physics] = (ref Physics)(position: (x: 0.5, y: 1.0), width: 1.0, height: 0.02)
+  self.walls.add(upperWall)
+
+
+proc dist(v1, v2: Vector): float =
+  sqrt((v1.x - v2.x) ^ 2 + (v1.y - v2.y) ^ 2)
+
 
 method update*(self: ref PhysicsSystem, dt: float) =
   procCall (ref SimplePhysicsSystem)(self).update(dt)
 
-  for entity in self.paddles:
+  for entity in concat(@[self.player], self.enemies):
     let physics = entity[ref Physics]
     if physics.movementRemains > 0:
       physics.movementRemains -= dt
@@ -83,13 +90,19 @@ method update*(self: ref PhysicsSystem, dt: float) =
   # simple AI logic
   for entity in toSeq(getComponents(ref Control).pairs).filterIt(it[1] of ref AIControl).mapIt(it[0]):
     let
-      entityX = entity[ref Physics].position.x
-      ballX = self.ball[ref Physics].position.x
+      entityPhysics = entity[ref Physics]
+      playerPhysics = self.player[ref Physics]
 
-    const delta = 0.02
+    if playerPhysics.speed == (x: 0.0, y: 0.0):
+      return
 
-    if abs(entityX - ballX) > delta:
-      if entityX < ballX:
-        (ref MoveMessage)(direction: right).send()
-      else:
-        (ref MoveMessage)(direction: left).send()
+    let
+      delta = 0.01
+      xPlayerDelta = playerPhysics.position.x - entityPhysics.position.x
+      yPlayerDelta = playerPhysics.position.y - entityPhysics.position.y
+
+    if abs(xPlayerDelta) < delta and abs(yPlayerDelta) < delta:
+      continue
+
+    let angle = arctan2(yPlayerDelta, xPlayerDelta)
+    (ref MoveMessage)(entity: entity, direction: angle).send()

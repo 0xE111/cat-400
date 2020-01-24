@@ -1,4 +1,5 @@
 import sdl2/sdl as sdllib
+import math
 
 import c4/threads
 import c4/systems/input/sdl
@@ -18,11 +19,22 @@ method handle*(self: ref InputSystem, event: Event) =
 
 
 method handle*(self: ref InputSystem, keyboard: ptr array[NUM_SCANCODES.int, uint8]) =
-  let
-    leftPressed = keyboard[SCANCODE_LEFT].bool
-    rightPressed = keyboard[SCANCODE_RIGHT].bool
+  var vector = (x: 0.0, y: 0.0)
 
-  if leftPressed and not rightPressed:
-    (ref MoveMessage)(direction: left).send("network")
-  elif rightPressed and not leftPressed:
-    (ref MoveMessage)(direction: right).send("network")
+  if keyboard[SCANCODE_LEFT].bool:
+    vector = (x: vector.x - 1.0, y: vector.y + 0.0)
+
+  if keyboard[SCANCODE_RIGHT].bool:
+    vector = (x: vector. x + 1.0, y: vector.y + 0.0)
+
+  if keyboard[SCANCODE_UP].bool:
+    vector = (x: vector.x + 0.0, y: vector.y + 1.0)
+
+  if keyboard[SCANCODE_DOWN].bool:
+    vector = (x: vector.x + 0.0, y: vector.y - 1.0)
+
+  if vector == (x: 0.0, y: 0.0):
+    return
+
+  let angle = arctan2(vector.y, vector.x)
+  (ref MoveMessage)(direction: angle).send("network")
