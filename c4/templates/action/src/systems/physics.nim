@@ -4,6 +4,7 @@ import tables
 import c4/lib/ode/ode as odelib
 import c4/lib/enet/enet
 
+import c4/types
 import c4/entities
 import c4/threads
 import c4/messages as c4messages
@@ -55,7 +56,7 @@ proc startMovement*(self: ref Physics) =
 
 
 method init*(self: PhysicsSystem, physics: ref BoxPhysics) =
-  procCall self.init((ref Physics)physics)
+  procCall self.init(physics as ref Physics)
 
   let geometry = createBox(self.space, 1, 1, 1)
   geometry.geomSetBody(physics.body)

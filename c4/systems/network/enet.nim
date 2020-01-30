@@ -14,6 +14,7 @@ when isMainModule:
 
 import ../../lib/enet/enet
 
+import ../../types
 import ../../threads
 import ../../entities
 import ../../messages
@@ -355,7 +356,7 @@ method processRemote*(self: ref EnetClientNetworkSystem, message: ref CreateEnti
   self.entitiesMap[message.entity] = entity
   logging.debug &"Created new mapping: {message.entity} -> {entity}"
 
-  procCall self.processRemote((ref EntityMessage)message)  # map entity
+  procCall self.processRemote(message as ref EntityMessage)  # map entity
 
 
 method processRemote*(self: ref EnetClientNetworkSystem, message: ref DeleteEntityMessage) =

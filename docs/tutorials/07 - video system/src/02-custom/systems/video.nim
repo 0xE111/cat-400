@@ -4,6 +4,7 @@ import os  # required for `/` proc
 import tables
 import math
 
+import c4/types
 import c4/entities
 import c4/systems
 import c4/systems/video/ogre

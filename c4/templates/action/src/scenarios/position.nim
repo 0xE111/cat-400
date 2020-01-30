@@ -6,6 +6,7 @@ import strformat
 
 import c4/lib/ogre/ogre as ogrelib
 
+import c4/types
 import c4/entities
 import c4/systems
 import c4/systems/video/ogre

@@ -1,6 +1,7 @@
 import sdl2/sdl as sdllib
 import math
 
+import c4/types
 import c4/threads
 import c4/systems/input/sdl
 
@@ -12,7 +13,7 @@ type InputSystem* = object of SdlInputSystem
 
 method handle*(self: ref InputSystem, event: Event) =
   ## Handling of basic event. These are pretty reasonable defaults.
-  procCall (ref SdlInputSystem)(self).handle(event)
+  procCall self.as(ref SdlInputSystem).handle(event)
 
   if event.kind == KEYDOWN and event.key.keysym.sym == K_SPACE:
     new(StartGameMessage).send("network")

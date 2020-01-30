@@ -6,6 +6,7 @@ import math
 
 import c4/lib/ode/ode as odelib
 
+import c4/types
 import c4/messages as c4messages
 import c4/entities
 import c4/systems

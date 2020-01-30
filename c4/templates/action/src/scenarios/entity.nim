@@ -1,6 +1,7 @@
 when defined(nimHasUsed):
     {.used.}
 
+import c4/types
 import c4/entities
 import c4/systems
 import c4/systems/network/enet

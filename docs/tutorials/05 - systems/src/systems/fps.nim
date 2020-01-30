@@ -2,6 +2,7 @@
 import logging
 import strformat
 
+import c4/types
 import c4/systems
 
 # define new system

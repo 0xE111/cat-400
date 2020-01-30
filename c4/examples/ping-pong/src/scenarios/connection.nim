@@ -45,12 +45,17 @@ proc getEntityDescribingMessages(self: Entity, kind: EntityKind): seq[ref Entity
 
 method process*(self: ref PhysicsSystem, message: ref ConnectionOpenedMessage) =
   # send world info to newly connected client
-  for msg in self.player.getEntityDescribingMessages(player):
+  for msg in self.ball.getEntityDescribingMessages(ball):
     msg.peer = message.peer
     msg.send("network")
 
-  for entity in self.enemies:
-    for msg in entity.getEntityDescribingMessages(enemy):
+  for entity in self.paddles:
+    for msg in entity.getEntityDescribingMessages(paddle):
+      msg.peer = message.peer
+      msg.send("network")
+
+  for entity in self.gates:
+    for msg in entity.getEntityDescribingMessages(gate):
       msg.peer = message.peer
       msg.send("network")
 
@@ -68,8 +73,9 @@ method processRemote*(self: ref ClientNetworkSystem, message: ref CreateTypedEnt
   procCall self.as(ref EnetClientNetworkSystem).processRemote(message)  # create entity, generate mapping
   let color = case message.kind
     of wall: wallColor
-    of player: playerColor
-    of enemy: enemyColor
+    of gate: wallColor
+    of paddle: paddleColor
+    of ball: ballColor
 
   message.entity[ref Video] = (ref Video)(color: color)
 
