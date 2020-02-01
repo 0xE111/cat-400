@@ -4,7 +4,7 @@ import tables
 import c4/lib/ode/ode as odelib
 import c4/lib/enet/enet
 
-import c4/types
+import c4/sugar
 import c4/entities
 import c4/threads
 import c4/messages as c4messages
@@ -14,13 +14,13 @@ import ../messages
 
 
 type
-  PhysicsSystem* = object of ode.PhysicsSystem
+  PhysicsSystem* = object of OdePhysicsSystem
     impersonationsMap*: Table[ptr Peer, Entity] ## Mapping from remote Peer to an Entity it's controlling
 
     boxes*: seq[Entity]
     plane*: Entity
 
-  Physics* = object of ode.Physics
+  Physics* = object of OdePhysics
     # additionally store previous position & rotation;
     # position/rotation update messages are sent only when values really changes
     prevPosition: array[3, dReal]
@@ -42,8 +42,8 @@ const
 
 # ---- Component ----
 
-method init*(self: PhysicsSystem, physics: ref Physics) =
-  ode.PhysicsSystem(self).init(physics)
+method init*(self: ref PhysicsSystem, physics: ref Physics) =
+  procCall self.as(ref OdePhysicsSystem).init(physics)
 
   physics.prevPosition = physics.body.bodyGetPosition()[]
   physics.prevRotation = physics.body.bodyGetQuaternion()[]
@@ -55,7 +55,7 @@ proc startMovement*(self: ref Physics) =
   self.movementDurationElapsed = movementDuration
 
 
-method init*(self: PhysicsSystem, physics: ref BoxPhysics) =
+method init*(self: ref PhysicsSystem, physics: ref BoxPhysics) =
   procCall self.init(physics as ref Physics)
 
   let geometry = createBox(self.space, 1, 1, 1)
@@ -94,13 +94,13 @@ method init*(self: PhysicsSystem, physics: ref BoxPhysics) =
 #   # }
 
 
-proc init*(self: var PhysicsSystem) =
-  ode.PhysicsSystem(self).init()
+proc init*(self: ref PhysicsSystem) =
+  self.as(ref OdePhysicsSystem).init()
   self.world.worldSetGravity(0, -G, 0)
   # self.nearCallback = nearCallback
 
-proc update*(self: var PhysicsSystem, dt: float) =
-  ode.PhysicsSystem(self).update(dt)
+proc update*(self: ref PhysicsSystem, dt: float) =
+  self.as(ref OdePhysicsSystem).update(dt)
 
   for entity, physics in getComponents(ref Physics):
     ## This method compares previous position and rotation of entity, and (if there are any changes) sends ``MoveMessage`` or ``RotateMessage``.

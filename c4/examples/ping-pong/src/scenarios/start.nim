@@ -2,7 +2,7 @@
 import math
 import random
 
-import c4/types
+import c4/sugar
 import c4/entities
 import c4/threads
 import c4/systems/physics/simple

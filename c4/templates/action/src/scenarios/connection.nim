@@ -1,12 +1,11 @@
-when defined(nimHasUsed):
-  {.used.}
+{.used.}
 
 # TODO: move specific messages here?
 import logging
 import tables
 import strformat
 
-import c4/types
+import c4/sugar
 import c4/lib/ode/ode as odelib
 import c4/messages as c4messages
 import c4/systems

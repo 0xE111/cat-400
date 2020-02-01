@@ -2,7 +2,7 @@ import tables
 import strformat
 import sequtils
 
-import c4/types
+import c4/sugar
 import c4/threads
 import c4/systems/physics/simple
 import c4/entities

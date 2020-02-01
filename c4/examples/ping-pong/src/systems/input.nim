@@ -1,6 +1,6 @@
 import sdl2/sdl as sdllib
 
-import c4/types
+import c4/sugar
 import c4/threads
 import c4/systems/input/sdl
 

@@ -2,6 +2,7 @@ import sdl2/sdl as sdllib
 import math
 import net
 
+import c4/sugar
 import c4/threads
 import c4/systems/input/sdl
 import c4/systems/network/enet
@@ -13,7 +14,7 @@ type
   InputSystem* = object of SdlInputSystem
 
 
-proc handle*(self: InputSystem, event: Event) =
+proc handle*(self: ref InputSystem, event: Event) =
   case event.kind
     of WINDOWEVENT:
       case event.window.event
@@ -58,16 +59,16 @@ proc handle*(self: InputSystem, event: Event) =
       discard
 
   # fallback to default implementation
-  InputSystem(self).handle(event)
+  self.as(ref SdlInputSystem).handle(event)
 
 
-proc update(self: InputSystem, dt: float) =
+proc update(self: ref InputSystem, dt: float) =
   # when some key is held down, there's usually a delay between first KEYDOWN event
   # and subsequent ones; so if you want to send some messages constantly when key is pressed
   # (for example, `PlayerMoveMessage`), you shouldn't rely on KEYDOWN event; instead,
   # you should check whether key is down in `update()` method
 
-  InputSystem(self).update(dt)
+  self.as(ref SdlInputSystem).update(dt)
 
   # process long-pressing key by polling keyboard state
   let

@@ -24,18 +24,18 @@ type
     contactGroup: dJointGroupID
     simulationStepRemains: float
 
-  Physics* {.inheritable.} = object
+  OdePhysics* {.inheritable.} = object
     body*: dBodyID
 
 
 # ---- Component ----
 
-method init*(self: ref OdePhysicsSystem, physics: ref Physics) {.base.} =
+method init*(self: ref OdePhysicsSystem, physics: ref OdePhysics) {.base.} =
   logging.debug &"{self.type.name}: initializing component"
   physics.body = self.world.bodyCreate()
   physics.body.bodySetPosition(0.0, 0.0, 0.0)
 
-method dispose*(self: ref Physics) {.base.} =
+method dispose*(self: ref OdePhysics) {.base.} =
   logging.debug &"{self.type.name}: destroying component"
   self.body.bodyDestroy()
 

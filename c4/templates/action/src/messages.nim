@@ -1,9 +1,10 @@
 import c4/messages
 import c4/entities
+import c4/systems/network/enet
 
 
 type
-  EntityMessage* = object of Message
+  EntityMessage* = object of NetworkMessage
     entity*: Entity
 
   CreatePlayerEntityMessage* = object of EntityMessage

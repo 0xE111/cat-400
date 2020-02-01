@@ -3,7 +3,7 @@ import strformat
 import math
 import sequtils
 
-import c4/types
+import c4/sugar
 import c4/threads
 import c4/systems/physics/simple
 import c4/entities

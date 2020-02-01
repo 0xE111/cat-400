@@ -8,14 +8,10 @@ import ../messages
 
 
 type
-  ClientNetworkSystem* = object of enet.ClientNetworkSystem
-  ServerNetworkSystem* = object of enet.ServerNetworkSystem
+  ClientNetworkSystem* = object of EnetClientNetworkSystem
+  ServerNetworkSystem* = object of EnetServerNetworkSystem
 
 
-strMethod(ClientNetworkSystem, fields=false)
-strMethod(ServerNetworkSystem, fields=false)
-
-
-method processRemote*(self: ServerNetworkSystem, message: ref ResetSceneMessage) =
+method processRemote*(self: ref ServerNetworkSystem, message: ref ResetSceneMessage) =
   # When network receives ``ResetSceneMessage``, it forwards the message to physics system
   message.send("physics")

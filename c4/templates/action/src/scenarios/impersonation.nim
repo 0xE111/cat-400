@@ -1,11 +1,10 @@
-when defined(nimHasUsed):
-  {.used.}
+{.used.}
 
 import logging
 import strformat
 import tables
 
-import c4/types
+import c4/sugar
 import c4/entities
 import c4/systems
 import c4/systems/network/enet

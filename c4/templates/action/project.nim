@@ -1,4 +1,4 @@
-import c4/core
+import c4/processes
 import c4/threads
 
 import src/systems/physics
@@ -15,24 +15,46 @@ import src/scenarios/position
 
 
 when isMainModule:
-  app do:  # server systems
+  run("server"):
     spawn("network"):
-      var system = ServerNetworkSystem()
-      system.run()
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] server $levelname: "))
+      let network = new(ServerNetworkSystem)
+      network.init(port=Port(9000))
+      network.run()
+      network.dispose()
 
     spawn("physics"):
-      var system = PhysicsSystem()
-      system.run()
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] physics $levelname: "))
+      let physics = new(PhysicsSystem)
+      physics.init()
+      physics.run()
+      physics.dispose()
 
-  do:  # client systems
+    joinAll()
+
+  run("client"):
     spawn("network"):
-      var system = ClientNetworkSystem()
-      system.run()
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] client $levelname: "))
+      let network = new(ClientNetworkSystem)
+      network.init()
+      network.connect(host="localhost", port=Port(9000))
+      network.run()
+      network.dispose()
 
     spawn("input"):
-      var system = InputSystem()
-      system.run()
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] input $levelname: "))
+      var input = new(InputSystem)
+      input.init()
+      input.run()
+      input.dispose()
 
     spawn("video"):
-      var system = VideoSystem()
-      system.run()
+      logging.addHandler(logging.newConsoleLogger(levelThreshold=getCmdLogLevel(), fmtStr="[$datetime] video $levelname: "))
+      let video = new(VideoSystem)
+      video.init()
+      video.run()
+      video.dispose()
+
+    joinAll()
+
+  processes.dieTogether()

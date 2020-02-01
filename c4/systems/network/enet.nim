@@ -14,7 +14,7 @@ when isMainModule:
 
 import ../../lib/enet/enet
 
-import ../../types
+import ../../sugar
 import ../../threads
 import ../../entities
 import ../../messages
