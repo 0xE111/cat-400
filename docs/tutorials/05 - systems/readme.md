@@ -1,10 +1,7 @@
 
-Systems
-=======
+# Systems
 
-
-What is a system?
------------------
+## What is a system?
 
 `System` is a large piece of code which is responsible for one global part of the game. Examples:
 
@@ -16,11 +13,11 @@ What is a system?
 
 In `Cat 400`, all systems are completely independent and know nothing about each other except names.
 
-How systems work
-----------------
+## How systems work
 
 There's no restriction on how your system should look like. However, there are some conventions that `c4` follows itself and you are encouraged to follow them too.
 
+### Definition
 
 Each system is an object which encapsulates all information inside its private fields:
 
@@ -36,26 +33,40 @@ type PhysicsSystem* = object
 
 > As you may see, we don't store `boxes`, `player` and other resources in global scope. If we did it, these structures would be initialized at module import, which is unnecessary side effect: your program may import the module but never use its global variables. Also global variables won't allow you to create multiple instances of system, just in case you need it.
 
-System should have procedures (or methods) for initialization, running and shutting down:
+### Initialization
+
+The `init` method initializes all internal structures of the system.
 
 ```nim
 method init*(self: ref PhysicsSystem) =
-  # initialize all internal structures of the system
   self.boxes = @[newEntity(), newEntity()]
   self.player = newEntity()
   # ...
+```
 
+### Updating
+
+Use `update` method to update internal state of the system according to delta time (in seconds) since last update.
+
+```nim
 method update*(self: ref PhysicsSystem, dt: float) =
-  # update the system according to delta time since last update (in seconds)
   var playerPhysics = self.player[ref Physics]
   playerPhysics.position.x += playerPhysics.velocity.x * dt
   # ...
+```
 
+### Disposal
+
+`dispose` method frees resources and terminates the system.
+
+```nim
 method dispose*(self: ref PhysicsSystem) =
-  # free resources and shutdown the system
+  #
   getComponents[ref Physics].clear()
   # ...
 ```
+
+### Message processing
 
 System should be able to process incoming messages. By convention, systems have `process` methods for message handling:
 
@@ -76,8 +87,7 @@ method process(self: ref PhysicsSystem, message: ref MoveMessage) =
   # ...
 ```
 
-Running a system
-----------------
+### Running a system
 
 There's a `loop` template which runs your code with specific frequency and provides a `dt` variable (delta time in seconds):
 
@@ -90,10 +100,12 @@ loop(frequency=30):
   echo &"Current frequency: {1/dt}/s"
   i += 1
   if i > 100:
-    break  # use `break` to quit loop
+    break  # use `break` to quit the loop
 ```
 
-Systems have `run` proc which is quite straightforward:
+Systems have `run` proc which is usually quite straightforward - it updates the system and processes all pending messages.
+
+> Of course you're not restricted to use the logic above, change it if you need different behavior.
 
 ```nim
 import c4/loop
@@ -112,19 +124,6 @@ proc run*(self: ref PhysicsSystem) =
         break
       self.process(message)
 ```
-
-> Of course you're not restricted to use the logic above.
-
-Summary
--------
-
-Each system should define these procs:
-
-* `init`
-* `update`
-* `dispose`
-* `process` (for each message type)
-* `run`
 
 
 <!--
