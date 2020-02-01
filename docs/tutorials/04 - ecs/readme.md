@@ -1,5 +1,5 @@
 Entity-component system
------------------------
+=======================
 
 > Attention! Before reading this tutorial, it's highly recommended to read [the "Component" chapter](https://gameprogrammingpatterns.com/component.html) of Bob Nystrom's awesome "Game Programming Patterns" book.
 
@@ -166,4 +166,7 @@ tree[ref Video].dispose()  # this removes the tree from screen, deinitializes te
 tree.del(ref Video)
 ```
 
-Ready to suffer from [systems](../05%20-%20systems/readme.md)?
+Next
+----
+
+Ready to learn [systems](../05%20-%20systems/readme.md)?

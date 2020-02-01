@@ -1,13 +1,12 @@
 
-Tutorial 2 - systems
-====================
+Systems
+=======
 
-> WARNING: This tutorial is currently outdated.
 
 What is a system?
 -----------------
 
-`System` is a core concept of `Cat 400`. `System` is a large piece of code which is responsible for one global part of the game. Examples:
+`System` is a large piece of code which is responsible for one global part of the game. Examples:
 
 * Input system - reads user input (keyboard / mouse)
 * Video system - draws image on screen
@@ -15,26 +14,120 @@ What is a system?
 * Network system - connects players and server
 * Physics system - simulates game world
 
-In `Cat 400`, all systems are completely independent and know nothing about each other.
+In `Cat 400`, all systems are completely independent and know nothing about each other except names.
 
 How systems work
 ----------------
 
-Each system is a subclass of `c4.systems.System` class. There are 2 methods that may (and should be) overwritten:
+There's no restriction on how your system should look like. However, there are some conventions that `c4` follows itself and you are encouraged to follow them too.
+
+
+Each system is an object which encapsulates all information inside its private fields:
 
 ```nim
-method init*(self: ref System) {.base.}
+import c4/entities
 
-method update*(self: ref System, dt: float) {.base.}
+
+type PhysicsSystem* = object
+  boxes: set[Entity]
+  player: Entity
+  # whatever else
 ```
 
-`init` is called before game loop is started, and it is used to set up all internal structures of the system. This method is called automatically, your system may overwrite it but you should never call it yourself.
+> As you may see, we don't store `boxes`, `player` and other resources in global scope. If we did it, these structures would be initialized at module import, which is unnecessary side effect: your program may import the module but never use its global variables. Also global variables won't allow you to create multiple instances of system, just in case you need it.
 
-`update` is called at each game loop iteration. It is used to:
-1) Update system (read user input / render frame / send packets over network etc)
-2) Process all messages (described later)
+System should have procedures (or methods) for initialization, running and shutting down:
 
-Again, `c4` will call this method automatically.
+```nim
+method init*(self: ref PhysicsSystem) =
+  # initialize all internal structures of the system
+  self.boxes = @[newEntity(), newEntity()]
+  self.player = newEntity()
+  # ...
+
+method update*(self: ref PhysicsSystem, dt: float) =
+  # update the system according to delta time since last update (in seconds)
+  var playerPhysics = self.player[ref Physics]
+  playerPhysics.position.x += playerPhysics.velocity.x * dt
+  # ...
+
+method dispose*(self: ref PhysicsSystem) =
+  # free resources and shutdown the system
+  getComponents[ref Physics].clear()
+  # ...
+```
+
+System should be able to process incoming messages. By convention, systems have `process` methods for message handling:
+
+```nim
+import c4/messages
+
+
+method process(self: ref PhysicsSystem, message: ref Message) {.base.}:
+  # this is a general method which will capture all messages which don't have specific `process` method; it's a good practice to emit a warning here
+  logging.warn(&"No rule for processing {message}")
+  # nothing is done, i.e. message is ignored
+
+
+method process(self: ref PhysicsSystem, message: ref MoveMessage) =
+  # this is an example of processing specific message
+  var physics = message.entity[ref Physics]
+  physics.velocity = message.direction * movementSpeed
+  # ...
+```
+
+Running a system
+----------------
+
+There's a `loop` template which runs your code with specific frequency and provides a `dt` variable (delta time in seconds):
+
+```nim
+import strformat
+import c4/loop
+
+var i = 0
+loop(frequency=30):
+  echo &"Current frequency: {1/dt}/s"
+  i += 1
+  if i > 100:
+    break  # use `break` to quit loop
+```
+
+Systems have `run` proc which is quite straightforward:
+
+```nim
+import c4/loop
+
+
+proc run*(self: ref PhysicsSystem) =
+  loop(frequency=30) do:
+
+    # update the system
+    self.update(dt)
+
+    # process all messages
+    while true:
+      let message = tryRecv()
+      if message.isNil:
+        break
+      self.process(message)
+```
+
+> Of course you're not restricted to use the logic above.
+
+Summary
+-------
+
+Each system should define these procs:
+
+* `init`
+* `update`
+* `dispose`
+* `process` (for each message type)
+* `run`
+
+
+<!--
 
 Creating a simple system
 ------------------------
@@ -352,4 +445,4 @@ Now compile the project:
 ...
 ```
 
-Awesome! We just set up systems that communicate by sending messages and reacting on them. While it may seem a bit complicated, it's definitely worth it because your systems are truly independent, your code is not tangled and you now have a lot of opportunities like sending messages over network or saving them in order to reproduce ("playback") user inputs.
+Awesome! We just set up systems that communicate by sending messages and reacting on them. While it may seem a bit complicated, it's definitely worth it because your systems are truly independent, your code is not tangled and you now have a lot of opportunities like sending messages over network or saving them in order to reproduce ("playback") user inputs. -->
