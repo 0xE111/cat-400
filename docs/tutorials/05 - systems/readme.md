@@ -61,7 +61,6 @@ method update*(self: ref PhysicsSystem, dt: float) =
 
 ```nim
 method dispose*(self: ref PhysicsSystem) =
-  #
   getComponents[ref Physics].clear()
   # ...
 ```
@@ -105,7 +104,7 @@ loop(frequency=30):
 
 Systems have `run` proc which is usually quite straightforward - it updates the system and processes all pending messages.
 
-> Of course you're not restricted to use the logic above, change it if you need different behavior.
+> Of course you're not restricted to use this logic, change it if you need different behavior.
 
 ```nim
 import c4/loop

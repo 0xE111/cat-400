@@ -6,7 +6,6 @@ export options
 import tables
 export tables
 import parseopt
-import nre
 import logging
 
 when isMainModule:
@@ -34,8 +33,6 @@ let processName*: ProcessName = getProcessName()
 template run*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
   if processName == mainProcessName:
-    assert name.match(re"\w+").isSome
-
     if processes.hasKey(name):
       raise newException(KeyError, "Process with name '" & name & "' already exists")
 
