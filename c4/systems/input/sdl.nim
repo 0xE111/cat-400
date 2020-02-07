@@ -12,7 +12,7 @@ import ../../loop
 
 
 type SdlInputSystem* {.inheritable.} = object
-  event: Event  # temporarily stores event
+  event: Event  # temporary storage for event when calling pollEvent()
 
 proc `$`*(event: Event): string = $event.kind
 
@@ -28,11 +28,14 @@ register WindowQuitMessage
 
 # ---- workflow methods ----
 method init*(self: ref SdlInputSystem) {.base.} =
-  logging.debug &"Initializing {self.type.name}"
+  logging.debug &"Initializing {self[].type.name}"
 
   try:
-    if initSubSystem(INIT_EVENTS) != 0:
-      raise newException(LibraryError, &"Could not init {self.type.name}: {getError()}")
+    if wasInit(INIT_VIDEO) == 0:
+      # INIT_VIDEO implies INIT_EVENTS -> don't initialize events if video already initialized
+      logging.debug "Initializing SDL events"
+      if initSubSystem(INIT_EVENTS) != 0:
+        raise newException(LibraryError, &"Could not init {self.type.name}: {getError()}")
 
   except LibraryError:
     quitSubSystem(INIT_EVENTS)
@@ -70,7 +73,7 @@ method update*(self: ref SdlInputSystem, dt: float) {.base.} =
   self.handle(getKeyboardState(nil))
 
 method dispose*(self: ref SdlInputSystem) {.base.} =
-  quitSubSystem(INIT_EVENTS)  # TODO: destroying single SdlInputSystem will destroy events for all other InputSystems
+  quitSubSystem(INIT_EVENTS)
   logging.debug &"{self.type.name} destroyed"
 
 
