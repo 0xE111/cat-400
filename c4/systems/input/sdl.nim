@@ -31,6 +31,7 @@ method init*(self: ref SdlInputSystem) {.base.} =
   logging.debug &"Initializing {self[].type.name}"
 
   try:
+    sleep 500  # wait for SDL VIDEO system to initialize (in case of race condition)
     if wasInit(INIT_VIDEO) == 0:
       # INIT_VIDEO implies INIT_EVENTS -> don't initialize events if video already initialized
       logging.debug "Initializing SDL events"
