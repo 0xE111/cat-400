@@ -1,7 +1,5 @@
 {.used.}
-import logging
 import net
-import strformat
 
 import sdl2/sdl as sdllib
 

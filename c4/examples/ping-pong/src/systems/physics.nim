@@ -1,5 +1,4 @@
 import tables
-import strformat
 import sequtils
 
 import c4/sugar

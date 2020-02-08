@@ -25,7 +25,7 @@ when isMainModule:
     A {.inheritable.} = object
     B = object of A
 
-  suite "types":
+  suite "sugar":
     test "as":
       let b = new(B)
       let a = b.as(ref A)

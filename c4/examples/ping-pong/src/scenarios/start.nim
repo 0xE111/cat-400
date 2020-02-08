@@ -23,7 +23,7 @@ method process*(self: ref PhysicsSystem, message: ref StartGameMessage) =
   # start game when movement starts
   let ballPhysics = self.ball[ref Physics]
   if ballPhysics.speed == (0.0, 0.0):
-    let angle = Pi / 180.0 * (180.float + random(55..75).float)  # rad
+    let angle = Pi / 180.0 * (180.float + rand(55..75).float)  # rad
     ballPhysics.speed = (cos(angle) * ballSpeed, sin(angle) * ballSpeed)
 
 

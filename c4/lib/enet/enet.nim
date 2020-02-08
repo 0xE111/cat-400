@@ -1,7 +1,7 @@
 # Credits to https://github.com/fowlmouth/nimrod-enet/blob/master/enet.nim
 {.deadCodeElim: on.}
 when defined(windows):
-  const lib* = "enet.dll"
+  const lib* = "enet64.lib"
 elif defined(macosx):
   const lib* = "enet.dylib"
 elif defined(unix):

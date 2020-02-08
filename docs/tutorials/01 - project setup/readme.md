@@ -31,25 +31,13 @@ If you query for installed packages, you will see that `Cat 400` is named as `c4
 c4  [#head]
 ```
 
-Creating project files
-----------------------
+Test module import
+------------------
 
-In these tutorials we'll develop a small 2d game - "Ping Pong", which is simple enough to understand and hard enough to code.
-
-> It's important to mention that you don't have to start each project from scratch - `cat 400` is shipped with some templates which allow you to immediately start coding your game without setting up a project. However, for learning purposes we'll cover creating brand new game from scratch. After this tutorial you should understand how the framework works and that there's no magic inside.
-
-First, create a working directory for the new project, and create a main `.nim` file inside which will be an entrypoint for the game:
-
-```sh
-mkdir ping-pong
-cd ping-pong
-touch pingpong.nim
-```
-
-In next lessons we'll cover basic concepts of `Cat 400` which will allow us to write something better than just an empty file. For now, let's just ensure that the framework can be successfully imported:
+Let's just ensure that the framework can be successfully imported:
 
 ```nim
-# pingpong.nim
+# test.nim
 import c4/processes
 
 
@@ -57,7 +45,9 @@ when isMainModule:
   echo "C4 was successfully imported"
 ```
 
-Compile the code with `nim c -r pingpong` and ensure the message is successfully printed.
+Compile the code with `nim c -r test` and ensure the message is successfully printed.
+
+Before going further, it's important to mention that you don't have to start each project from scratch - `cat 400` is shipped with some templates which allow you to immediately start coding your game without setting up a project. However, for learning purposes we'll cover creating brand new project from scratch. After this tutorial you should understand how the framework works and that there's no magic inside.
 
 > For every tutorial, you will find sources in [src](src/) folder.
 
