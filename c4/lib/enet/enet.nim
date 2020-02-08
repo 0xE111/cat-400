@@ -13,7 +13,7 @@ when defined(windows):
   import winlean
 
   type
-    Socket* = SOCKET
+    Socket* = winlean.SocketHandle
     Buffer* {.bycopy.} = object
       dataLength*: csize_t
       data*: pointer
