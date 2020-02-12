@@ -1,5 +1,8 @@
 import times
 import os
+import logging
+import strutils
+
 when isMainModule:
   import unittest
 
@@ -24,6 +27,8 @@ template loop*(frequency: int = 30, code: untyped) =
     sleepTime = lastUpdateTime + skipSeconds - now
     if sleepTime > 0:
       sleep(int(sleepTime * 1000))
+    else:
+      logging.warn "Loop step taking more time (" & $(now - lastUpdateTime).formatFloat(precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $(1/frequency).formatFloat(precision=3) & "s per step) at " & $instantiationInfo()
 
 
 template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCode: untyped) =
@@ -60,6 +65,9 @@ template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCod
 
 
 when isMainModule:
+  var logger = newConsoleLogger()
+  logging.addHandler(logger)
+
   suite "Loop":
     test "Base loop frequency":
       var i = 0
@@ -71,4 +79,13 @@ when isMainModule:
           assert dt < 0.035 and dt > 0.025
         inc i
         if i > 30:
+          break
+
+    test "Warnings":
+      var i = 0
+      loop(30) do:
+        echo $i
+        sleep(500)
+        inc i
+        if i > 3:
           break
