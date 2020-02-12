@@ -46,6 +46,12 @@ nimble genDocs
 
 Generated reference files will be located in `docs/ref` folder.
 
+### Examples
+
+All examples are available in [examples folder](c4/examples).
+
+You may also check [templates folder](c4/templates). Templates are just app skeletons which contain initialization and minimal game environment, like a movable player and couple of enemies.
+
 ## Submodules
 
 Although these modules are part of `Cat-400`, they may be used separately in any project.
