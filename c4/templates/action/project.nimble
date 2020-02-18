@@ -10,6 +10,7 @@ license = "MIT"
 
 skipDirs = @["build"]
 
+requires "nim >= 1.1.1"
 requires "sdl2_nim >= 2.0.8"
 when defined(linux):
   requires "x11 >= 1.1"
