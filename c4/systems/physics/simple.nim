@@ -103,7 +103,7 @@ method process*(self: ref SimplePhysicsSystem, message: ref Message) {.base.} =
   logging.warn &"Don't know how to process {message}"
 
 method run*(self: ref SimplePhysicsSystem) {.base.} =
-  loop(frequency=30) do:
+  loop(frequency=60) do:
     self.update(dt)
     while true:
       let message = tryRecv()
