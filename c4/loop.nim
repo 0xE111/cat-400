@@ -28,7 +28,7 @@ template loop*(frequency: int = 30, code: untyped) =
     if sleepTime > 0:
       sleep(int(sleepTime * 1000))
     else:
-      logging.warn "Loop step taking more time (" & $(now - lastUpdateTime).formatFloat(precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $(1/frequency).formatFloat(precision=3) & "s per step) at " & $instantiationInfo()
+      logging.warn "Loop step taking more time (" & $formatFloat(now - lastUpdateTime, precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $formatFloat(1/frequency, precision=3) & "s per step) at " & $instantiationInfo()
 
 
 template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCode: untyped) =
