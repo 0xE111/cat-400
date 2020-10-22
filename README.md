@@ -70,3 +70,7 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 * [`horde3d` wrapper](c4/lib/horde3d) for [Horde3d graphics engine](http://horde3d.org/)
 * [`bgfx` wrapper](c4/lib/bgfx) for [BGFX graphics library](https://github.com/bkaradzic/bgfx)
 * [`ode` wrapper](c4/lib/ode) for [Open dynamics engine](https://www.ode.org/)
+
+## Other
+
+[![Stargazers over time](https://starchart.cc/c0ntribut0r/cat-400.svg)](https://starchart.cc/c0ntribut0r/cat-400)
