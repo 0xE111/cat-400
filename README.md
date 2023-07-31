@@ -16,13 +16,9 @@ Key features:
 - simple overwriting of existing systems and ability to create custom systems
 - templates which include some reasonable defaults for specific game genre
 
-## Status
-
-[Current milestones](https://github.com/c0ntribut0r/cat-400/milestones)
-
 ## Is 2D/3D supported?
 
-Yes, 2D via SDL, 3D via SDL+Ogre3d. Also note that `C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even [4D](https://www.youtube.com/watch?v=0t4aKJuKP0Q) game using any graphics library of your choice.
+Yes, 2D via SDL, 3D via SDL+Ogre3d. Also note that `C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even 4D ([wat?!](https://www.youtube.com/watch?v=0t4aKJuKP0Q)) game using any graphics library of your choice.
 
 ## GUI / Game Engine
 
