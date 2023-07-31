@@ -67,6 +67,17 @@ There are several wrappers which are subpackages of "Cat-400" and may be install
 * [`bgfx` wrapper](c4/lib/bgfx) for [BGFX graphics library](https://github.com/bkaradzic/bgfx)
 * [`ode` wrapper](c4/lib/ode) for [Open dynamics engine](https://www.ode.org/)
 
-## Other
+## Contribute to the project
+
+Developing a game framework, well... takes time! If you want to speed things up, you may contribute by
+1) testing, creating issues (or better closing them with PRs)
+2) sharing the framework with friends
+3) making donations - send some bitcoin here:
+```
+bc1qxwkqjmfmczcxe7zx7hjske7fpkp6e3qdrm72gv
+```
+4) providing a grant if you are a company interested in gamedev & nim
+
+## Statistics
 
 [![Stargazers over time](https://starchart.cc/c0ntribut0r/cat-400.svg)](https://starchart.cc/c0ntribut0r/cat-400)
