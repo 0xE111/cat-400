@@ -1,31 +1,39 @@
 # threads_communication.nim
 import strformat
+import threadpool
 
 import c4/threads
 import c4/messages
 
 
-type DataMessage = object of Message
-  data: int
+type
+  DataMessage = object of Message
+    data: int
+  StopMessage = object of Message
 
 # `recv()` and `tryRecv()` return `ref Message` type,
 # not `ref DataMessage` -> we need to use methods to
 # perform runtime type-specific actions, thus we define
 # `process()` and `value()` methods
+
+# these are methods for basic `Message` type
 method value(msg: ref Message): int {.base.} = 0
 method process(msg: ref Message) {.base.} = discard
 
+# and these are methods for `DataMessage` type
 method value(msg: ref DataMessage): int = msg.data
 method process(msg: ref DataMessage) = msg.data += 1
 
 
 when isMainModule:
-  spawn("thread1"):
+  spawnThread("thread1"):
     # thread1 will wait for thread2 to appear by calling
-    # `waitAvailable`; `waitAvailable` may accept `timeout`
+    # `probe`; `probe` may accept `timeout`
     # arg (how many seconds to wait) and `interval` arg
     # (how often to check for thread)
-    if not waitAvailable("thread2"):
+    try:
+      probe("thread2", timeout=5):
+    except ThreadUnavailable:
       echo "Error: thread2 is not available"
       return
 
@@ -37,27 +45,31 @@ when isMainModule:
     while true:
       # this will block execution until message received;
       # for non-blocking behaviour use `tryRecv()`
-      let msg = recv()
+      let msg = channel[].recv()
 
-      echo &"{threadName()}: {msg.value}"  # print current thread name and message value
+      echo &"{threadName}: {msg.value}"  # print current thread name and message value
 
       msg.process()  # increment message value
-
-      msg.send("thread2")  # send message to thread2
       if msg.value > 100:
+        echo &"{threadName}: sending stop message"
+        new(StopMessage).send("thread2")
+        echo &"{threadName}: stopping"
         return  # quit on condition
 
-  spawn("thread2"):
+      msg.send("thread2")  # send message to thread2
+
+  spawnThread("thread2"):
     # this thread is spawned after thread1
 
     while true:
-      let msg = recv()  # wait until message is received
-      echo &"{threadName()}: {msg.value}"
+      let msg = channel[].recv()  # wait until message is received
+      if msg of (ref StopMessage):
+        echo &"{threadName}: received stop message"
+        echo &"{threadName}: stopping"
+        return
+
+      echo &"{threadName}: {msg.value}"
       msg.process()  # increment message value
+      msg.send("thread1")
 
-      try:
-        msg.send("thread1")
-      except KeyError:
-        return  # quit if thread1 is unavailable
-
-  joinAll()  # wait for all threads
+  sync()  # wait for all threads
