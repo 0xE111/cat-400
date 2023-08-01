@@ -102,12 +102,15 @@ loop(frequency=30):
     break  # use `break` to quit the loop
 ```
 
+> Use `frequency=0` to run at max possible frequency.
+
 Systems have `run` proc which is usually quite straightforward - it updates the system and processes all pending messages.
 
 > Of course you're not restricted to use this logic, change it if you need different behavior.
 
 ```nim
 import c4/loop
+import c4/threads
 
 
 proc run*(self: ref PhysicsSystem) =
@@ -118,14 +121,11 @@ proc run*(self: ref PhysicsSystem) =
 
     # process all messages
     while true:
-      let message = tryRecv()
+      let message = channel.tryRecv()
       if message.isNil:
         break
       self.process(message)
 ```
-
-
-<!--
 
 Creating a simple system
 ------------------------
@@ -136,96 +136,94 @@ Let's create a demo system which will do some useless thing - output fps (frames
 
 ```nim
 # systems/fps.nim
-import logging
 import strformat
 
-import c4/systems
+import c4/loop
 
 # define new system
-type FpsSystem* = object of System
+type FpsSystem* = object  # just some object, no inheritance needed
   # with custom field
   worstFps: int
 
-method `$`*(self: ref FpsSystem): string =
-  "FpsSystem"
 
-method init(self: ref FpsSystem) =
-  # don't forget to call this, or internal system's structures won't be initialized
-  procCall self.as(ref System).init()
-
-  # now init custom fields
+proc init*(self: var FpsSystem) =
   self.worstFps = 0
 
-method update(self: ref FpsSystem, dt: float) =
-  # call parent's method, which will process messages
-  procCall self.as(ref System).update(dt)
+proc run*(self: var FpsSystem) =
+  var i = 0
+  loop(frequency=60):
+    # calculate fps
+    let fps = (1 / dt).int
 
-  # calculate fps
-  let fps = (1 / dt).int
+    # update custom field
+    if fps > self.worstFps:
+      self.worstFps = fps
 
-  # update custom field
-  if fps > self.worstFps:
-    self.worstFps = fps
-
-  # use c4's logging system to output message
-  logging.debug &"FPS: {$fps}"
+    # use c4's logging system to output message
+    echo &"FPS: {$fps}"
+    inc i
+    if i > 100:
+      break
 ```
 
-Here we create a `FpsSystem` which is subclass of `System`. All it does is display current fps and store worst result in internal field.
+Here we create a `FpsSystem` which is just an object. All it does is display current fps and store worst result in internal field.
 
-> It is a good idea to define a `$` method on each system, because system names are used in many debug messages.
-
-Now let's run the framework. In order to do this, we need to call `core.run` proc, passing `OrderedTable[string, ref System]` of client and server systems. In this tutorial we gonna run our `FpsSystem` on server process:
+Now let's run the framework. In order to do this, we'll just use `c4/threads` and `c4/processes` modules. In this tutorial we gonna run our `FpsSystem` on server process:
 
 ```nim
 # main.nim
-import tables
-
-import c4/core
-import c4/systems
+import threadpool
+import strformat
+import c4/threads
+import c4/processes
 
 # import our newly created system
 import systems/fps
 
-# pay attention that we don't call ``FpsSystem.init()``
 when isMainModule:
-  core.run(
-    serverSystems={
-      "fps": FpsSystem.new().as(ref System),
-    }.toOrderedTable(),
-  )
-```
+  run("server"):
+    spawnThread("fps"):
+      echo &" - Thread {threadName}"
+      var system = FpsSystem()
+      system.init()
+      system.run()
 
-When we write `serverSystems={"fps": FpsSystem.new().as(ref System)}.toOrderedTable()`, we ask `Cat 400` to register the `FpsSystem` system under `fps` name. Names are used to discover systems: later, we can send reach this system by name, i.e. call `systems.get("fps")` and get the instance of `FpsSystem`.
+    sync()
+```
 
 It's fine to call system `"fps"` for this example project, but in real projects you should use something more meaningful, like `"video"` or `"network"`. There's no restrictions on how much and which systems you have.
 
 Now compile and run the code:
 
 ```
-> nim c -r main.nim -l=debug
+> nim c -r main.nim
 ...
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
-[2019-04-19T00:42:05] server DEBUG: FPS: 60
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 62
+FPS: 61
+FPS: 62
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 62
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
+FPS: 61
 ```
 
-Our system is successfully running at 60 fps. Congratulations!
+Our system is successfully running at 61 fps. Why not at 60? I have no clue.
 
+Congratulations!
 
+<!--
 Sending and processing messages
 -------------------------------
 

@@ -1,15 +1,18 @@
 # main.nim
-import tables
+import threadpool
+import strformat
+import c4/threads
+import c4/processes
 
-import c4/core
-import c4/systems
-
+# import our newly created system
 import systems/fps
 
-
 when isMainModule:
-  core.run(
-    serverSystems={
-      "fps": FpsSystem.new().as(ref System),
-    }.toOrderedTable(),
-  )
+  run("server"):
+    spawnThread("fps"):
+      echo &" - Thread {threadName}"
+      var system = FpsSystem()
+      system.init()
+      system.run()
+
+    sync()

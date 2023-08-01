@@ -7,7 +7,7 @@ when isMainModule:
   import unittest
 
 
-template loop*(frequency: int = 30, code: untyped) =
+template loop*(frequency: int, code: untyped) =
   let skipSeconds = 1 / frequency
 
   var
@@ -24,44 +24,13 @@ template loop*(frequency: int = 30, code: untyped) =
     code
 
     now = epochTime()
-    sleepTime = lastUpdateTime + skipSeconds - now
-    if sleepTime > 0:
-      sleep(int(sleepTime * 1000))
-    else:
-      logging.warn "Loop step taking more time (" & $formatFloat(now - lastUpdateTime, precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $formatFloat(1/frequency, precision=3) & "s per step) at " & $instantiationInfo()
 
-
-template loop*(frequency: int = 30, fixedFrequencyCode: untyped, maxFrequencyCode: untyped) =
-  # handlers will receive dt - delta time between two last calls (in seconds, floating point)
-  let
-    skipSeconds = 1 / frequency
-    maxUpdatesSkip = int(frequency.float * 0.3)
-
-  var
-    numUpdates: int
-    nextFixedUpdateTime = epochTime()  # in seconds, floating point
-    lastFixedUpdateTime = nextFixedUpdateTime
-    lastMaxUpdateTime = nextFixedUpdateTime
-    now: float
-
-  while true:
-    # following block is called once every frame; however, if we missed several frames, it will try to catch up by running up to maxUpdateSkip times
-    numUpdates = 0
-    while (epochTime() > nextFixedUpdateTime) and (numUpdates < maxUpdatesSkip):
-      now = epochTime()
-      block:
-        let dt {.inject.} = now - lastFixedUpdateTime
-        fixedFrequencyCode
-
-      lastFixedUpdateTime = now
-      nextFixedUpdateTime += skipSeconds
-      numUpdates += 1
-
-    now = epochTime()
-    block:
-      let dt {.inject.} = now - lastMaxUpdateTime
-      maxFrequencyCode
-    lastMaxUpdateTime = now
+    if frequency != 0:
+      sleepTime = lastUpdateTime + skipSeconds - now
+      if sleepTime > 0:
+        sleep(int(sleepTime * 1000))
+      else:
+        logging.warn "Loop step taking more time (" & $formatFloat(now - lastUpdateTime, precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $formatFloat(1/frequency, precision=3) & "s per step) at " & $instantiationInfo()
 
 
 when isMainModule:
