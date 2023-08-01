@@ -11,11 +11,10 @@ let chest = newEntity()
 proc printHealth(self: Entity) =
   if self.has(Health):
     echo &"Entity {self} health: {self[Health].value}"
-
   else:
     echo &"Entity {self} has no <Health> component!"
 
-player[Health] = Health()
+player[Health] = Health(value: 100)
 player.printHealth()  # Entity -32768 health: 100
 chest.printHealth()  # Entity -32767 has no <Health> component!
 
@@ -32,7 +31,10 @@ for entity, health in getComponents(Health):
   echo &"Entity {entity} has health component with value {health.value}"
 
 # player[Health] = Health()
-# or
+# or:
 # player.del(Health)
-# or delete entire entity and all its components
+# or delete entire entity and all its components:
 player.delete()
+
+echo "Deleted player and all components"
+player.printHealth()  # Entity -32768 has no <Health> component!

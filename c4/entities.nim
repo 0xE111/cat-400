@@ -5,12 +5,11 @@ export tables
 import strformat
 import logging
 
-import messages
-
 when isMainModule:
   import unittest
-  import threads
+  import threadpool
   import sequtils
+  import c4/threads
 
 
 type Entity* = int16  ## Entity is just an int which may have components of any type. Zero entity is reserved as "not initialized"
@@ -42,23 +41,34 @@ iterator items*(): Entity =
 # Entity may have as much components as desired. For each type (component) there is a separate table ``Table[Entity, <component type>]``. This table is created automatically by compiler using {.global.} pragma.
 # However, we want to delete all components when Entity is deleted. Since components tables are created automatically, we don't have a list of tables to delete from. The only way to know which tables require deletion of components is to create a component destructor for that specific table when it is initialised, and add each destructor to a sequence.
 # When Entity is deleted, call all destructors from that sequence.
-# The idea is quite simple, but ``{.global.}`` variables have a bit complicated behaviour. In order tomake it working we need to make destructors sequence ``{.global.}`` too.
+# The idea is quite simple, but ``{.global.}`` variables have a bit complicated behaviour. In order to make it working we need to make destructors sequence ``{.global.}`` too.
 
+var seenTables: seq[pointer] = @[]
 var destructors {.global.}: seq[proc(entity: Entity)] = @[]
-
-
-proc initComponentTable(T: typedesc): Table[Entity, T] =
-  # Creates a components table for specific type, as well as destructor proc for that type
-  destructors.add(
-    proc(entity: Entity) = entity.del(T)
-  )
-  initTable[Entity, T]()
-
 
 proc getComponents*(T: typedesc): var Table[Entity, T] =
   ## Returns a table of components of specific type ``T`` (``Table[Entity, T]``)
   {.gcsafe.}:  # TODO: this is a bullshit
-    var table {.global.} = initComponentTable(T)
+    var table {.global.}: Table[Entity, T]  # https://github.com/nim-lang/Nim/issues/17552
+    # That's what all nim is about: there is some feature like {.global.} which is documented
+    # and should work, but after some version update you find out it doesn't; after some googling
+    # you find some post on nim forum which says that this feature works but only for primitive types,
+    # and for complex types it works ONLY if you split declaration and initialization. Previously
+    # you had some additional logic executed only once during initialization, but now you can't do
+    # it. You start googling how to create your subtype with custom initialization and guess what?
+    # You cannot! Cause in nim there are no "constructors", everyone can initialize whatever he wants
+    # in whatever way he wants. So you end up having a global variable of "seen", or "initialized" tables,
+    # so that when you get a new one, you execute that "only once" logic. And you pray, you pray that
+    # it will work at least a year until Araq decides to change something again, I dunno, implement
+    # an 11th garbage collecting algo or some another cool feature like
+    # "proc ~(*)@$@ from nullptr by nilvar as ptrref {.fuckoff:[@wat].}". I just wanna write code
+    # and be sure  that the code does what the documentation says! But that bug is 2yo now.
+    let tableAddr = addr(table)
+    if tableAddr notin seenTables:
+      seenTables.add(tableAddr)
+      destructors.add(
+        proc(entity: Entity) = entity.del(T)
+      )
     return table
 
 proc delete*(entity: Entity) =
@@ -67,7 +77,7 @@ proc delete*(entity: Entity) =
     destructor(entity)
 
   if not entity in entities:
-    logging.warn &"Trying to delete entity {entity}, but it doesn't exist"
+    logging.warn &"Trying to delete entity {entity} but it doesn't exist"
   entities.excl(entity)  # will not alert if entity does not exist
 
 proc flush*() =
@@ -149,14 +159,14 @@ when isMainModule:
     test "Multithreading support":
       discard newEntity()
 
-      spawn("thread1"):
+      spawnThread("thread1"):
         let entity2 = newEntity()
         entity2[PhysicsComponent] = PhysicsComponent(value: 5)
 
-      spawn("thread2"):
+      spawnThread("thread2"):
         let entity3 = newEntity()
         entity3[int] = 3
 
-      joinAll()
+      sync()
       check:
         toSeq(items()).len == 3

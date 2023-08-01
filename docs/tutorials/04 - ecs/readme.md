@@ -14,7 +14,7 @@ Under the hood each entity is nothing but a number, which you may treat as entit
 
 ``int16`` type was chosen because:
 * signed ints are checked for boundary errors, so if you try to create entity with ID ``32 767``, it won't be treated as ``-32 768`` - and you'll get an exception;
-* 16 bits is maximum for ``set`` type for efficiency reasons.
+* 16 bits is maximum for ``set`` type for efficiency reasons; could switch to `HashSet` type in case we ever need it
 
 Creating new entity
 -------------------
@@ -22,7 +22,7 @@ Creating new entity
 To create new entity, call ``newEntity()``. Entity ID will be the selected from unused IDs pool. If Entity limit is reached, an overflow exception will be thrown.
 
 ```nim
-# /tmp/test.nim
+# entities.nim
 import c4/entities
 
 let player = newEntity()
@@ -32,7 +32,6 @@ while true:
 ```
 
 ```sh
-> nim c -r /tmp/test.nim
 Player ID = -32768
 ...
 32764
@@ -40,7 +39,7 @@ Player ID = -32768
 32766
 32767
 /tmp/test.nim(4)         test
-/home/user/workspace/c4/cat-400/c4/core/entities.nim(31) newEntity
+.../entities.nim(31) newEntity
 /usr/lib/nim/system/fatal.nim(39) sysFatal
 Error: unhandled exception: over- or underflow [OverflowError]
 ```
@@ -61,7 +60,7 @@ Components
 Component is some value or object instance that you can attach to / retrieve from `Entity`. For example, our `player` entity may have `Health` and `Inventory` components, and we may also add a `chest` entity with only `Inventory` components (chests don't need health component, unless you wanna make chests breakable in your game).
 
 Here are rules for components:
-* Each entity may have as many types of components as you wish. For example, `player` may have `Health`, `Inventory`, `Spells`, `Diseases`, `Sprite`, `Sound`, `Animation`, `WalkState` and more,  depending on your needs.
+* Each entity may have as many types of components as you wish. For example, `player` may have `Health`, `Inventory`, `Spells`, `Diseases`, `Sprite`, `Sound`, `Animation`, `WalkState` and more, depending on your needs.
 * Each entity may have only one component of specific type. `player` can have no `Health` component, can have one `Health` component, but never two or more.
 
 Now we gonna create `Health` component for our game:
@@ -87,7 +86,7 @@ Under the hood, a separate ``Table[Entity, <component type>]`` is created for ea
 Playing with entities
 ---------------------
 
-Now it's time to create a player. Since `Entity` is just int and usually should not be changed, it's a good practice to use `let` to show and force unmutability.
+Now it's time to create a player. Since `Entity` is just int and usually should not be changed, it's a good practice to use `let` to show and force immutability.
 
 ```nim
 let player = newEntity()
@@ -108,7 +107,7 @@ proc printHealth(self: Entity) =
 To attach new component to entity, use `[]=` template:
 
 ```nim
-player[Health] = Health()
+player[Health] = Health(value: 100)
 player.printHealth()  # Entity -32768 health: 100
 chest.printHealth()  # Entity -32767 has no <Health> component!
 ```
@@ -144,7 +143,12 @@ player[Health] = Health()
 player.del(Health)
 # or
 player.delete()
+
+echo "Deleted player and all components"
+player.printHealth()  # Entity -32768 has no <Health> component!
 ```
+
+> Note that `del` and `delete` are not the same. `del` removes component from entity, while `delete` removes entity completely. As you may see from example above, `player` variable is still available after `delete()` (it's just integer after all), but now `newEntity()` may reuse former player's ID. Don't use an entity after you called `delete()` on it.
 
 Delete it the right way
 -----------------------
