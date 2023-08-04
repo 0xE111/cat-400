@@ -8,13 +8,27 @@
 
 Core of "Cat 400" is platform-independent and may be run on every target platform supported by nim. However, default systems (which are optional) have external dependencies which may restrict their usage on some platforms.
 
-Key features:
+# Key features
+
 - client-server multithreading architecture (even for single-player games) with network support
 - modularity: all code is split into "systems" (video/user input/networking etc) which work independently
 - systems communicate only by sending messages, thus avoiding tangled code
 - ECS (entity-component-system) with custom user components support
 - simple overwriting of existing systems and ability to create custom systems
 - templates which include some reasonable defaults for specific game genre
+
+# So why another game framework?
+
+I've made a research about game engines and frameworks for Nim, and none of them had solid and thoughtful design. It's super easy to display something on screen, and many people think that opportunity for a program to display cubes on screen makes it a game engine. It doesn't. When I see another game framework, I read its documentation (or code, if there are no docs at all) and try to find answers to these questions:
+1) What about physics, i.e. collisions, collision shapes, force, velocity, position etc?
+2) Can I do 3D graphics?
+3) What if I want multiplayer over network?
+4) How do I map user input to specific actions?
+5) How do I occupy all cores effectively?
+6) What about logging? How to debug?
+7) How easy it is to create large project with thousands lines of code? How does the engine help me not get lost?
+
+Usually many of these questions aren't covered at all, but for `Cat-400` I do my best to address all of them and beyond.
 
 ## Is 2D/3D supported?
 
