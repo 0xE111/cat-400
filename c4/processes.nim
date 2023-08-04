@@ -6,7 +6,9 @@ export options
 import tables
 export tables
 import parseopt
-import logging
+import sequtils
+
+import c4/logging
 
 when isMainModule:
   import unittest
@@ -30,13 +32,18 @@ proc getProcessName(): string =
 let processName*: ProcessName = getProcessName()
 
 
-template run*(name: ProcessName, code: untyped) =
+template spawnProcess*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
+  logScope:
+    process = processName
+
+  debug "process started"
+
   if processName == mainProcessName:
     if processes.hasKey(name):
       raise newException(KeyError, "Process with name '" & name & "' already exists")
 
-    logging.debug "Starting '" & name & "' process"
+    debug "spawning child process", childProcess=name
     processes[name] = startProcess(
       command=getAppFilename(),
       args=commandLineParams() & " --process=" & name,
@@ -44,50 +51,47 @@ template run*(name: ProcessName, code: untyped) =
     )
 
   elif processName == name:
-    logging.debug "Running '" & name & "' process"
-
     try:
       code
-      quit()
+      debug "process finishing"
+      system.quit()
     except Exception as exc:
-      # log any exception before dying
-      logging.fatal "Exception: " & exc.msg & "\n" & exc.getStackTrace()
+      fatal "process failed", exceptionMessage=exc.msg, stackTrace=exc.getStackTrace()
       raise
 
 proc dieTogether*(checkInterval: int = 1000) =
   ## Monitors existing processes. If one process is not running anymore, terminates all other processes as well.
   assert processName == mainProcessName
-  var shutdown = false
 
   while true:
-    for name, process in processes:
-      if not process.running:
-        logging.debug "Process '" & name & "' not running -> shutting down"
-        shutdown = true
-        break
-
-    if shutdown:
-      for process in processes.values:
-        if process.running:
-          process.kill()
+    let notRunning = toSeq(processes.values()).filterIt(not it.running)
+    if notRunning.len > 0:
+      for process in notRunning:
+        process.kill()
       break
 
     sleep checkInterval
 
 
+proc sync*(checkInterval: int = 1000) =
+  assert processName == mainProcessName
+  while toSeq(processes.values()).anyIt(it.running):
+    sleep checkInterval
+
+
 when isMainModule:
   suite "processes":
-    run("process1") do:
+    spawnProcess "process1":
       for _ in 0..10:
         echo processName
         sleep 100
 
-    run("process2") do:
+    spawnProcess "process2":
       for _ in 0..10:
         echo processName
         sleep 100
 
-    dieTogether()
+    sync()
 
     test "run":
       assert true

@@ -1,7 +1,8 @@
 import times
 import os
-import logging
 import strutils
+
+import c4/logging
 
 when isMainModule:
   import unittest
@@ -30,13 +31,10 @@ template loop*(frequency: int, code: untyped) =
       if sleepTime > 0:
         sleep(int(sleepTime * 1000))
       else:
-        logging.warn "Loop step taking more time (" & $formatFloat(now - lastUpdateTime, precision=3) & "s) than desired frequency allows (" & $frequency & "Hz == " & $formatFloat(1/frequency, precision=3) & "s per step) at " & $instantiationInfo()
+        logging.warn "loop lag", timeTakenPerStep=formatFloat(now - lastUpdateTime, precision=3), desiredFrequency=frequency, maxAllowedTimePerStep=formatFloat(1/frequency, precision=3)
 
 
 when isMainModule:
-  var logger = newConsoleLogger()
-  logging.addHandler(logger)
-
   suite "Loop":
     test "Base loop frequency":
       var i = 0

@@ -16,9 +16,10 @@ skipDirs = @["docs"]
 # Dependencies
 requires "nim >= 1.6"
 requires "msgpack4nim >= 0.3.1"
+requires "chronicles == 0.10.3"
+# requires "sdl2 == 2.0.5"
 # requires "cligen >= 0.9.41"
 # requires "fsm >= 0.1.0"
-# requires "sdl2_nim >= 2.0.12.0"
 # when defined(linux):
 #   requires "x11 >= 1.1"
 

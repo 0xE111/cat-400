@@ -5,6 +5,8 @@ export sharedtables
 import std/threadpool
 import c4/messages
 
+export threadpool.sync
+
 type
   ThreadName* = string
   ThreadProc* = proc() {.closure.}
@@ -73,7 +75,7 @@ proc probe*(thread: ThreadName, timeout: float = 10.0, interval: float = 1.0) {.
   raise newException(ThreadUnavailable, "Thread " & thread & " is not available after " & $timeout & " seconds")
 
 
-proc send*(message: ref Message, thread: ThreadName) {.raises: [ThreadUnavailable].} =
+proc send*(message: ref Message, thread: ThreadName) {.raises: [ThreadUnavailable, Exception].} =
     ## Sends a message to a thread.
     ## Usage example:
     ##   new(HelloMessage).send("thread2")

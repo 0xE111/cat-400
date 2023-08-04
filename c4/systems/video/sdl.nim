@@ -1,100 +1,67 @@
-import logging
 import strformat
-import os
 
 import sdl2/sdl
 
-import c4/threads
+import c4/systems
+import c4/logging
 import c4/messages
-import c4/loop
 
-when isMainModule:
-  import unittest
-
+logScope:
+  system = "SdlVideoSystem"
 
 type
-  SdlVideoSystem* {.inheritable.} = object
-    window*: Window
-    renderer*: Renderer
+  SdlVideoSystem* = object of System
+    window: sdl.Window
+    renderer: sdl.Renderer
 
-  SdlVideo* {.inheritable.} = object
-    x*, y*: float
+  SdlVideoSystemError * = object of LibraryError
+
+  SdlVideoInitMessage* = object of Message
+    windowTitle*: string
+    windowX*: int
+    windowY*: int
+    windowWidth*: int
+    windowHeight*: int
+    flags*: uint32
+
+  SdlVideoDrawRectangleMessage* = object of Message
+    x*: int
+    y*: int
+    width*: int
+    height*: int
+    color*: array[4, uint8]
 
 
-# ---- Component ----
-method render*(self: ref SdlVideoSystem, video: ref SdlVideo) {.base.} =
-  discard self.renderer.setRenderDrawColor(Color(r: 255, g: 255, b: 255))
+template handleError(message: string) =
+  let error = sdl.getError()
+  fatal message, error
+  raise newException(SdlVideoSystemError, message & ": "  & $error)
 
-  var windowWidth, windowHeight: cint
-  self.window.getWindowSize(windowWidth.addr, windowHeight.addr)
 
-  var rect = Rect(
-    x: int(windowWidth.float * video.x),
-    y: int(windowHeight.float * video.y),
-    w: int(windowWidth.float * 0.01),
-    h: int(windowHeight.float * 0.01),
+method process*(self: ref SdlVideoSystem, message: ref SdlVideoInitMessage) =
+  debug "initializing video"
+  if sdl.initSubSystem(sdl.INIT_VIDEO) != 0: handleError("failed to initialize video")
+  debug "initialized video"
+
+  debug "creating window"
+  self.window = sdl.createWindow(
+    message.windowTitle.cstring,
+    message.windowX,
+    message.windowY,
+    message.windowWidth,
+    message.windowHeight,
+    message.flags,
   )
-  discard self.renderer.renderFillRect(rect.addr)
+  if self.window.isNil: handleError("failed to create window")
+  debug "created window"
+
+  debug "creating renderer"
+  self.renderer = self.window.createRenderer(-1, sdl.RENDERER_ACCELERATED)
+  if self.renderer.isNil: handleError("failed to create renderer")
+  debug "created renderer"
 
 
-method init*(self: ref SdlVideoSystem, windowTitle: string = "Game", windowX: int = 100, windowY: int = 100, windowWidth: int = 640, windowHeight: int = 480, fullscreen: bool = false) {.base.} =
-
-  logging.debug &"Initializing SdlVideoSystem"
-
-  if initSubSystem(INIT_VIDEO) != 0:
-    raise newException(LibraryError, &"Could not init SdlVideoSystem: {getError()}")
-
-  # create window
-  self.window = createWindow(windowTitle, windowX, windowY, windowWidth, windowHeight, (WINDOW_SHOWN or WINDOW_RESIZABLE or (if fullscreen: WINDOW_FULLSCREEN_DESKTOP else: 0)).uint32)
-  if self.window.isNil:
-    raise newException(LibraryError, &"Could not create window: {getError()}")
-
-  # initialize renderer
-  self.renderer = self.window.createRenderer(-1, RENDERER_ACCELERATED)
-  if self.renderer.isNil:
-    raise newException(LibraryError, &"Could not create renderer: {getError()}")
-
-  if self.renderer.setRenderDrawColor(uint8.high, uint8.high, uint8.high, uint8.high) != 0:
-    raise newException(LibraryError, &"Could not set renderer draw color: {getError()}")
-
-  if self.renderer.renderClear() != 0:
-    raise newException(LibraryError, &"Could not clear renderer: {getError()}")
-
-
-method update*(self: ref SdlVideoSystem, dt: float) {.base.} =
-  if self.renderer.renderClear() != 0:
-    raise newException(LibraryError, &"Could not clear renderer: {getError()}")
+method update*(self: ref SdlVideoSystem, dt: float) =
+  if self.renderer.renderClear() != 0: handleError("failed to clear renderer")
+  if setRenderDrawColor(self.renderer, 0, 0, 0, 255) != 0: handleError("failed to set renderer draw color")
   self.renderer.renderPresent()
-
-
-method process*(self: ref SdlVideoSystem, message: ref Message) {.base.} =
-  logging.warn &"No rule for processing {message}"
-
-
-method dispose*(self: ref SdlVideoSystem) {.base.} =
-  self.renderer.destroyRenderer()
-  self.window.destroyWindow()
-  quitSubSystem(INIT_VIDEO)
-  logging.debug "SdlVideoSystem unloaded"
-
-
-method run*(self: ref SdlVideoSystem) {.base.} =
-  loop(frequency=30) do:
-    while true:
-      let message = tryRecv()
-      if message.isNil:
-        break
-      self.process(message)
-    self.update(dt)
-
-
-when isMainModule:
-  suite "System tests":
-    test "Running inside thread":
-      spawn("thread") do:
-        var system = SdlVideoSystem()
-        system.init()
-        system.run()
-        system.dispose()
-
-      sleep 2000
