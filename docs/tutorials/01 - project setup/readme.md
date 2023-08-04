@@ -12,7 +12,7 @@ However, `Cat 400` is not an _engine_ - there is no visual editor, no blueprints
 Installing the framework
 ------------------------
 
-This library doesn't require some special software. You can replace almost all its parts with your own implementations, so there are no external dependencies for new empty project. So, unlike other game frameworks, there is no strict `bgfx` or `sdl` requirements.
+This library doesn't require some special software. You can replace almost all its parts with your own implementations, so there are no external dependencies for new empty project. So, unlike other game frameworks, there are no strict requirements.
 
 However, `Cat 400` ships with some default systems which you may choose and use. For example, you may use `SdlInput` system for user input handling, which I believe is fine for almost all projects. If you do so, there appears a requirement to install `sdl2` shared library into your system, as well as nim-sdl bindings. Same for other systems, each of them has its own requirements. We'll cover this in depth later.
 

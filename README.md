@@ -60,12 +60,7 @@ Although these modules are part of `Cat-400`, they may be used separately in any
 
 ## Wrappers
 
-There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately:
-
-* [`enet` wrapper](c4/lib/enet) for [Enet networking library](http://enet.bespin.org/)
-* [`horde3d` wrapper](c4/lib/horde3d) for [Horde3d graphics engine](http://horde3d.org/)
-* [`bgfx` wrapper](c4/lib/bgfx) for [BGFX graphics library](https://github.com/bkaradzic/bgfx)
-* [`ode` wrapper](c4/lib/ode) for [Open dynamics engine](https://www.ode.org/)
+There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately, see [lib folder](c4/lib).
 
 ## Contribute to the project
 
