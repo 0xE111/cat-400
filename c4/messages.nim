@@ -90,7 +90,12 @@ template register*(MessageType: typedesc) =
     )
 
   method packId*(self: ref MessageType): uint8 = messageId
-  method `$`*(self: ref MessageType): string = $(self[].type) & $self[]
+
+  method `$`*(self: ref MessageType): string =
+    result = self[].type.name
+    for name, value in self[].fieldPairs:
+      result.add(" " & name & "=[" & $value & "]")
+
   proc msgpack*(self: ref MessageType): string = ((ref Message)self).msgpack()  # required for instant pack
 
 

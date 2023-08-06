@@ -40,6 +40,14 @@ Yes, 2D via SDL, 3D via SDL+Ogre3d. Also note that `C4` is a _framework_, which 
 
 Feel free to create high-level tools on top of `Cat 400` and share them with community if you have such an opportunity.
 
+### But where do I write code?
+
+I know many game engines (for example, Godot) have integrated basic code editors - but they probably haven't heard about IDEs which 1) are designed for writing code, 2) already exist, are mature and just work, and 3) suit better for coding cause have extra features like plugins. So, open your favorite IDE which supports Nim and start coding a game.
+
+### But where do I edit graphics?
+
+I know many game engines (for example, Godot) have integrated basic mesh editors - but they probably haven't heard about 3D modeling software which 1) are designed for creating 3D models, 2) already exist, are mature and just work, and 3) suit better for modeling cause have extra features like plugins. So, open your favorite 3D modeling software and start creating models.
+
 ## Documentation
 
 ### Tutorials

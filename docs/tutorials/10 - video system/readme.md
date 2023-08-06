@@ -1,7 +1,5 @@
 # Video system
 
-> WARNING: This tutorial is currently outdated.
-
 While you can create your own systems for every aspect of your game, `C4` comes with some default ones for physics, video, network etc. They are extremely handy for quick start, but you are free to replace any of them with your favorite one.
 
 This tutorial will cover built-in video system.
@@ -9,17 +7,9 @@ This tutorial will cover built-in video system.
 ## Is 2D supported?
 
 Yes and no.
-`C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even [4D](https://www.youtube.com/watch?v=0t4aKJuKP0Q) game.
+`C4` is a _framework_, which means that you can use any backend for any of your systems. So, unlike game _engines_, you can make a 2D, 3D or even 4D game.
 
 However, currently only 3D video backend is included. If you want 2D you should write your own backend (which is rather easy if you follow this tutorial) or search for third-party one.
-
-## C / Horde3d
-
-Originally, `C4` was using [Horde3d](http://horde3d.org/) as default backend for its video system. It is a lightweight 3D rendering engine with small `C` API. It's extremely easy to set up and use, so it's excellent for prototyping.
-
-However, lack of updates and tiny API make working with `Horde3d` unpleasant on big projects. We won't cover the backend in this tutorial.
-
-The sources may be found at [c4/systems/video/horde3d.nim](../../../c4/systems/video/horde3d.nim).
 
 ## C++ / Ogre3d
 
@@ -43,10 +33,10 @@ Install those using your package manager or whatever:
 
 ```sh
 # Ubuntu / Debian
-sudo apt-get install libsdl2-2.0 libogre-1.9-dev
+sudo apt-get install libsdl2 libogre
 
 # Arch
-sudo pacman -S sdl ogre
+sudo pacman -S sdl2 ogre
 ```
 
 `C4` already includes partial bindings for Ogre in [c4/lib/ogre/ogre.nim](../../../c4/lib/ogre/ogre.nim), but for sdl2 you need to install [sdl2_nim](https://github.com/Vladar4/sdl2_nim):

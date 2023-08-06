@@ -8,6 +8,9 @@ when isMainModule:
   import unittest
 
 
+type BreakLoopException* = object of CatchableError
+
+
 template loop*(frequency: int, code: untyped) =
   let skipSeconds = 1 / frequency
 
@@ -18,17 +21,22 @@ template loop*(frequency: int, code: untyped) =
     sleepTime: type(now)
 
   while true:
+    trace "loop tick"
     now = epochTime()
     dt = now - lastUpdateTime
     lastUpdateTime = now
 
-    code
+    try:
+      code
+    except BreakLoopException:
+      break
 
     now = epochTime()
 
     if frequency != 0:
       sleepTime = lastUpdateTime + skipSeconds - now
       if sleepTime > 0:
+        trace "loop sleep", sleepTime
         sleep(int(sleepTime * 1000))
       else:
         logging.warn "loop lag", timeTakenPerStep=formatFloat(now - lastUpdateTime, precision=3), desiredFrequency=frequency, maxAllowedTimePerStep=formatFloat(1/frequency, precision=3)

@@ -1,6 +1,7 @@
 import strformat
 
 import sdl2/sdl
+export sdl
 
 import c4/systems
 import c4/logging
@@ -11,10 +12,10 @@ logScope:
 
 type
   SdlVideoSystem* = object of System
-    window: sdl.Window
-    renderer: sdl.Renderer
+    window*: sdl.Window
+    renderer*: sdl.Renderer
 
-  SdlVideoSystemError * = object of LibraryError
+  SdlVideoSystemError* = object of LibraryError
 
   SdlVideoInitMessage* = object of Message
     windowTitle*: string
@@ -24,15 +25,10 @@ type
     windowHeight*: int
     flags*: uint32
 
-  SdlVideoDrawRectangleMessage* = object of Message
-    x*: int
-    y*: int
-    width*: int
-    height*: int
-    color*: array[4, uint8]
+SdlVideoInitMessage.register()
 
 
-template handleError(message: string) =
+template handleError*(message: string) =
   let error = sdl.getError()
   fatal message, error
   raise newException(SdlVideoSystemError, message & ": "  & $error)
@@ -65,3 +61,10 @@ method update*(self: ref SdlVideoSystem, dt: float) =
   if self.renderer.renderClear() != 0: handleError("failed to clear renderer")
   if setRenderDrawColor(self.renderer, 0, 0, 0, 255) != 0: handleError("failed to set renderer draw color")
   self.renderer.renderPresent()
+
+
+method dispose*(self: ref SdlVideoSystem) =
+  self.renderer.destroyRenderer()
+  self.window.destroyWindow()
+  quitSubSystem(sdl.INIT_VIDEO)
+  debug "disposed video system"
