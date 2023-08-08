@@ -1,5 +1,6 @@
 # src/messages.nim
 import c4/messages
+import c4/logging
 
 
 type RunMessage = object of Message
@@ -19,11 +20,13 @@ message = (ref RunMessage)(data: "test data")  # here message is of type `ref Me
 assert message.name == "RunMessage"
 
 packed = message.msgpack()
+info "packed message", packed
 assert stringify(packed) == "1 [ \"test data\" ] "  # `1` means that we packed message type (1 for RunMessage) together with message data
 
 # ... send `packed` over network / save it on disk / whatever ...
 
 # now it's time to restore the message
 unpacked = packed.msgunpack()  # when unpacking, we use value `1` to understand that real runtime type of `unpacked` should be `ref RunMessage`
+info "unpacked message", unpacked
 assert unpacked of ref RunMessage  # runtime type is preserved
 assert unpacked.name == "RunMessage"

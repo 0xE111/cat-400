@@ -1,14 +1,17 @@
 # threads_creation.nim
-import std/threadpool
 import c4/threads
+import c4/logging
 
+const
+  thread1 = ThreadID(1)
+  thread2 = ThreadID(2)
 
-spawnThread("thread1"):  # launches a new thread called "thread1"
+spawnThread(thread1):  # launches a new thread called "thread1"
   for _ in 0..100:
-    echo threadName  # use `threadName` to get name of currently running thread
+    echo threadID  # use `threadName` to get name of currently running thread
 
-spawnThread("thread2"):
+spawnThread(thread2):
   for _ in 0..100:
-    echo threadName
+    echo threadID
 
-sync()  # call this to wait for all threads to complete
+joinActiveThreads()  # call this to wait for all threads to complete

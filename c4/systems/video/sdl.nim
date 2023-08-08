@@ -35,26 +35,23 @@ template handleError*(message: string) =
 
 
 method process*(self: ref SdlVideoSystem, message: ref SdlVideoInitMessage) =
-  debug "initializing video"
-  if sdl.initSubSystem(sdl.INIT_VIDEO) != 0: handleError("failed to initialize video")
-  debug "initialized video"
+  withLog(DEBUG, "initializing video"):
+    if sdl.initSubSystem(sdl.INIT_VIDEO) != 0: handleError("failed to initialize video")
 
-  debug "creating window"
-  self.window = sdl.createWindow(
-    message.windowTitle.cstring,
-    message.windowX,
-    message.windowY,
-    message.windowWidth,
-    message.windowHeight,
-    message.flags,
-  )
-  if self.window.isNil: handleError("failed to create window")
-  debug "created window"
+  withLog(DEBUG, "creating window"):
+    self.window = sdl.createWindow(
+      message.windowTitle.cstring,
+      message.windowX,
+      message.windowY,
+      message.windowWidth,
+      message.windowHeight,
+      message.flags,
+    )
+    if self.window.isNil: handleError("failed to create window")
 
-  debug "creating renderer"
-  self.renderer = self.window.createRenderer(-1, sdl.RENDERER_ACCELERATED)
-  if self.renderer.isNil: handleError("failed to create renderer")
-  debug "created renderer"
+  withLog(DEBUG, "creating renderer"):
+    self.renderer = self.window.createRenderer(-1, sdl.RENDERER_ACCELERATED)
+    if self.renderer.isNil: handleError("failed to create renderer")
 
 
 method update*(self: ref SdlVideoSystem, dt: float) =

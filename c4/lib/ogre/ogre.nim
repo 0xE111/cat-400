@@ -1,5 +1,6 @@
 ## Basic wrapper for Ogre3d.
 ## Only minimal requred definitions included.
+
 # TODO: inspect all places where we use object instances directly instead of pointers!
 when isMainModule:
   import unittest
@@ -13,13 +14,10 @@ elif defined(macosx):
 
 elif defined(linux):
   # {.link: "/usr/lib/libOgre.so".}
-  {.link: "/usr/lib/libOgreMain.so".}
-  {.link: "/usr/lib/libOgreBites.so".}
+  # {.link: "/usr/lib/libOgreMain.so".}
+  # {.link: "/usr/lib/libOgreBites.so".}
+  {.passL: "-lOgreMain".}
   {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}
-
-  const
-    defaultPluginFile* = "/usr/share/OGRE/plugins.cfg"
-    defaultMediaDir* = "/usr/share/OGRE/Media"
 
 else:
   raise newException(LibraryError, "Platform not supported")
@@ -27,8 +25,8 @@ else:
 
 type
   StdMap[K, V] {.header: "<map>", importcpp: "std::map".} = object
-  String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = cstring  # object
-  # String* {.header: "<string>", importcpp: "std::string", bycopy.} = object
+  # String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = object
+  String* {.header: "<string>", importcpp: "std::string", bycopy.} = cstring
   ConfigDialog* {.header: "OgreConfigDialog.h", importcpp: "Ogre::ConfigDialog", bycopy.} = object
   NameValuePairList* = StdMap[String, String]
 
@@ -131,6 +129,8 @@ type
   Vector4* {.importcpp: "Ogre::Vector4", bycopy.} = object
     x*, y*, z*, w*: Real
 
+let NEGATIVE_UNIT_Z* {.importcpp: "Ogre::Vector3::NEGATIVE_UNIT_Z".}: Vector3
+
 proc initVector2*(fX: Real, fY: Real): Vector2 {.importcpp: "Ogre::Vector2(@)", constructor.}
 proc initVector3*(fX: Real, fY: Real, fZ: Real): Vector3 {.importcpp: "Ogre::Vector3(@)", constructor.}
 proc initVector4*(fX: Real, fY: Real, fZ: Real, fW: Real): Vector4 {.importcpp: "Ogre::Vector4(@)", constructor.}
@@ -153,7 +153,7 @@ type
 proc initManualObject*(name: String): ManualObject {.importcpp: "Ogre::ManualObject(@)", constructor.}
 {.push importcpp: "#.$1(@)".}
 proc begin*(this: ptr ManualObject, materialName: String, opType: OperationType = OT_TRIANGLE_LIST, groupName: String = DEFAULT_RESOURCE_GROUP_NAME)
-proc position*(this: ptr ManualObject, pos: Vector3)
+# proc position*(this: ptr ManualObject, pos: Vector3)
 proc position*(this: ptr ManualObject, x: float, y: float, z: float)
 proc normal*(this: ptr ManualObject, norm: Vector3)
 proc normal*(this: ptr ManualObject, x: float, y: float, z: float)
@@ -184,11 +184,6 @@ type
 {.push header: "OgreLight.h".}
 type
   Light* {.importcpp: "Ogre::Light", bycopy.} = object of MovableObject
-
-{.push importcpp: "#.$1(@)".}
-# TODO @deprecated attach to SceneNode and use SceneNode::setPosition
-proc setPosition*(this: ptr Light, x: Real, y: Real, z: Real)
-{.pop.}
 {.pop.}
 
 
@@ -198,9 +193,6 @@ type
   Camera* {.importcpp: "Ogre::Camera", bycopy.} = object
 
 {.push importcpp: "#.$1(@)".}
-# TODO: @deprecated attach to SceneNode and use SceneNode::lookAt
-proc setPosition*(this: ptr Camera, x: Real, y: Real, z: Real)
-proc lookAt*(this: ptr Camera, x: Real, y: Real, z: Real)
 proc setAspectRatio*(this: ptr Camera, ratio: Real)
 proc setNearClipDistance*(this: ptr Camera, nearDist: Real)
 proc setFarClipDistance*(this: ptr Camera, farDist: Real)
@@ -215,13 +207,15 @@ type
 
 
 # ---- Node ----
-{.push header: "OgreSceneNode.h".}
+{.push header: "OgreNode.h".}
 type
   Node* {.importcpp: "Ogre::Node", bycopy, inheritable.} = object
 
 {.push importcpp: "#.$1(@)".}
 proc setOrientation*(this: ptr Node, q: ptr Quaternion)
 proc setOrientation*(this: ptr Node, w: Real, x: Real, y: Real, z: Real)
+proc setPosition*(this: ptr, x, y, z: Real)
+proc setPosition*(this: ptr, pos: Vector3)
 {.pop.}
 {.pop.}
 
@@ -250,6 +244,8 @@ proc setDirection*(this: ptr SceneNode, x: Real, y: Real, z: Real)
 proc roll*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
 proc pitch*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
 proc yaw*(this: ptr SceneNode, angle: Radian, relativeTo: TransformSpace = TS_LOCAL)
+
+proc lookAt*(this: ptr SceneNode, targetPoint: Vector3, relativeTo: TransformSpace, localDirectionVector: Vector3 = NEGATIVE_UNIT_Z)
 {.pop.}
 {.pop.}
 
@@ -314,12 +310,12 @@ proc messagePump*() {.importcpp: "OgreBites::WindowEventUtilities::messagePump()
 type
   Root* {.importcpp: "Ogre::Root", bycopy.} = object
 
-proc newRoot*(pluginFileName: cstring = defaultPluginFile, configFileName: cstring = "ogre.cfg", logFileName: cstring = "ogre.log"): ptr Root {.importcpp: "new Ogre::Root(@)", constructor.}
+proc newRoot*(pluginFileName: cstring = "plugins.cfg", configFileName: cstring = "ogre.cfg", logFileName: cstring = "ogre.log"): ptr Root {.importcpp: "new Ogre::Root(@)", constructor.}
 
 {.push importcpp: "#.$1(@)".}
 proc showConfigDialog*(this: ptr Root, dialog: ptr ConfigDialog = nil): bool
 proc restoreConfig*(this: ptr Root): bool
-proc initialise*(this: ptr Root, autoCreateWindow: bool, windowTitle: cstring = "OGRE Render Window", customCapabilitiesConfig: cstring = ""): ptr RenderWindow
+proc initialise*(this: ptr Root, autoCreateWindow: bool, windowTitle: cstring = "OGRE Render Window"): ptr RenderWindow
 proc createRenderWindow*(this: ptr Root, name: cstring, width: uint, height: uint, fullScreen: bool, miscParams: ptr NameValuePairList = nil): ptr RenderWindow
 proc createSceneManager*(this: ptr Root): ptr SceneManager
 proc renderOneFrame*(this: ptr Root): bool
