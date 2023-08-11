@@ -1,29 +1,26 @@
 # systems/fps.nim
-import strformat
-
 import c4/loop
+import c4/systems
+import c4/logging
 
 # define new system
-type FpsSystem* = object  # just some object, no inheritance needed
+type FpsSystem* = object of System
   # with custom field
-  worstFps: int
+  i: int
+  bestFps: int
 
+method update*(self: ref FpsSystem, dt: float) =
 
-proc init*(self: var FpsSystem) =
-  self.worstFps = 0
+  # calculate fps
+  let fps = (1 / dt).int
 
-proc run*(self: var FpsSystem) =
-  var i = 0
-  loop(frequency=60):
-    # calculate fps
-    let fps = (1 / dt).int
+  # update custom field
+  if fps > self.bestFps:
+    self.bestFps = fps
 
-    # update custom field
-    if fps > self.worstFps:
-      self.worstFps = fps
+  # use c4's logging system to output message
+  info "fps measured", value=fps, i=self.i
 
-    # use c4's logging system to output message
-    echo &"FPS: {$fps}"
-    inc i
-    if i > 100:
-      break
+  inc self.i
+  if self.i > 15:
+    raise newException(BreakLoopException, "")

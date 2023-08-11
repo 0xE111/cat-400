@@ -10,7 +10,7 @@ Entity
 
 ``Entity`` represents some game entity / object. It may be a tree, or wind, or player, or UI element - whatever you want to.
 
-Under the hood each entity is nothing but a number, which you may treat as entity ID. In `C4` it's just ``int16``, thus you may have up to ``65 536`` different entities with IDs from ``-32 768`` to ``32 767``.
+Under the hood each entity is nothing but a number, which you may treat as entity ID. In `C4` it's just ``int16``, thus you may have up to ``65 535`` different entities with IDs from ``-32 768`` to ``32 767`` (except `0`).
 
 ``int16`` type was chosen because:
 * signed ints are checked for boundary errors, so if you try to create entity with ID ``32 767``, it won't be treated as ``-32 768`` - and you'll get an exception;
