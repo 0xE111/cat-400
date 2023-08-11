@@ -22,8 +22,8 @@ const
 # `process()` and `value()` methods
 
 # these are methods for basic `Message` type
-method value(msg: ref Message): int {.base.} = 0
-method process(msg: ref Message) {.base.} = discard
+method value(msg: ref Message): int {.base, gcsafe.} = 0
+method process(msg: ref Message) {.base, gcsafe.} = discard
 
 # and these are methods for `DataMessage` type
 method value(msg: ref DataMessage): int = msg.data
@@ -31,13 +31,13 @@ method process(msg: ref DataMessage) = msg.data += 1
 
 
 when isMainModule:
-  spawnThread(thread1):
+  spawnThread thread1:
     # thread1 will wait for thread2 to appear by calling
     # `probe`; `probe` may accept `timeout`
     # arg (how many seconds to wait) and `interval` arg
     # (how often to check for thread)
     try:
-      probe(thread2, timeout=initDuration(seconds=5)):
+      thread2.probe(timeout=initDuration(seconds=5))
     except ThreadUnavailable:
       echo "Error: thread2 is not available"
       return
@@ -63,7 +63,7 @@ when isMainModule:
 
       msg.send(thread2)  # send message to thread2
 
-  spawnThread(thread2):
+  spawnThread thread2:
     # this thread is spawned after thread1
 
     while true:

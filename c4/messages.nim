@@ -8,7 +8,6 @@ import locks
 import typetraits
 import msgpack4nim
 export msgpack4nim  # every module using messages packing must import msgpack4nim
-import unittest
 
 
 type
@@ -56,7 +55,7 @@ proc msgunpack*(data: string): ref Message {.gcsafe.} =
     packId: uint8
     stream = MsgStream.init(data)
 
-  stream.setPosition(0)
+  # stream.setPosition(0)  # TODO: why was it needed?
   stream.unpack(packId)
   {.gcsafe.}:
     withLock packTableLock:
@@ -100,6 +99,8 @@ template register*(MessageType: typedesc) =
 
 
 when isMainModule:
+  import unittest
+
   type
     MessageA = object of Message
       msg: string

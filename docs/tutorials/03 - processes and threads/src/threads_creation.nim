@@ -6,12 +6,12 @@ const
   thread1 = ThreadID(1)
   thread2 = ThreadID(2)
 
-spawnThread(thread1):  # launches a new thread called "thread1"
+spawnThread thread1:
   for _ in 0..100:
-    echo threadID  # use `threadName` to get name of currently running thread
+    info "thread running", threadID  # use `threadID` to get ID of currently running thread
 
-spawnThread(thread2):
+spawnThread thread2:
   for _ in 0..100:
-    echo threadID
+    info "thread running", threadID
 
 joinActiveThreads()  # call this to wait for all threads to complete

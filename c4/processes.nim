@@ -59,15 +59,13 @@ template spawnProcess*(name: ProcessName, code: untyped) =
       fatal "process failed", exceptionMessage=exc.msg, stackTrace=exc.getStackTrace()
       raise
 
-proc dieTogether*(checkInterval: int = 1000) =
+proc joinProcesses*(checkInterval: int = 1000) =
   ## Monitors existing processes. If one process is not running anymore, terminates all other processes as well.
   assert processName == mainProcessName
 
   while true:
-    let notRunning = toSeq(processes.values()).filterIt(not it.running)
-    if notRunning.len > 0:
-      for process in notRunning:
-        process.kill()
+    let running = toSeq(processes.values()).filterIt(it.running)
+    if running.len == 0:
       break
 
     sleep checkInterval

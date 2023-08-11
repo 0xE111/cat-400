@@ -1,20 +1,19 @@
 import times
 import os
-import std/tables
 
 import c4/messages
 import c4/logging
 
 
 type
-  ThreadID* = int8
-  ThreadsTable* = Table[string, Channel[ref Message]]
+  ThreadID* = uint8
   ThreadUnavailable* = object of CatchableError
 
 var
   channels*: array[16, Channel[ref Message]]
   activeThreads*: set[ThreadID]
   threadID* {.threadvar.}: ThreadID
+  threadName* {.threadvar.}: string
 
 let
   defaultPollInterval*: Duration = initDuration(milliseconds=100)
@@ -53,7 +52,7 @@ proc probe*(
 proc joinActiveThreads*(pollInterval: Duration = defaultPollInterval) =
   let sleepTime = (pollInterval.inNanoseconds.int / 1000000).int
   while activeThreads.len > 0:
-    debug "waiting for threads to finish", activeThreads, pollInterval
+    trace "waiting for threads to finish", activeThreads, pollInterval
     sleep(sleepTime)
   trace "threads finished"
 

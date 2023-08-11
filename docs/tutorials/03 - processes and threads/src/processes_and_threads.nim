@@ -1,33 +1,39 @@
 # processes_and_threads.nim
-import strformat
-import threadpool
-import c4/[processes, threads]
-
+import c4/processes
+import c4/threads
+import c4/logging
 
 when isMainModule:
-  echo &"Running {processName} process"
+  const
+    network = ThreadID(1)
+    physics = ThreadID(2)
+    video = ThreadID(3)
 
-  run("server"):
-    spawnThread("physics"):
-      echo &" - Thread {threadName}"
-      sleep 2000
+  info "running process", processName
 
-    spawnThread("network"):
-      echo &" - Thread {threadName}"
-      sleep 2000
+  spawnProcess "server":
 
-    sync()  # let's specify module explicitly to not get confused
+    spawnThread physics:
+      info "running thread", threadID, threadName="physics"
+      sleep 200
 
-  run("client"):
-    spawnThread("video"):
-      echo &" - Thread {threadName}"
-      sleep 2000
+    spawnThread network:
+      info "running thread", threadID, threadName="network"
+      sleep 200
 
-    spawnThread("network"):
-      echo &" - Thread {threadName}"
-      sleep 2000
+    joinActiveThreads()
 
-    sync()
+  spawnProcess "client":
 
-  processes.dieTogether()  # let's specify module explicitly to not get confused
-  echo "All processes are finished"
+    spawnThread video:
+      info "running thread", threadID, threadName="physics"
+      sleep 200
+
+    spawnThread network:
+      info "running thread", threadID, threadName="network"
+      sleep 200
+
+    joinActiveThreads()
+
+  joinProcesses()
+  info "all processes finished"
