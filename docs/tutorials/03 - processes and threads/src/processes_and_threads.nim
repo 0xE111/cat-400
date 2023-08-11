@@ -9,9 +9,10 @@ when isMainModule:
     physics = ThreadID(2)
     video = ThreadID(3)
 
-  info "running process", processName
+  info "running common code"
 
   spawnProcess "server":
+    info "running server"
 
     spawnThread physics:
       info "running thread", threadID, threadName="physics"
@@ -24,6 +25,7 @@ when isMainModule:
     joinActiveThreads()
 
   spawnProcess "client":
+    info "running client"
 
     spawnThread video:
       info "running thread", threadID, threadName="physics"

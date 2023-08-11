@@ -34,8 +34,6 @@ let processName*: ProcessName = getProcessName()
 
 template spawnProcess*(name: ProcessName, code: untyped) =
   ## Runs new process which executes all instructions before this call, plus `code` content.
-  logScope:
-    process = processName
 
   debug "process started"
 
