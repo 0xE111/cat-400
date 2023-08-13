@@ -50,6 +50,8 @@ I know many game engines (for example, Godot) have integrated basic mesh editors
 
 ## Documentation
 
+> WARNING! Due to active development documentation is very outdated. It will be fixed once framework's API is stable.
+
 ### Tutorials
 
 Visit [docs/tutorials](docs/tutorials/) folder - it's the best place to learn `Cat 400`.
