@@ -16,11 +16,11 @@ import consts
 when isMainModule:
   spawnProcess "server":
     spawnThread videoThread:
-      var videoSystem = VideoSystem.new()
+      var videoSystem = video.VideoSystem.new()
 
       # this will be processed immediately
       videoSystem.process(
-        (ref OgreVideoInitMessage)(
+        (ref VideoInitMessage)(
           windowTitle: "My awesome game",
           windowWidth: 640,
           windowHeight: 480,

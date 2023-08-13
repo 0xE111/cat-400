@@ -7,7 +7,7 @@ import sdl2
 
 
 type
-  OgreVideoSystem* = object of SdlVideoSystem
+  VideoSystem* = object of c4sdl.VideoSystem
     root*: ptr Root
     resourceGroupManager*: ptr ResourceGroupManager
     sceneManager*: ptr SceneManager
@@ -16,18 +16,18 @@ type
     camera*: ptr Camera
     viewport*: ptr Viewport
 
-  OgreVideo* = object of RootObj
+  Video* = object of RootObj
     node*: ptr SceneNode
 
-  OgreVideoInitMessage* = object of SdlVideoInitMessage
+  VideoInitMessage* = object of c4sdl.VideoInitMessage
 
   OgreException* = object of CatchableError
 
 
-register OgreVideoInitMessage
+register VideoInitMessage
 
 
-method process*(self: ref OgreVideoSystem, message: ref OgreVideoInitMessage) =
+method process*(self: ref VideoSystem, message: ref VideoInitMessage) =
   withLog(DEBUG, "initializing video"):
     if initSubSystem(INIT_VIDEO) != 0: handleError("failed to initialize video")
 
@@ -103,6 +103,7 @@ method process*(self: ref OgreVideoSystem, message: ref OgreVideoInitMessage) =
     self.viewport = self.renderWindow.addViewport(self.camera)
     self.viewport.setBackgroundColour(initColourValue(0, 0, 0))
 
-method update*(self: ref OgreVideoSystem, dt: float) =
+
+method update*(self: ref VideoSystem, dt: float) =
   withLog(TRACE, "updating ogre"):
     discard self.root.renderOneFrame(dt)

@@ -2,7 +2,7 @@ import std/math
 import std/times
 
 import c4/logging
-import c4/systems/video/ogre
+import c4/systems/video/ogre as c4ogre
 import c4/lib/ogre/ogre
 import c4/messages
 import c4/entities
@@ -13,18 +13,18 @@ import ../messages
 import ../consts
 
 type
-  VideoSystem* = object of OgreVideoSystem
+  VideoSystem* = object of c4ogre.VideoSystem
     entity*: entities.Entity
-  Video* = object of OgreVideo
+  Video* = object of c4ogre.Video
 
 
 method update*(self: ref VideoSystem, dt: float) =
   ((ref RotateEntityMessage)(angle: sin(epochTime()))).send(videoThread)
-  procCall self.as(ref OgreVideoSystem).update(dt)
+  procCall self.as(ref c4ogre.VideoSystem).update(dt)
 
 
-method process*(self: ref VideoSystem, message: ref OgreVideoInitMessage) =
-  procCall self.as(ref OgreVideoSystem).process(message)
+method process*(self: ref VideoSystem, message: ref VideoInitMessage) =
+  procCall self.as(ref c4ogre.VideoSystem).process(message)
 
   var cameraNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
   cameraNode.attachObject(self.camera)

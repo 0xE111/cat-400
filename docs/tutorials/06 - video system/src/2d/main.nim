@@ -14,10 +14,10 @@ import systems/video
 when isMainModule:
   spawnProcess "server":
     spawnThread c4threads.ThreadID(1):
-      var videoSystem = VideoSystem.new()
+      var videoSystem = video.VideoSystem.new()
 
       videoSystem.process(
-        (ref SdlVideoInitMessage)(
+        (ref VideoInitMessage)(
           windowTitle: "My awesome game",
           windowWidth: 640,
           windowHeight: 480,

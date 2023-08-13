@@ -47,7 +47,7 @@ type
 
 
 # ---- types ----
-# TODO: x32 not supported
+# x32 not supported
 # when compileOption("cpu", "i386"):
 #   type
 #     dint32* = cint
@@ -71,7 +71,7 @@ type
   dint16* = cshort
   duint16* = cushort
   dint8* = cchar
-  duint8* = cuchar
+  duint8* = uint8
   dintptr* = dint64
   duintptr* = duint64
   ddiffint* = dint64

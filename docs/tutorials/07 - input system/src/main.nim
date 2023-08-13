@@ -9,15 +9,14 @@ import c4/logging
 
 import ./systems/input
 import ./systems/video
-import ./messages
 
 
 when isMainModule:
   spawnThread c4threads.ThreadID(1):
-    var videoSystem = new(VideoSystem)
+    var videoSystem = new(video.VideoSystem)
 
     videoSystem.process(
-      (ref SdlVideoInitMessage)(
+      (ref VideoInitMessage)(
         windowTitle: "My awesome game",
         windowWidth: 640,
         windowHeight: 480,
@@ -30,8 +29,8 @@ when isMainModule:
     videoSystem.run(frequency=60)
 
   spawnThread c4threads.ThreadID(2):
-    var inputSystem = new(InputSystem)
-    inputSystem.process(new(SdlInputInitMessage))
+    var inputSystem = new(input.InputSystem)
+    inputSystem.process(new(InputInitMessage))
     inputSystem.run(frequency=30)
 
   joinActiveThreads()

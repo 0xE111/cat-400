@@ -7,10 +7,10 @@ import c4/logging
 import c4/systems/video/sdl
 
 
-type VideoSystem* = object of SdlVideoSystem
+type VideoSystem* = object of sdl.VideoSystem
 
 
-method update*(self: ref SdlVideoSystem, dt: float) =
+method update*(self: ref VideoSystem, dt: float) =
   if self.renderer.clear() != 0: handleError("failed to clear renderer")
 
   let windowSize = self.window.getSize()

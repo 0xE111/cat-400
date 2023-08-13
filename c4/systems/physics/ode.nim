@@ -1,49 +1,43 @@
-import logging
-import strformat
 import math
 import system
-import unittest
-import os
-import typetraits
 
-import ../../lib/ode/ode
-
-import ../../threads
+import ../../logging
+import ../../systems
 import ../../messages
-import ../../entities
-import ../../loop
+import ../../lib/ode/ode
 
 
 const simulationStep = 1 / 30
 
 type
-  OdePhysicsSystem* {.inheritable.} = object
+  PhysicsSystem*  = object of System
     world*: dWorldID
     space*: dSpaceID
     nearCallback*: dNearCallback
+
     contactGroup: dJointGroupID
     simulationStepRemains: float
 
-  OdePhysics* {.inheritable.} = object
+  Physics* = object of RootObj
     body*: dBodyID
 
+  PhysicsInitMessage* = object of Message
 
-# ---- Component ----
 
-method init*(self: ref OdePhysicsSystem, physics: ref OdePhysics) {.base.} =
-  logging.debug &"{self.type.name}: initializing component"
-  physics.body = self.world.bodyCreate()
-  physics.body.bodySetPosition(0.0, 0.0, 0.0)
+# method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
+#   logging.debug &"{self.type.name}: initializing component"
+#   physics.body = self.world.bodyCreate()
+#   physics.body.bodySetPosition(0.0, 0.0, 0.0)
 
-method dispose*(self: ref OdePhysics) {.base.} =
-  logging.debug &"{self.type.name}: destroying component"
-  self.body.bodyDestroy()
+# method dispose*(self: ref Physics) {.base.} =
+#   logging.debug &"{self.type.name}: destroying component"
+#   self.body.bodyDestroy()
 
 
 # ---- System ----
 proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   let
-    self = cast[ptr OdePhysicsSystem](data)[]
+    self = cast[ptr PhysicsSystem](data)[]
     body1 = geom1.geomGetBody()
     body2 = geom2.geomGetBody()
 
@@ -66,19 +60,18 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     contact.jointAttach(body1, body2)
 
 
-method init*(self: ref OdePhysicsSystem) {.base.} =
-  ode.initODE()
-  self.world = worldCreate()
-  # self.world.worldSetAutoDisableFlag(1)
-  self.space = hashSpaceCreate(nil)
-  self.simulationStepRemains = 0
-  self.nearCallback = nearCallback  # cast[ptr dNearCallback](nearCallback.rawProc)
-  self.contactGroup = jointGroupCreate(0)
+method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
+  withLog(DEBUG, "initializing physics engine"):
+    initODE()
+    self.world = worldCreate()
+    # self.world.worldSetAutoDisableFlag(1)
+    self.space = hashSpaceCreate(nil)
+    self.simulationStepRemains = 0
+    self.nearCallback = nearCallback  # cast[ptr dNearCallback](nearCallback.rawProc)
+    self.contactGroup = jointGroupCreate(0)
 
-  logging.debug "ODE initialized"
 
-
-method update*(self: ref OdePhysicsSystem, dt: float) {.base.} =
+method update*(self: ref PhysicsSystem, dt: float) =
   let
     dt = dt + self.simulationStepRemains
     nSteps = (dt / simulationStep).int
@@ -92,35 +85,26 @@ method update*(self: ref OdePhysicsSystem, dt: float) {.base.} =
     self.contactGroup.jointGroupEmpty()
 
 
-method dispose*(self: ref OdePhysicsSystem) {.base.} =
-  self.contactGroup.jointGroupDestroy()
-  self.space.spaceDestroy()
-  self.world.worldDestroy()
-  ode.closeODE()
-  logging.debug "ODE destroyed"
-
-
-method process*(self: ref OdePhysicsSystem, message: ref Message) {.base.} =
-  logging.warn &"No rule for processing {message}"
-
-
-method run*(self: ref OdePhysicsSystem) {.base.} =
-  loop(frequency=30) do:
-    self.update(dt)
-    while true:
-      let message = tryRecv()
-      if message.isNil:
-        break
-      self.process(message)
+method dispose*(self: ref PhysicsSystem) =
+  withLog(DEBUG, "disposing physics engine"):
+    self.contactGroup.jointGroupDestroy()
+    self.space.spaceDestroy()
+    self.world.worldDestroy()
+    ode.closeODE()
 
 
 when isMainModule:
-  suite "System tests":
-    test "Running inside thread":
-      spawn("thread") do:
-        var system = OdePhysicsSystem()
-        system.init()
-        system.run()
-        system.dispose()
+  import unittest
 
-      sleep 1000
+  suite "System tests":
+    test "Running":
+      let system = new(PhysicsSystem)
+      system.process(new(PhysicsInitMessage))
+
+      let body = system.world.bodyCreate()
+      body.bodySetPosition(0.0, 0.0, 0.0)
+
+      let entity = newEntity()
+      entity[Physics] = Physics(body: body)
+
+      system.run()

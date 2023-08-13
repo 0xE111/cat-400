@@ -4,7 +4,7 @@ import c4/loop
 import ../messages
 
 
-type VideoSystem* = object of SdlVideoSystem
+type VideoSystem* = object of sdl.VideoSystem
 
 
 method process*(self: ref VideoSystem, message: ref StopMessage) =

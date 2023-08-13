@@ -10,7 +10,7 @@ import ../messages
 
 
 type
-  InputSystem* = object of SdlInputSystem
+  InputSystem* = object of sdl.InputSystem
 
 
 method handleKeyboardState*(
@@ -33,7 +33,7 @@ method handleKeyboardState*(
     raise newException(BreakLoopException, "")
 
 method handleEvent*(self: ref InputSystem, event: Event) =
-  procCall self.as(ref SdlInputSystem).handleEvent(event)
+  procCall self.as(ref sdl.InputSystem).handleEvent(event)
 
 
   case event.kind

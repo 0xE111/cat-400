@@ -8,12 +8,12 @@ import ../../loop
 
 
 type
-  SdlInputSystem* = object of System
+  InputSystem* = object of System
     event: Event  # temporary storage for event when calling pollEvent()
 
-  SdlInputSystemError* = object of LibraryError
+  InputSystemError* = object of LibraryError
 
-  SdlInputInitMessage* = object of Message
+  InputInitMessage* = object of Message
 
   WindowQuitMessage* = object of Message
 
@@ -21,18 +21,18 @@ type
 template handleError*(message: string) =
   let error = getError()
   fatal message, error
-  raise newException(SdlInputSystemError, message & ": "  & $error)
+  raise newException(InputSystemError, message & ": "  & $error)
 
 
-SdlInputInitMessage.register()
+InputInitMessage.register()
 WindowQuitMessage.register()
 
 
-method process*(self: ref SdlInputSystem, message: ref SdlInputInitMessage) =
+method process*(self: ref InputSystem, message: ref InputInitMessage) =
   withLog(DEBUG, "initializing input"):
     if initSubSystem(INIT_EVENTS) != 0: handleError("failed to initialize events")
 
-method dispose*(self: ref SdlInputSystem) =
+method dispose*(self: ref InputSystem) =
   quitSubSystem(INIT_EVENTS)
 
 
@@ -41,7 +41,7 @@ method dispose*(self: ref SdlInputSystem) =
 
 
 # ---- workflow methods ----
-# method init*(self: ref SdlInputSystem) =
+# method init*(self: ref InputSystem) =
 #   logging.debug &"Initializing {self[].type.name}"
 
 #   try:
@@ -57,7 +57,7 @@ method dispose*(self: ref SdlInputSystem) =
 #     logging.fatal(getCurrentExceptionMsg())
 #     raise
 
-method handleEvent*(self: ref SdlInputSystem, event: Event) {.base.} =
+method handleEvent*(self: ref InputSystem, event: Event) {.base.} =
   case event.kind
     of QuitEvent:
       raise newException(BreakLoopException, "")
@@ -77,12 +77,12 @@ method handleEvent*(self: ref SdlInputSystem, event: Event) {.base.} =
       discard
 
 method handleKeyboardState*(
-  self: ref SdlInputSystem,
+  self: ref InputSystem,
   keyboard: ptr array[0 .. SDL_NUM_SCANCODES.int, uint8],
 ) {.base.} =
   discard
 
-method update*(self: ref SdlInputSystem, dt: float) =
+method update*(self: ref InputSystem, dt: float) =
   while pollEvent(self.event) != False32:
     self.handleEvent(self.event)
 
@@ -96,8 +96,8 @@ when isMainModule:
   suite "System tests":
     test "Running inside thread":
       spawnThread ThreadID(1):
-        let system = new(SdlInputSystem)
-        system.process(new SdlInputInitMessage)
+        let system = new(InputSystem)
+        system.process(new InputInitMessage)
         system.run(frequency=30)
 
       joinActiveThreads()
