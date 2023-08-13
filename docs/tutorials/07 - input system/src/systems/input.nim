@@ -3,6 +3,10 @@ import sdl2
 import c4/systems/input/sdl
 import c4/logging
 import c4/sugar
+import c4/loop
+import c4/threads as c4threads
+
+import ../messages
 
 
 type
@@ -22,6 +26,11 @@ method handleKeyboardState*(
 
   if keys.len > 0:
     info "keyboard input", keys
+
+  if keyboard[SDL_SCANCODE_ESCAPE.int] > 0:
+    new(StopMessage).send(c4threads.ThreadID(1))
+    info "quit"
+    raise newException(BreakLoopException, "")
 
 method handleEvent*(self: ref InputSystem, event: Event) =
   procCall self.as(ref SdlInputSystem).handleEvent(event)

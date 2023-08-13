@@ -7,12 +7,14 @@ import c4/systems/video/sdl as sdlvideo
 import c4/systems/input/sdl as sdlinput
 import c4/logging
 
-import systems/input
+import ./systems/input
+import ./systems/video
+import ./messages
 
 
 when isMainModule:
   spawnThread c4threads.ThreadID(1):
-    var videoSystem = new(SdlVideoSystem)
+    var videoSystem = new(VideoSystem)
 
     videoSystem.process(
       (ref SdlVideoInitMessage)(
