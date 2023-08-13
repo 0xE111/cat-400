@@ -1,4 +1,3 @@
-import unittest
 import macros
 
 
@@ -21,6 +20,8 @@ macro operateOn*(x: typed; calls: untyped) =
 
 
 when isMainModule:
+  import unittest
+
   type
     A {.inheritable.} = object
     B = object of A

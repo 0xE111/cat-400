@@ -2,9 +2,9 @@ import strformat
 
 import sdl2
 
-import c4/systems
-import c4/logging
-import c4/messages
+import ../../systems
+import ../../logging
+import ../../messages
 
 type
   SdlVideoSystem* = object of System

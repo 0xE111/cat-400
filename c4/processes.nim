@@ -8,7 +8,7 @@ export tables
 import parseopt
 import sequtils
 
-import c4/logging
+import ./logging
 
 when isMainModule:
   import unittest

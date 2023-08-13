@@ -1,6 +1,6 @@
 # Ogre3D Nim wrapper
 
-This is a wrapper for [Ogre 3D](ogre3d.org/).
+This is a wrapper for [Ogre 3D](https://ogre3d.org/).
 
 Please note that this wrapper is very dirty and is barely tested.
 

@@ -3,7 +3,7 @@
 import tables
 export tables
 
-import c4/logging
+import ./logging
 
 
 # uint doesn't check boundaries, thus int; set[int32] won't compile, thus int16

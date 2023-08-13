@@ -1,7 +1,7 @@
-import c4/loop
-import c4/threads
-import c4/messages
-import c4/logging
+import ./loop
+import ./threads
+import ./messages
+import ./logging
 
 type System* = object of RootObj
 

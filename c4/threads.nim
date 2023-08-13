@@ -1,8 +1,8 @@
 import times
 import os
 
-import c4/messages
-import c4/logging
+import ./messages
+import ./logging
 
 
 type

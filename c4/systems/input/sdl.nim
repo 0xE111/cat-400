@@ -1,60 +1,72 @@
-import sdl2/sdl
-import logging
+import sdl2
 import tables
-import strformat
-import unittest
-import os
-import typetraits
 
-import ../../threads
+import ../../logging
 import ../../messages
+import ../../systems
 import ../../loop
 
 
-type SdlInputSystem* {.inheritable.} = object
-  event: Event  # temporary storage for event when calling pollEvent()
+type
+  SdlInputSystem* = object of System
+    event: Event  # temporary storage for event when calling pollEvent()
 
-proc `$`*(event: Event): string = $event.kind
+  SdlInputSystemError* = object of LibraryError
+
+  SdlInputInitMessage* = object of Message
+
+  WindowQuitMessage* = object of Message
 
 
-# ---- messages ----
-type WindowResizeMessage* = object of Message
-    width*, height*: int
-register WindowResizeMessage
+template handleError*(message: string) =
+  let error = getError()
+  fatal message, error
+  raise newException(SdlInputSystemError, message & ": "  & $error)
 
-type WindowQuitMessage* = object of Message
-register WindowQuitMessage
+
+SdlInputInitMessage.register()
+WindowQuitMessage.register()
+
+
+method process*(self: ref SdlInputSystem, message: ref SdlInputInitMessage) =
+  withLog(DEBUG, "initializing input"):
+    if initSubSystem(INIT_EVENTS) != 0: handleError("failed to initialize events")
+
+method dispose*(self: ref SdlInputSystem) =
+  quitSubSystem(INIT_EVENTS)
+
+
+# proc `$`*(event: Event): string = $event.kind
+
 
 
 # ---- workflow methods ----
-method init*(self: ref SdlInputSystem) {.base.} =
-  logging.debug &"Initializing {self[].type.name}"
+# method init*(self: ref SdlInputSystem) =
+#   logging.debug &"Initializing {self[].type.name}"
 
-  try:
-    sleep 500  # wait for SDL VIDEO system to initialize (in case of race condition)
-    if wasInit(INIT_VIDEO) == 0:
-      # INIT_VIDEO implies INIT_EVENTS -> don't initialize events if video already initialized
-      logging.debug "Initializing SDL events"
-      if initSubSystem(INIT_EVENTS) != 0:
-        raise newException(LibraryError, &"Could not init {self.type.name}: {getError()}")
+#   try:
+#     sleep 500  # wait for SDL VIDEO system to initialize (in case of race condition)
+#     if wasInit(INIT_VIDEO) == 0:
+#       # INIT_VIDEO implies INIT_EVENTS -> don't initialize events if video already initialized
+#       logging.debug "Initializing SDL events"
+#       if initSubSystem(INIT_EVENTS) != 0:
+#         raise newException(LibraryError, &"Could not init {self.type.name}: {getError()}")
 
-  except LibraryError:
-    quitSubSystem(INIT_EVENTS)
-    logging.fatal(getCurrentExceptionMsg())
-    raise
+#   except LibraryError:
+#     quitSubSystem(INIT_EVENTS)
+#     logging.fatal(getCurrentExceptionMsg())
+#     raise
 
-method handle*(self: ref SdlInputSystem, event: Event) {.base.} =
-  ## Handling of basic event. These are pretty reasonable defaults.
+method handleEvent*(self: ref SdlInputSystem, event: Event) {.base.} =
   case event.kind
-    of QUIT:
-      new(WindowQuitMessage).send("video")
+    of QuitEvent:
+      raise newException(BreakLoopException, "")
     of WINDOWEVENT:
       case event.window.event
         of WINDOWEVENT_SIZE_CHANGED:
-          (ref WindowResizeMessage)(
-            width: event.window.data1,
-            height: event.window.data2,
-          ).send("video")
+          #   width: event.window.data1,
+          #   height: event.window.data2,
+          discard
         else:
           discard
     # of KEYDOWN:
@@ -64,41 +76,28 @@ method handle*(self: ref SdlInputSystem, event: Event) {.base.} =
     else:
       discard
 
-method handle*(self: ref SdlInputSystem, keyboard: ptr array[NUM_SCANCODES.int, uint8]) {.base.} =
+method handleKeyboardState*(
+  self: ref SdlInputSystem,
+  keyboard: ptr array[0 .. SDL_NUM_SCANCODES.int, uint8],
+) {.base.} =
   discard
 
-method update*(self: ref SdlInputSystem, dt: float) {.base.} =
-  while pollEvent(self.event.unsafeAddr) != 0:
-    self.handle(self.event)
+method update*(self: ref SdlInputSystem, dt: float) =
+  while pollEvent(self.event) != False32:
+    self.handleEvent(self.event)
 
-  self.handle(getKeyboardState(nil))
-
-method dispose*(self: ref SdlInputSystem) {.base.} =
-  quitSubSystem(INIT_EVENTS)
-  logging.debug &"{self.type.name} destroyed"
-
-
-method process*(self: ref SdlInputSystem, message: ref Message) {.base.} =
-  logging.warn &"No rule for processing {message}"
-
-
-method run*(self: ref SdlInputSystem) {.base.} =
-  loop(frequency=30) do:
-    self.update(dt)
-    while true:
-      let message = tryRecv()
-      if message.isNil:
-        break
-      self.process(message)
+  self.handleKeyboardState(getKeyboardState(nil))
 
 
 when isMainModule:
+  import unittest
+  import ../../threads
+
   suite "System tests":
     test "Running inside thread":
-      spawn("thread") do:
+      spawnThread ThreadID(1):
         let system = new(SdlInputSystem)
-        system.init()
-        system.run()
-        system.dispose()
+        system.process(new SdlInputInitMessage)
+        system.run(frequency=30)
 
-      sleep 1000
+      joinActiveThreads()

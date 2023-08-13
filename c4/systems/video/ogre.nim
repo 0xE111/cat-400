@@ -1,7 +1,7 @@
-import c4/logging
-import c4/systems/video/sdl as c4sdl
-import c4/lib/ogre/ogre
-import c4/messages
+import ../../logging
+import ../../systems/video/sdl as c4sdl
+import ../../lib/ogre/ogre
+import ../../messages
 
 import sdl2
 

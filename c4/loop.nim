@@ -2,10 +2,7 @@ import times
 import os
 import strutils
 
-import c4/logging
-
-when isMainModule:
-  import unittest
+import ./logging
 
 
 type BreakLoopException* = object of CatchableError
@@ -43,6 +40,8 @@ template loop*(frequency: int, code: untyped) =
 
 
 when isMainModule:
+  import unittest
+
   suite "Loop":
     test "Base loop frequency":
       var i = 0
