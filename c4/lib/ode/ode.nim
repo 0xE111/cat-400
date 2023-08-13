@@ -55,7 +55,7 @@ type
 #     dint16* = cshort
 #     duint16* = cushort
 #     dint8* = cchar
-#     duint8* = cuchar
+#     duint8* = uint8
 #     dintptr* = dint32
 #     duintptr* = duint32
 #     ddiffint* = dint32
@@ -194,9 +194,9 @@ type
   dCallReleaseeID* = ptr dxCallReleasee
   dxCallWait* {.bycopy.} = object
   dCallWaitID* = ptr dxCallWait
-  ddependencycount_t* = csize
+  ddependencycount_t* = csize_t
   ddependencychange_t* = ptrdiff_t
-  dcallindex_t* = csize
+  dcallindex_t* = csize_t
   dThreadedCallFunction* = proc (call_context: pointer; instance_index: dcallindex_t; this_releasee: dCallReleaseeID): cint
   dThreadedWaitTime* {.bycopy.} = object
     wait_sec*: time_t
@@ -231,9 +231,9 @@ type
 
   dWorldStepMemoryFunctionsInfo* {.bycopy.} = object
     struct_size*: cuint
-    alloc_block*: proc (block_size: csize): pointer
-    shrink_block*: proc (block_pointer: pointer; block_current_size: csize; block_smaller_size: csize): pointer
-    free_block*: proc (block_pointer: pointer; block_current_size: csize)
+    alloc_block*: proc (block_size: csize_t): pointer
+    shrink_block*: proc (block_pointer: pointer; block_current_size: csize_t; block_smaller_size: csize_t): pointer
+    free_block*: proc (block_pointer: pointer; block_current_size: csize_t)
 
   dNearCallback* = proc (data: pointer; o1: dGeomID; o2: dGeomID)
 
@@ -972,7 +972,7 @@ proc createHeightfield*(space: dSpaceID; data: dHeightfieldDataID; bPlaceable: c
 proc geomHeightfieldDataCreate*(): dHeightfieldDataID {.importc: "dGeomHeightfieldDataCreate".}
 proc geomHeightfieldDataDestroy*(d: dHeightfieldDataID) {.importc: "dGeomHeightfieldDataDestroy".}
 proc geomHeightfieldDataBuildCallback*(d: dHeightfieldDataID; pUserData: pointer; pCallback: ptr dHeightfieldGetHeight; width: dReal; depth: dReal; widthSamples: cint; depthSamples: cint; scale: dReal; offset: dReal; thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildCallback".}
-proc geomHeightfieldDataBuildByte*(d: dHeightfieldDataID; pHeightData: ptr cuchar; bCopyHeightData: cint; width: dReal; depth: dReal; widthSamples: cint; depthSamples: cint; scale: dReal; offset: dReal; thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildByte".}
+proc geomHeightfieldDataBuildByte*(d: dHeightfieldDataID; pHeightData: ptr uint8; bCopyHeightData: cint; width: dReal; depth: dReal; widthSamples: cint; depthSamples: cint; scale: dReal; offset: dReal; thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildByte".}
 proc geomHeightfieldDataBuildShort*(d: dHeightfieldDataID; pHeightData: ptr cshort; bCopyHeightData: cint;  width: dReal; depth: dReal; widthSamples: cint;  depthSamples: cint; scale: dReal; offset: dReal;  thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildShort".}
 proc geomHeightfieldDataBuildSingle*(d: dHeightfieldDataID; pHeightData: ptr cfloat; bCopyHeightData: cint; width: dReal; depth: dReal; widthSamples: cint; depthSamples: cint; scale: dReal; offset: dReal; thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildSingle".}
 proc geomHeightfieldDataBuildDouble*(d: dHeightfieldDataID; pHeightData: ptr cdouble; bCopyHeightData: cint; width: dReal; depth: dReal; widthSamples: cint; depthSamples: cint; scale: dReal; offset: dReal; thickness: dReal; bWrap: cint) {.importc: "dGeomHeightfieldDataBuildDouble".}
@@ -995,7 +995,7 @@ proc threadingImplementationShutdownProcessing*(impl: dThreadingImplementationID
 proc threadingImplementationCleanupForRestart*(impl: dThreadingImplementationID) {.importc: "dThreadingImplementationCleanupForRestart".}
 proc threadingFreeImplementation*(impl: dThreadingImplementationID) {.importc: "dThreadingFreeImplementation".}
 proc externalThreadingServeMultiThreadedImplementation*(impl: dThreadingImplementationID; readiness_callback: ptr dThreadReadyToServeCallback; callback_context: pointer) {.importc: "dExternalThreadingServeMultiThreadedImplementation".}
-proc threadingAllocateThreadPool*(thread_count: cuint; stack_size: csize; ode_data_allocate_flags: cuint; reserved: pointer): dThreadingThreadPoolID {.importc: "dThreadingAllocateThreadPool".}
+proc threadingAllocateThreadPool*(thread_count: cuint; stack_size: csize_t; ode_data_allocate_flags: cuint; reserved: pointer): dThreadingThreadPoolID {.importc: "dThreadingAllocateThreadPool".}
 proc threadingThreadPoolServeMultiThreadedImplementation*(pool: dThreadingThreadPoolID; impl: dThreadingImplementationID) {.importc: "dThreadingThreadPoolServeMultiThreadedImplementation".}
 proc threadingThreadPoolWaitIdleState*(pool: dThreadingThreadPoolID) {.importc: "dThreadingThreadPoolWaitIdleState".}
 proc threadingFreeThreadPool*(pool: dThreadingThreadPoolID) {.importc: "dThreadingFreeThreadPool".}
