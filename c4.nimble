@@ -2,8 +2,7 @@ import strutils
 import strformat
 import os
 
-# Package info
-version = "0.2.1"
+version = "0.2.2"
 author = "c0ntribut0r"
 description = "Game framework"
 license = "MPL-2.0"
@@ -17,11 +16,6 @@ skipDirs = @["docs"]
 requires "nim >= 2.1"
 requires "msgpack4nim == 0.4.4"
 requires "chronicles == 0.10.3"
-# requires "sdl2 == 2.0.5"
-# requires "cligen >= 0.9.41"
-# requires "fsm >= 0.1.0"
-# when defined(linux):
-#   requires "x11 >= 1.1"
 
 
 proc dirGenDocs(src, dst: string) =

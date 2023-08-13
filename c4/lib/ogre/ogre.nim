@@ -1,28 +1,6 @@
 ## Basic wrapper for Ogre3d.
 ## Only minimal requred definitions included.
 
-# TODO: inspect all places where we use object instances directly instead of pointers!
-when isMainModule:
-  import unittest
-  import sdl2/sdl, sdl2/sdl_syswm
-
-when defined(windows):
-  raise newException(LibraryError, "Not implemented")
-
-elif defined(macosx):
-  raise newException(LibraryError, "Not implemented")
-
-elif defined(linux):
-  # {.link: "/usr/lib/libOgre.so".}
-  # {.link: "/usr/lib/libOgreMain.so".}
-  # {.link: "/usr/lib/libOgreBites.so".}
-  {.passL: "-lOgreMain".}
-  {.passC: "-I/usr/include/OGRE -I/usr/include/OGRE/Bites".}  # -I/usr/include/OGRE/RTShaderSystem ".}
-
-else:
-  raise newException(LibraryError, "Platform not supported")
-
-
 type
   StdMap[K, V] {.header: "<map>", importcpp: "std::map".} = object
   # String* {.header: "OgrePrerequisites.h", importcpp: "Ogre::String", bycopy.} = object
@@ -73,7 +51,7 @@ type
 var
   DEFAULT_RESOURCE_GROUP_NAME {.importcpp: "Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME".}: String
 
-proc getSingletonPtr*(): ptr ResourceGroupManager {.importcpp: "Ogre::ResourceGroupManager::getSingletonPtr()".}
+proc getResourceGroupManager*(): ptr ResourceGroupManager {.importcpp: "Ogre::ResourceGroupManager::getSingletonPtr()".}
 
 {.push importcpp: "#.$1(@)".}
 proc addResourceLocation*(this: ptr ResourceGroupManager, name: cstring, locType: cstring, resGroup: cstring = DEFAULT_RESOURCE_GROUP_NAME, recursive: bool = false, readOnly: bool = true)
@@ -387,7 +365,7 @@ when isMainModule:
       var renderWindow = root.createRenderWindow("Main Render Window", 800, 600, false, misc.addr)
 
       # ---- Loading resources ----
-      var resourceManager: ptr ResourceGroupManager = getSingletonPtr()
+      var resourceManager: ptr ResourceGroupManager = getResourceGroupManager()
       resourceManager.addResourceLocation(mediaDir / "packs" / "SdkTrays.zip", "Zip", resGroup="Essential")
 
       resourceManager.addResourceLocation(mediaDir, "FileSystem", resGroup="General")
