@@ -13,7 +13,7 @@ license = "MPL-2.0"
 skipDirs = @["docs"]
 
 # Dependencies
-requires "nim >= 2.1"
+requires "nim >= 2.0"
 requires "msgpack4nim == 0.4.4"
 requires "chronicles == 0.10.3"
 
