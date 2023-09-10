@@ -15,6 +15,14 @@ var
   threadID* {.threadvar.}: ThreadID
   threadName* {.threadvar.}: string
 
+threadID = 0
+threadName = "main"
+channels[threadID].open()
+
+publicLogScope:
+  threadID
+  threadName
+
 let
   defaultPollInterval*: Duration = initDuration(milliseconds=100)
 
@@ -54,7 +62,7 @@ proc joinActiveThreads*(pollInterval: Duration = defaultPollInterval) =
   while activeThreads.len > 0:
     trace "waiting for threads to finish", activeThreads, pollInterval
     sleep(sleepTime)
-  trace "threads finished"
+  trace "all active threads finished"
 
 
 proc send*(message: ref Message, id: ThreadID) =
@@ -62,6 +70,8 @@ proc send*(message: ref Message, id: ThreadID) =
   ## Usage example:
   ##   new(HelloMessage).send(ThreadID(1))
   ##   (ref PayloadMessage)(x: 1).send(ThreadID(2))
+
+  trace "sending message", thread=id, message=message
   channels[id].send(message)
 
 
