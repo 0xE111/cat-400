@@ -10,9 +10,6 @@ import sequtils
 
 import ./logging
 
-when isMainModule:
-  import unittest
-
 type
   ProcessName* = string  ## each process must have a unique name; process will be accessible by this name
 
@@ -21,7 +18,7 @@ var processes = initTable[ProcessName, Process]()
 const mainProcessName* = "master"
 
 
-proc getProcessName(): string =
+proc getProcessName*(): string =
   for kind, key, value in parseopt.getopt():
     if kind == parseopt.cmdLongOption and key == "process":
       return value
@@ -76,6 +73,8 @@ proc sync*(checkInterval: int = 1000) =
 
 
 when isMainModule:
+  import unittest
+
   suite "processes":
     spawnProcess "process1":
       for _ in 0..10:
