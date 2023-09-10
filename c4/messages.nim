@@ -47,7 +47,10 @@ proc msgpack*(message: ref Message): string {.gcsafe.} =
 
   {.gcsafe.}:  # im so sorry for this
     withLock packTableLock:
-      result = packTablePtr[][message.packId].pack(message)
+      try:
+        result = packTablePtr[][message.packId].pack(message)
+      except KeyError:
+        raise newException(LibraryError, "Unknown message type id: " & $message.packId)
 
 proc msgunpack*(data: string): ref Message {.gcsafe.} =
   ## General method which selects appropriate unpack method from pack table according to real message runtime type.
@@ -59,7 +62,10 @@ proc msgunpack*(data: string): ref Message {.gcsafe.} =
   stream.unpack(packId)
   {.gcsafe.}:
     withLock packTableLock:
-      result = packTablePtr[][packId].unpack(stream)
+      try:
+        result = packTablePtr[][packId].unpack(stream)
+      except KeyError:
+        raise newException(LibraryError, "Unknown message type id: " & $packId)
 
 template register*(MessageType: typedesc) =
   ## Template for registering pack/unpack procs for specific message type.
