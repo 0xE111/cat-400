@@ -83,7 +83,7 @@ else:
   type dReal* = cdouble
 
 when defined(dTRIMESH_16BIT_INDICES):
-  when dTRIMESH_GIMPACT:
+  when defined(dTRIMESH_GIMPACT):
     type dTriIndex* = duint32
   else:
     type dTriIndex* = duint16
