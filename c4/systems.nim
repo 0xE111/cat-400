@@ -19,6 +19,9 @@ method run*(self: ref System, frequency: int = 60) {.base, gcsafe.} =
   var received: bool
 
   loop frequency:
+    withLog(TRACE, "updating system state"):
+      self.update(dt)
+
     withLog(TRACE, "system processing messages"):
       while true:
         (received, message) = channels[threadID].tryRecv()
@@ -26,9 +29,6 @@ method run*(self: ref System, frequency: int = 60) {.base, gcsafe.} =
           break
         debug "received message", message
         self.process(message)
-
-    withLog(TRACE, "updating system state"):
-      self.update(dt)
 
   debug "disposing system"
   self.dispose()

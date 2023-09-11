@@ -14,12 +14,12 @@ type
   VideoSystemError* = object of LibraryError
 
   VideoInitMessage* = object of Message
-    windowTitle*: string
-    windowX*: cint
-    windowY*: cint
-    windowWidth*: cint
-    windowHeight*: cint
-    flags*: uint32
+    windowTitle*: string = ""
+    windowX*: cint = SDL_WINDOWPOS_CENTERED
+    windowY*: cint = SDL_WINDOWPOS_CENTERED
+    windowWidth*: cint = 800
+    windowHeight*: cint = 600
+    flags*: uint32 = (SDL_WINDOW_SHOWN or SDL_WINDOW_RESIZABLE or SDL_WINDOW_OPENGL).uint32
 
 VideoInitMessage.register()
 

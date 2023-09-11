@@ -1,33 +1,33 @@
-import tables
-import logging
-import strformat
-import os
 import sequtils
-when isMainModule:
-  import unittest
 
+import ../../systems
 import ../../entities
 import ../../messages
-import ../../loop
-import ../../threads
 
 
 type
-  SimplePhysicsSystem* {.inheritable.} = object
+  PhysicsSystem* = object of System
 
   Vector* = tuple[x: float, y: float]
-
-  SimplePhysics* {.inheritable.} = object
+  Physics* = object of RootObj
     position*: Vector
     previousPosition*: Vector
     width*, height*: float
-    speed*: Vector  # defines direction & speed
+    speed*: Vector
+
+  PhysicsInitMessage* = object of Message
 
 
-proc topLeft*(self: SimplePhysics): Vector = (x: self.position.x - self.width/2, y: self.position.y + self.height/2)
-proc bottomRight*(self: SimplePhysics): Vector = (x: self.position.x + self.width/2, y: self.position.y - self.height/2)
+register(PhysicsInitMessage)
 
-proc overlap*(self: SimplePhysics, other: SimplePhysics): bool =
+
+proc topLeft*(self: Physics): Vector =
+  (x: self.position.x - self.width/2, y: self.position.y + self.height/2)
+
+proc bottomRight*(self: Physics): Vector =
+  (x: self.position.x + self.width/2, y: self.position.y - self.height/2)
+
+proc overlap*(self: Physics, other: Physics): bool =
   if self.topLeft.x > other.bottomRight.x or other.topLeft.x > self.bottomRight.x:
     return false
 
@@ -35,7 +35,6 @@ proc overlap*(self: SimplePhysics, other: SimplePhysics): bool =
     return false
 
   true
-
 
 proc `+`*(v1: Vector, v2: Vector): Vector =
   result.x = v1.x + v2.x
@@ -45,17 +44,8 @@ proc `*`*(v: Vector, mul: float): Vector =
   result.x = v.x * mul
   result.y = v.y * mul
 
-method getComponents*(self: ref SimplePhysicsSystem): Table[Entity, ref SimplePhysics] {.base.} =
-  getComponents(ref SimplePhysics)
 
-method init*(self: ref SimplePhysicsSystem) {.base.} =
-  discard
-
-method handleCollision*(self: ref SimplePhysicsSystem, entity1: Entity, entity2: Entity) =
-  let
-    physics1 = self.getComponents()[entity1]
-    physics2 = self.getComponents()[entity2]
-
+method handleCollision*(self: ref PhysicsSystem, physics1: ref Physics, physics2: ref Physics) {.base, gcsafe.} =
   const eps = 0.02
 
   # objects are collided using their horizontal edges
@@ -71,13 +61,13 @@ method handleCollision*(self: ref SimplePhysicsSystem, entity1: Entity, entity2:
   physics2.position = physics2.previousPosition
 
 
-method update*(self: ref SimplePhysics, dt: float) {.base.} =
+method update*(self: ref Physics, dt: float) {.base, gcsafe.} =
   # calculate new position for every Physics instance
   self.previousPosition = self.position
   self.position = self.position + self.speed * dt
 
-method update*(self: ref SimplePhysicsSystem, dt: float) {.base.} =
-  let components = self.getComponents()
+method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
+  let components = getComponents(ref Physics)
 
   for entity, physics in components:
     physics.update(dt)
@@ -93,32 +83,20 @@ method update*(self: ref SimplePhysicsSystem, dt: float) {.base.} =
         physics2 = components[entities[j]]
 
       if overlap(physics1[], physics2[]):
-        self.handleCollision(entities[i], entities[j])
+        self.handleCollision(physics1, physics2)
 
-
-method dispose*(self: ref SimplePhysicsSystem) {.base.} =
+method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
   discard
-
-method process*(self: ref SimplePhysicsSystem, message: ref Message) {.base.} =
-  logging.warn &"Don't know how to process {message}"
-
-method run*(self: ref SimplePhysicsSystem) {.base.} =
-  loop(frequency=60) do:
-    self.update(dt)
-    while true:
-      let message = tryRecv()
-      if message.isNil:
-        break
-      self.process(message)
 
 
 when isMainModule:
+  import unittest
+  import ../../threads
+
   suite "System tests":
     test "Running inside thread":
-      spawn("thread") do:
-        let system = new(SimplePhysicsSystem)
-        system.init()
-        system.run()
-        system.dispose()
+      spawnThread ThreadID(1):
+        let system = new(PhysicsSystem)
+        system.update(0.01)
 
-      sleep 1000
+      joinActiveThreads()

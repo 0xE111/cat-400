@@ -33,6 +33,7 @@ template spawnThread*(id: ThreadID, code: untyped) =
   var thread: Thread[ThreadID]
   thread.createThread(proc(thisThreadID: ThreadID) {.gcsafe.} =
     threadID = thisThreadID
+    threadName = "thread" & $threadID
     withLog(DEBUG, "running thread"):
       code
     channels[thisThreadID].close()

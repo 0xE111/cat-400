@@ -18,7 +18,7 @@ var processes = initTable[ProcessName, Process]()
 const mainProcessName* = "master"
 
 
-proc getProcessName*(): string =
+proc getProcessName(): string =
   for kind, key, value in parseopt.getopt():
     if kind == parseopt.cmdLongOption and key == "process":
       return value

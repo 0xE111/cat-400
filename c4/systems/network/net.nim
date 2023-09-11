@@ -1,4 +1,5 @@
 import std/tables
+import times
 
 import netty
 
@@ -7,9 +8,11 @@ import ../../entities
 import ../../messages
 import ../../threads
 import ../../logging
+import ../../sugar
 
 const
   default_port: uint16 = 8765
+  pingInterval: float64 = 2.0
 
 type
   NetworkSystem* = object of System
@@ -18,87 +21,116 @@ type
   ServerNetworkSystem* = object of NetworkSystem
 
   ClientNetworkSystem* = object of NetworkSystem
-    connection: Connection
+    lastPingAttemptTime: float64 = 0.0
     entitiesMap: Table[Entity, Entity]
 
   ServerInitMessage* = object of messages.Message
     host*: string = "127.0.0.1"
-    port*: uint16 = default_port
+    port*: uint16 = defaultPort
 
   ClientInitMessage* = object of messages.Message
 
   ConnectMessage* = object of messages.Message
     host*: string = "127.0.0.1"
-    port*: uint16 = default_port
+    port*: uint16 = defaultPort
 
   DisconnectMessage* = object of messages.Message
 
   NetworkMessage* = object of messages.Message
-    connectionId*: uint32
+    connection*: Connection = nil
 
-  ConnectedMessage* = object of NetworkMessage
-  DisconnectedMessage* = object of NetworkMessage
+  HelloMessage* = object of NetworkMessage
+  PingMessage* = object of NetworkMessage
 
 
-method process*(self: ref ServerNetworkSystem, message: ref ServerInitMessage) =
-  self.reactor = netty.newReactor(message.host, message.port.int)
-  debug "server network initialized", host=message.host, port=message.port
+proc `$`*(self: Connection): string =
+  if self.isNil: "nil" else: $self.id
 
-method update*(self: ref ServerNetworkSystem, delta: float) =
+register ConnectMessage
+register DisconnectMessage
+register NetworkMessage
+register HelloMessage
+register PingMessage
+
+
+method receive*(self: ref NetworkSystem, message: ref NetworkMessage) {.base, gcsafe.} =
+  warn "dropping unhandled network message", message
+
+method receive*(self: ref NetworkSystem, message: ref PingMessage) =
+  discard
+
+method update*(self: ref NetworkSystem, delta: float) {.gcsafe.} =
   var message: ref messages.Message
 
   self.reactor.tick()
 
   for connection in self.reactor.newConnections:
     debug "new connection detected", connection
-    (ref ConnectedMessage)(connectionId: connection.id).send(threadID)
 
   for connection in self.reactor.deadConnections:
     debug "connection closed", connection
-    (ref DisconnectedMessage)(connectionId: connection.id).send(threadID)
 
   for rawMessage in self.reactor.messages:
     try:
       message = rawMessage.data.msgunpack()
-      debug "server received message", message
     except Exception as exc:
       error "message unpacking failed", rawMessage, exc=exc.msg
       continue
 
-method update*(self: ref ClientNetworkSystem, delta: float) =
-  var message: ref messages.Message
-
-  self.reactor.tick()
-
-  for rawMessage in self.reactor.messages:
-    try:
-      message = rawMessage.data.msgunpack()
-      debug "client received message", message
-    except Exception as exc:
-      error "message unpacking failed", rawMessage, exc=exc.msg
+    if not (message of (ref NetworkMessage)):
+      warn "discarding message not of NetworkMessage type", message
       continue
+
+    message.as(ref NetworkMessage).connection = rawMessage.conn
+    debug "received message", message
+    self.receive(message.as(ref NetworkMessage))
+
+method send*(self: ref NetworkSystem, message: ref NetworkMessage) {.base, gcsafe.} =
+  debug "sending message", message
+
+  let payload = message.msgpack()
+  if message.connection.isNil:
+    for connection in self.reactor.connections:
+      self.reactor.send(connection, payload)
+  else:
+    self.reactor.send(message.connection, payload)
+
+method process*(self: ref NetworkSystem, message: ref NetworkMessage) {.gcsafe.} =
+  self.send(message)
+
+
+# -------------------------------- server --------------------------------
+
+method process*(self: ref ServerNetworkSystem, message: ref ServerInitMessage) =
+  self.reactor = netty.newReactor(message.host, message.port.int)
+  debug "server network initialized", host=message.host, port=message.port
+
+
+# -------------------------------- client --------------------------------
+
+method update*(self: ref ClientNetworkSystem, dt: float) =
+  procCall self.as(ref NetworkSystem).update(dt)
+
+  for connection in self.reactor.connections:
+    if epochTime() - max(connection.lastActiveTime, self.lastPingAttemptTime) > pingInterval:
+      self.lastPingAttemptTime = epochTime()
+      self.send((ref PingMessage)(connection: connection))
+
 
 method process*(self: ref ClientNetworkSystem, message: ref ClientInitMessage) =
   self.reactor = netty.newReactor()
+  debug "client network initialized"
 
 method process*(self: ref ClientNetworkSystem, message: ref ConnectMessage) =
-  self.connection = self.reactor.connect(message.host, message.port.int)
+  let connection = self.reactor.connect(message.host, message.port.int)
   info "connection established", host=message.host, port=message.port
+  self.send((ref HelloMessage)(connection: connection))
 
 method process*(self: ref ClientNetworkSystem, message: ref DisconnectMessage) =
-  if self.connection == nil:
+  if self.reactor.connections.len == 0:
     warn "received disconnect message while not connected"
     return
 
-  self.reactor.disconnect(self.connection)
-  self.connection = nil
+  for connection in self.reactor.connections:
+    self.reactor.disconnect(connection)
   info "disconnected"
-
-method process*(self: ref ClientNetworkSystem, message: ref NetworkMessage) =
-  if self.connection == nil:
-    warn "received network message while not connected"
-    return
-
-  debug "forwarding message to server", message
-  self.reactor.send(self.connection, message.msgpack())
-  debug "message sent to server", message
