@@ -88,12 +88,16 @@ method update*(self: ref NetworkSystem, delta: float) {.gcsafe.} =
 method send*(self: ref NetworkSystem, message: ref NetworkMessage) {.base, gcsafe.} =
   debug "sending message", message
 
+  let destination = message.connection
+
+  message.connection = nil  # no need to pack this field
   let payload = message.msgpack()
-  if message.connection.isNil:
+
+  if destination.isNil:
     for connection in self.reactor.connections:
       self.reactor.send(connection, payload)
   else:
-    self.reactor.send(message.connection, payload)
+    self.reactor.send(destination, payload)
 
 method process*(self: ref NetworkSystem, message: ref NetworkMessage) {.gcsafe.} =
   self.send(message)
