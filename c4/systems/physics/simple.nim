@@ -13,7 +13,7 @@ type
     position*: Vector
     previousPosition*: Vector
     width*, height*: float
-    speed*: Vector
+    velocity*: Vector
 
   PhysicsInitMessage* = object of Message
 
@@ -50,12 +50,12 @@ method handleCollision*(self: ref PhysicsSystem, physics1: ref Physics, physics2
 
   # objects are collided using their horizontal edges
   if abs(physics1[].bottomRight.y - physics2[].topLeft.y) < eps or abs(physics1[].topLeft.y - physics2[].bottomRight.y) < eps:
-    physics1.speed = (physics1.speed.x, -physics1.speed.y)
-    physics2.speed = (physics2.speed.x, -physics2.speed.y)
+    physics1.velocity = (physics1.velocity.x, -physics1.velocity.y)
+    physics2.velocity = (physics2.velocity.x, -physics2.velocity.y)
 
   else:
-    physics1.speed = (-physics1.speed.x, physics1.speed.y)
-    physics2.speed = (-physics2.speed.x, physics2.speed.y)
+    physics1.velocity = (-physics1.velocity.x, physics1.velocity.y)
+    physics2.velocity = (-physics2.velocity.x, physics2.velocity.y)
 
   physics1.position = physics1.previousPosition
   physics2.position = physics2.previousPosition
@@ -64,7 +64,7 @@ method handleCollision*(self: ref PhysicsSystem, physics1: ref Physics, physics2
 method update*(self: ref Physics, dt: float) {.base, gcsafe.} =
   # calculate new position for every Physics instance
   self.previousPosition = self.position
-  self.position = self.position + self.speed * dt
+  self.position = self.position + self.velocity * dt
 
 method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
   let components = getComponents(ref Physics)

@@ -22,7 +22,6 @@ type
 
   ClientNetworkSystem* = object of NetworkSystem
     lastPingAttemptTime: float64 = 0.0
-    entitiesMap: Table[Entity, Entity]
 
   ServerInitMessage* = object of messages.Message
     host*: string = "127.0.0.1"

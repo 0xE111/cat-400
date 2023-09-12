@@ -13,7 +13,12 @@ type
   EntityMoveMessage* = object of EntityMessage
     x*, y*: float
 
+  MoveUpMessage* = object of NetworkMessage
+  MoveDownMessage* = object of NetworkMessage
+
 
 register EntityMessage
 register EntityCreateMessage
 register EntityMoveMessage
+register MoveUpMessage
+register MoveDownMessage

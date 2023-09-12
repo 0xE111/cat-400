@@ -16,7 +16,7 @@ import ./systems/network
 import ./systems/input
 import ./systems/physics
 
-import ./scenarios/connection
+import ./scenarios/master
 
 
 when isMainModule:
