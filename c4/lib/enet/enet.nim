@@ -127,6 +127,8 @@ type
 
   Version* = uint32
 
+  Peer* = object
+
   # list
   ListNode* {.bycopy.} = object
     next*: pointer  # _ListNode
