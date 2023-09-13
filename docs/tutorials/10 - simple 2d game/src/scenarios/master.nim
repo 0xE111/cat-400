@@ -1,3 +1,5 @@
+import std/random
+
 import c4/entities
 import c4/threads
 import c4/systems/network/net
@@ -8,6 +10,8 @@ import ../systems/physics
 import ../systems/video
 import ../messages
 import ../threads
+
+var rand = initRand()
 
 
 method receive*(self: ref network.ServerNetworkSystem, message: ref HelloMessage) =
@@ -55,14 +59,12 @@ method process*(self: ref VideoSystem, message: ref EntityMoveMessage) =
   video.x = message.x
   video.y = message.y
 
-method receive*(self: ref network.ServerNetworkSystem, message: ref MoveUpMessage) =
+method receive*(self: ref network.ServerNetworkSystem, message: ref MoveMessage) =
   message.send(physicsThread)
 
-method receive*(self: ref network.ServerNetworkSystem, message: ref MoveDownMessage) =
-  message.send(physicsThread)
+method process*(self: ref physics.PhysicsSystem, message: ref MoveMessage) =
+  self.player[ref Physics].velocity = (x: 0, y: self.movementSpeed * (if message.up: -1 else: 1))
 
-method process*(self: ref physics.PhysicsSystem, message: ref MoveUpMessage) =
-  self.player[ref Physics].velocity = (x: 0, y: -self.movementSpeed)
-
-method process*(self: ref physics.PhysicsSystem, message: ref MoveDownMessage) =
-  self.player[ref Physics].velocity = (x: 0, y: self.movementSpeed)
+  let ballPhysics = self.ball[ref Physics]
+  if ballPhysics.velocity == (x: 0.0, y: 0.0):
+    ballPhysics.velocity = (x: rand.rand(self.movementSpeed), y: rand.rand(self.movementSpeed))

@@ -3,7 +3,7 @@ import sequtils
 import ../../systems
 import ../../entities
 import ../../messages
-
+import ../../logging
 
 type
   PhysicsSystem* = object of System
@@ -47,6 +47,7 @@ proc `*`*(v: Vector, mul: float): Vector =
 
 method handleCollision*(self: ref PhysicsSystem, physics1: ref Physics, physics2: ref Physics) {.base, gcsafe.} =
   const eps = 0.02
+  debug "collision happened", position1=physics1.position, position2=physics2.position
 
   # objects are collided using their horizontal edges
   if abs(physics1[].bottomRight.y - physics2[].topLeft.y) < eps or abs(physics1[].topLeft.y - physics2[].bottomRight.y) < eps:

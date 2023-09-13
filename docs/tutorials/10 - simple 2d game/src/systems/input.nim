@@ -23,9 +23,9 @@ method handleKeyboardState*(
 
   case direction:
     of 1:
-      new(MoveUpMessage).send(networkThread)
+      (ref MoveMessage)(up: true).send(networkThread)
     of -1:
-      new(MoveDownMessage).send(networkThread)
+      (ref MoveMessage)(up: false).send(networkThread)
     else:
       discard
 
