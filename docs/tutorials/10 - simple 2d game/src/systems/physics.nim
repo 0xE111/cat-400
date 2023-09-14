@@ -37,7 +37,17 @@ method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
   debug "physics initialization finished"
 
 method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
+  let
+    computerPhysics = self.computer[ref Physics]
+    ballPhysics = self.ball[ref Physics]
+  if computerPhysics.position.y > ballPhysics.position.y:
+    computerPhysics.velocity = (x: 0, y: -self.movementSpeed)
+  else:  # elif computerPhysics.position.y < ballPhysics.position.y:
+    computerPhysics.velocity = (x: 0, y: self.movementSpeed)
+
+  # move stuff
   procCall self.as(ref simple.PhysicsSystem).update(dt)
+
   for entity, physics in getComponents(ref Physics):
     if physics.position != physics.previousPosition:
       (ref EntityMoveMessage)(entity: entity, x: physics.position.x, y: physics.position.y).send(networkThread)

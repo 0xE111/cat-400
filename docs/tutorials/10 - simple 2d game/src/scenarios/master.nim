@@ -46,7 +46,10 @@ method receive*(self: ref network.ClientNetworkSystem, message: ref EntityCreate
 
 method receive*(self: ref network.ClientNetworkSystem, message: ref EntityMoveMessage) =
   debug "moving entity"
-  message.entity = self.entitiesMap[message.entity]  # convert server's entity to client's one
+  try:
+    message.entity = self.entitiesMap[message.entity]  # convert server's entity to client's one
+  except KeyError:
+    return
   message.send(videoThread)  # forward message to video thread
 
 method process*(self: ref VideoSystem, message: ref EntityCreateMessage) =

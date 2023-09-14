@@ -46,15 +46,24 @@ proc `*`*(v: Vector, mul: float): Vector =
 
 
 method handleCollision*(self: ref PhysicsSystem, physics1: ref Physics, physics2: ref Physics) {.base, gcsafe.} =
-  const eps = 0.02
   debug "collision happened", position1=physics1.position, position2=physics2.position
 
-  # objects are collided using their horizontal edges
-  if abs(physics1[].bottomRight.y - physics2[].topLeft.y) < eps or abs(physics1[].topLeft.y - physics2[].bottomRight.y) < eps:
+  let horizontalDist = min(
+    abs(physics1[].bottomRight.y - physics2[].topLeft.y),
+    abs(physics1[].topLeft.y - physics2[].bottomRight.y)
+  )
+  let verticalDist = min(
+    abs(physics1[].bottomRight.x - physics2[].topLeft.x),
+    abs(physics1[].topLeft.x - physics2[].bottomRight.x)
+  )
+
+  if horizontalDist < verticalDist:
+    # objects are collided using their horizontal edges
     physics1.velocity = (physics1.velocity.x, -physics1.velocity.y)
     physics2.velocity = (physics2.velocity.x, -physics2.velocity.y)
 
   else:
+    # objects are collided using their vertical edges
     physics1.velocity = (-physics1.velocity.x, physics1.velocity.y)
     physics2.velocity = (-physics2.velocity.x, physics2.velocity.y)
 
