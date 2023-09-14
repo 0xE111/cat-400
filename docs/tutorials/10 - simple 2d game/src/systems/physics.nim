@@ -36,13 +36,20 @@ method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
 
   debug "physics initialization finished"
 
+proc reset*(self: ref PhysicsSystem) =
+  let ballPhysics = self.ball[ref Physics]
+
+  ballPhysics.position = (x: 400.0, y: 300.0)
+  ballPhysics.velocity = (x: 0.0, y: 0.0)
+
+
 method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
   let
     computerPhysics = self.computer[ref Physics]
     ballPhysics = self.ball[ref Physics]
-  if computerPhysics.position.y > ballPhysics.position.y:
+  if computerPhysics.position.y > ballPhysics.position.y + 5:
     computerPhysics.velocity = (x: 0, y: -self.movementSpeed)
-  else:  # elif computerPhysics.position.y < ballPhysics.position.y:
+  elif computerPhysics.position.y < ballPhysics.position.y - 5:
     computerPhysics.velocity = (x: 0, y: self.movementSpeed)
 
   # move stuff
@@ -56,3 +63,11 @@ method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
   for entity, physics in getComponents(ref Physics):
     if entity != self.ball:
       physics.velocity = (x: 0.0, y: 0.0)
+
+  if ballPhysics.position.x < self.player[ref Physics].position.x - 3:
+    info "computer wins"
+    self.reset()
+
+  elif ballPhysics.position.x > computerPhysics.position.x + 3:
+    info "player wins"
+    self.reset()
