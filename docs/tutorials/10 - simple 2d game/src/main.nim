@@ -28,7 +28,7 @@ when isMainModule:
 
       var physics = new(physics.PhysicsSystem)
       physics.process(new(PhysicsInitMessage))
-      physics.run()
+      physics.run(frequency=60)
 
     spawnThread networkThread:
       threadName = "network"
@@ -60,7 +60,7 @@ when isMainModule:
 
       var input = new(input.InputSystem)
       input.process((ref InputInitMessage)())
-      input.run(frequency=30)
+      input.run(frequency=60)
 
     for thread in @[networkThread, videoThread, inputThread]:
       probe(thread, timeout=initDuration(seconds=5))

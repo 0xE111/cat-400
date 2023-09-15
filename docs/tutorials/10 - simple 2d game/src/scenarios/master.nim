@@ -75,6 +75,6 @@ method process*(self: ref physics.PhysicsSystem, message: ref MoveMessage) =
   let ballPhysics = self.ball[ref Physics]
   if ballPhysics.velocity == (x: 0.0, y: 0.0):
     ballPhysics.velocity = (
-      x: max(200.0, rand.rand(self.movementSpeed)),
-      y: max(200.0, rand.rand(self.movementSpeed)),
+      x: self.movementSpeed * (1.0 + rand.rand(0.1)),
+      y: self.movementSpeed * (1.0 + rand.rand(0.1)),
     )

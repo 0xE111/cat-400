@@ -30,10 +30,10 @@ method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
 
   # we make them fit precisely but not collide
   self.borders = [newEntity(), newEntity(), newEntity(), newEntity()]
-  self.borders[0][ref Physics] = (ref Physics)(width: 1, height: 600-2, position: (x: 0.0, y: 300.0))  # left
-  self.borders[1][ref Physics] = (ref Physics)(width: 1, height: 600-2, position: (x: 800.0, y: 300.0))  # right
-  self.borders[2][ref Physics] = (ref Physics)(width: 800-2, height: 1, position: (x: 400.0, y: 0.0))  # up
-  self.borders[3][ref Physics] = (ref Physics)(width: 800-2, height: 1, position: (x: 400.0, y: 600.0))  # down
+  self.borders[0][ref Physics] = (ref Physics)(width: 3, height: 600-2, position: (x: -2.0, y: 300.0))  # left
+  self.borders[1][ref Physics] = (ref Physics)(width: 3, height: 600-2, position: (x: 802.0, y: 300.0))  # right
+  self.borders[2][ref Physics] = (ref Physics)(width: 800-2, height: 3, position: (x: 400.0, y: -2.0))  # up
+  self.borders[3][ref Physics] = (ref Physics)(width: 800-2, height: 3, position: (x: 400.0, y: 602.0))  # down
 
   self.ball = newEntity()
   self.ball[ref Physics] = (ref Physics)(width: 6, height: 6, position: (x: 400.0, y: 300.0))
@@ -52,9 +52,9 @@ method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
     computerPhysics = self.computer[ref Physics]
     ballPhysics = self.ball[ref Physics]
   if computerPhysics.position.y > ballPhysics.position.y + 5:
-    computerPhysics.velocity = (x: 0, y: -self.movementSpeed)
+    computerPhysics.velocity = (x: 0, y: -self.movementSpeed * 0.95)
   elif computerPhysics.position.y < ballPhysics.position.y - 5:
-    computerPhysics.velocity = (x: 0, y: self.movementSpeed)
+    computerPhysics.velocity = (x: 0, y: self.movementSpeed * 0.95)
 
   # move stuff
   procCall self.as(ref simple.PhysicsSystem).update(dt)
