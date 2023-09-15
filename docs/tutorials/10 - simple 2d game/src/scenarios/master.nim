@@ -1,4 +1,5 @@
 import std/random
+import std/times
 
 import c4/entities
 import c4/threads
@@ -66,8 +67,14 @@ method receive*(self: ref network.ServerNetworkSystem, message: ref MoveMessage)
   message.send(physicsThread)
 
 method process*(self: ref physics.PhysicsSystem, message: ref MoveMessage) =
+  if epochTime() < self.freezePlayerUntil:
+    return  # discard user input if frozen
+
   self.player[ref Physics].velocity = (x: 0, y: self.movementSpeed * (if message.up: -1 else: 1))
 
   let ballPhysics = self.ball[ref Physics]
   if ballPhysics.velocity == (x: 0.0, y: 0.0):
-    ballPhysics.velocity = (x: rand.rand(self.movementSpeed), y: rand.rand(self.movementSpeed))
+    ballPhysics.velocity = (
+      x: max(200.0, rand.rand(self.movementSpeed)),
+      y: max(200.0, rand.rand(self.movementSpeed)),
+    )

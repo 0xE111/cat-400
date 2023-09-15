@@ -1,3 +1,5 @@
+import std/times
+
 import c4/entities
 import c4/systems/physics/simple
 import c4/logging
@@ -15,6 +17,8 @@ type
     ball*: Entity
 
     movementSpeed*: float = 500.0
+    freezePlayerUntil*: float = 0.0
+    freezeDuration*: float = 0.3
 
 
 method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
@@ -64,10 +68,13 @@ method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
     if entity != self.ball:
       physics.velocity = (x: 0.0, y: 0.0)
 
+  var winner: Entity
   if ballPhysics.position.x < self.player[ref Physics].position.x - 3:
-    info "computer wins"
-    self.reset()
-
+    winner = self.computer
   elif ballPhysics.position.x > computerPhysics.position.x + 3:
-    info "player wins"
+    winner = self.player
+
+  if winner.isInitialized():
+    info "end of game", winner=if winner == self.computer: "computer" else: "player"
     self.reset()
+    self.freezePlayerUntil = epochTime() + self.freezeDuration
