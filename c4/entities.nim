@@ -24,6 +24,7 @@ proc newEntity*(): Entity =
     result += 1  # TODO: pretty dumb, use random or `lastUsedID` instead
 
   entities.incl(result)  # add entity to global entities registry
+  debug "created new entity", result
 
 iterator iterEntities*(): Entity =
   for entity in entities:
