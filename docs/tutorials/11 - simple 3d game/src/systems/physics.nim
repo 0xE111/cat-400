@@ -13,7 +13,7 @@ import ../threads
 type
   PhysicsSystem* = object of ode.PhysicsSystem
     player*: Entity
-    boxes*: array[8, Entity]
+    playerMovementElapsed*: float
 
   Physics* = object of ode.Physics
     # additionally store previous position & rotation;
@@ -27,7 +27,7 @@ method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
 
   self.player = newEntity()
   self.player[ref Physics] = (ref Physics)(body: self.world.bodyCreate())
-  self.player[ref Physics].body.bodySetPosition(0.0, 0.0, 0.0)
+  self.player[ref Physics].body.bodySetPosition(0.0, 0.0, 10.0)
 
   for i in 0..<8:
     let entity = newEntity()
@@ -64,8 +64,8 @@ method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
         ).send(networkThread)
         break
 
-#     # if physics.movementDurationElapsed > 0:
-#     #   physics.movementDurationElapsed -= dt
-#     #   if physics.movementDurationElapsed <= 0:
-#     #     # it's time to stop movement
-#     #     physics.body.bodySetLinearVel(0, 0, 0)
+  if self.playerMovementElapsed > 0:
+    self.playerMovementElapsed -= dt
+    if self.playerMovementElapsed <= 0:
+      # it's time to stop movement
+      self.player[ref physics.Physics].body.bodySetLinearVel(0, 0, 0)

@@ -60,6 +60,7 @@ method receive*(self: ref ServerNetworkSystem, message: ref PlayerMoveMessage) =
 method process*(self: ref physics.PhysicsSystem, message: ref PlayerMoveMessage) =
 
   let playerPhysics = self.player[ref physics.Physics]
+  self.playerMovementElapsed = 1/60
 
   # calculate selected direction as a result of yaw on (0, 0, -1) vector
   let direction: array[3, float] = [-sin(message.yaw) , 0.0, -cos(message.yaw)]
