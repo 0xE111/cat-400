@@ -18,10 +18,10 @@ import ./systems/physics
 
 # TODO: import all submodules automatically
 import ./scenarios/[
-  master,
   hello,
   entity_create,
   entity_move,
+  player,
 ]
 
 

@@ -1,6 +1,7 @@
 import sdl2
 import math
 
+import c4/loop
 import c4/logging
 import c4/threads
 import c4/systems/input/sdl
@@ -31,28 +32,45 @@ method handleEvent*(self: ref InputSystem, event: Event) =
       discard
 
 
-# method handleKeyboardState*(
-#   self: ref InputSystem,
-#   keyboard: ptr array[0 .. SDL_NUM_SCANCODES.int, uint8],
-# ) =
+method handleKeyboardState*(
+  self: ref InputSystem,
+  keyboard: ptr array[0 .. SDL_NUM_SCANCODES.int, uint8],
+) =
+  var
+    forward = keyboard[SDL_SCANCODE_W.int] > 0
+    backward = keyboard[SDL_SCANCODE_S.int] > 0
+    left = keyboard[SDL_SCANCODE_A.int] > 0
+    right = keyboard[SDL_SCANCODE_D.int] > 0
 
+  # pressing opposite keys disables both of them
+  if forward and backward:
+    forward = false
+    backward = false
 
-#   var direction = 0
-#   if keyboard[SDL_SCANCODE_UP.int] > 0: direction += 1
-#   if keyboard[SDL_SCANCODE_DOWN.int] > 0: direction -= 1
+  if left and right:
+    left = false
+    right = false
 
-#   case direction:
-#     of 1:
-#       (ref MoveMessage)(up: true).send(networkThread)
-#     of -1:
-#       (ref MoveMessage)(up: false).send(networkThread)
-#     else:
-#       discard
+  if forward or backward or left or right:
+    var yaw: float
+    if right and not forward and not backward:
+      yaw = -2 * PI/4
+    elif right and forward:
+      yaw = -1 * PI/4
+    elif forward and not right and not left:
+      yaw = 0 * PI/4
+    elif forward and left:
+      yaw = 1 * PI/4
+    elif left and not forward and not backward:
+      yaw = 2 * PI/4
+    elif left and backward:
+      yaw = 3 * PI/4
+    elif backward and not left and not right:
+      yaw = 4 * PI/4
+    elif backward and right:
+      yaw = 5 * PI/4
 
-#   # if keys.len > 0:
-#   #   info "keyboard input", keys
+    (ref PlayerMoveMessage)(yaw: yaw).send(networkThread)
 
-#   # if keyboard[SDL_SCANCODE_ESCAPE.int] > 0:
-#   #   new(StopMessage).send(c4threads.ThreadID(1))
-#   #   info "quit"
-#   #   raise newException(BreakLoopException, "")
+  # if keyboard[SDL_SCANCODE_ESCAPE.int] > 0:
+  #   raise newException(BreakLoopException, "")
