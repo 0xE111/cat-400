@@ -77,17 +77,35 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     return
 
   debug "near callback", body1, body2
-
   let dynamicPosition = dynamicBody.bodyGetPosition()[]
   let kinematicPosition = kinematicBody.bodyGetPosition()[]
-
-  echo "KINEMATIC POS: " & $kinematicPosition
-  echo "DYNAMIC POS: " & $dynamicPosition
-
   let velocity = dynamicBody.bodyGetLinearVel()[]
+
+  const maxContacts = 4
+  var contact {.global.}: array[maxContacts, dContact]
+  for i in 0..<maxContacts:
+    contact[i] = dContact()
+    contact[i].surface.mode = dContactBounce or dContactSoftCFM
+    contact[i].surface.mu = dInfinity
+    contact[i].surface.mu2 = 0
+    contact[i].surface.bounce = 0.00
+    contact[i].surface.bounce_vel = 0.0
+    contact[i].surface.soft_cfm = 0.00
+
+  let numCollisions = collide(geom1, geom2, maxContacts.cint, contact[0].geom.addr, sizeof(dContact).cint)
+  if numCollisions == 0:
+    return
+  # for i in 0..<numCollisions:
+  #   let contact = jointCreateContact(self.world, self.contactGroup, contact[i].addr)
+  #   contact.jointAttach(body1, body2)
+
+  # echo "KINEMATIC POS: " & $kinematicPosition
+  # echo "DYNAMIC POS: " & $dynamicPosition
+
   let forbiddenDirection = kinematicPosition - dynamicPosition
   let newVelocity = forbiddenDirection * -0.1
-  dynamicBody.bodySetLinearVel(newVelocity[0], newVelocity[1], newVelocity[2])
+  # dynamicBody.bodySetLinearVel(newVelocity[0], newVelocity[1], newVelocity[2])
+  dynamicBody.bodySetLinearVel(0.0, 0.0, 0.0)
   debug "trimmed velocity due to collision", velocity, forbiddenDirection  # , newVelocity
 
 
@@ -103,49 +121,38 @@ proc createLandscape(self: ref PhysicsSystem): Entity =
   # for i in 0..<10:
   #   points.add([rand(-10..10).float, rand(-10..10).float])
   # var points = @[[0.0, 5.0], [3.0, -3.0], [-3.0, -3.0]]  # , [40, 61]]
-  var points = @[[0.0, 1.0], [3.0, 6.0], [5.0, 0.0]]  # , [40, 61]]
+
+  var points = @[[-1.0, 1.0], [2.0, 4.0], [5.0, 1.0]]
   let delaunay = delaunator.fromPoints[array[2, float], float](points)
-  for index in delaunay.triangles:
+  for index in @[0, 1, 2]:  # delaunay.triangles:
     let point = points[index]
-    physics.shape.add([point[0].dReal, 0.0.dReal, point[1].dReal])
+    physics.shape.add([point[0].dReal, index.dReal, point[1].dReal])
   assert physics.shape.len > 0, "delaunay failed to triangulate points"
 
   result[ref Physics] = physics
 
-  # var indexes: seq[dTriIndex]
-  # for i in 0..<int(physics.shape.len):
-  #   indexes.add(i.dTriIndex)
-
-  # let triMeshData = dGeomTriMeshDataCreate()
-
-  # let numbers = cast[array[9, dReal]](physics.shape[0][0].addr)
-  # echo "<<<<<<<<<<<<<<<<<"
-  # echo $physics.shape
-  # echo $numbers
-  # assert false
-  # triMeshData.dGeomTriMeshDataBuildSimple(physics.shape[0][0].addr, physics.shape.len, indexes[0].addr, indexes.len)
-
   var
     numPoints = physics.shape.len
-    rawValues = alloc0(sizeof(dReal) * numPoints * 3)
+    rawValues = alloc0(sizeof(dReal) * numPoints * 4)  # https://github.com/nim-lang/Nim/issues/11180#issuecomment-489430610
     values = cast[ptr UncheckedArray[dReal]](rawValues)
     rawIndexes = alloc0(sizeof(dTriIndex) * numPoints)
     indexes = cast[ptr UncheckedArray[dTriIndex]](rawIndexes)
 
   for i in 0..<numPoints:
     let point = physics.shape[i]
-    values[i*3+0] = point[0]
-    values[i*3+1] = point[1]
-    values[i*3+2] = point[2]
-    indexes[i] = i.dTriIndex+1
+    values[i*4+0] = point[0]
+    values[i*4+1] = point[1]
+    values[i*4+2] = point[2]
+    values[i*4+3] = 0.dReal
+    indexes[i] = i.dTriIndex
 
   let triMeshData = dGeomTriMeshDataCreate()
   for i in 0..<numPoints:
-    echo $indexes[i] & ": " & $values[i*3+0] & " " & $values[i*3+1] & " " & $values[i*3+2]
+    echo $indexes[i] & ": " & $values[i*4+0] & " " & $values[i*4+1] & " " & $values[i*4+2] & " " & $values[i*4+3]
 
   triMeshData.dGeomTriMeshDataBuildSimple(cast[ptr dReal](rawValues), numPoints, cast[ptr dTriIndex](rawIndexes), numPoints)
-  dealloc(rawValues)
-  dealloc(rawIndexes)
+  # dealloc(rawValues)
+  # dealloc(rawIndexes)
 
   let geom = dCreateTriMesh(self.space, triMeshData, nil, nil, nil)
   geom.geomSetBody(physics.body)
@@ -156,16 +163,25 @@ method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
   self.nearCallback = nearCallback
 
   let body = self.createBoxBody()
-  body.bodySetPosition(0.0, 3.0, 5.0)
+  body.bodySetPosition(0.0, 3.0, 10.0)
   self.player = newEntity()
   self.player[ref Physics] = (ref Physics)(body: body)
 
-  # for i in 0..<16:
-  #   let body = self.createBoxBody()
-  #   body.bodySetPosition(0.0, 0.0, -i.float * 3.0)
-  #   body.bodySetKinematic()
-  #   let entity = newEntity()
-  #   entity[ref Physics] = (ref Physics)(body: body)
+  let
+    xMin = -2.dReal
+    xMax = 6.dReal
+    zMin = -2.dReal
+    zMax = 6.dReal
+    step = 1.dReal
+
+  for i in 0..int((xMax - xMin) / step):
+    for j in 0..int((zMax - zMin) / step):
+      let body = self.createBoxBody()
+      body.bodySetPosition(xMin + i.dReal*step, 4.0.dReal, zMin + j.dReal*step)
+      # body.bodySetKinematic()
+      let entity = newEntity()
+      entity[ref Physics] = (ref Physics)(body: body)
+      body.bodySetLinearVel(0.0, -2.0, 0.0)
 
   self.landscape = self.createLandscape()
 
@@ -188,6 +204,9 @@ method update*(self: ref PhysicsSystem, dt: float) {.gcsafe.} =
           z: position[2],
         ).send(networkThread)
         break
+
+    if position[1] < -3.0:
+      physics.body.bodySetLinearVel(0.0, 0.0, 0.0)
 
     let rotation = physics.body.bodyGetQuaternion()[]
     for dimension in 0..3:

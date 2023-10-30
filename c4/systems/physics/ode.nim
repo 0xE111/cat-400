@@ -31,17 +31,15 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     body2 = geom2.geomGetBody()
 
   const maxContacts = 4
-
   var contact {.global.}: array[maxContacts, dContact]
-
   for i in 0..<maxContacts:
     contact[i] = dContact()
     contact[i].surface.mode = dContactBounce or dContactSoftCFM
     contact[i].surface.mu = dInfinity
     contact[i].surface.mu2 = 0
-    contact[i].surface.bounce = 0.01
-    contact[i].surface.bounce_vel = 0.1
-    contact[i].surface.soft_cfm = 0.01
+    contact[i].surface.bounce = 0.00
+    contact[i].surface.bounce_vel = 0.0
+    contact[i].surface.soft_cfm = 0.00
 
   let numCollisions = collide(geom1, geom2, maxContacts.cint, contact[0].geom.addr, sizeof(dContact).cint)
   for i in 0..<numCollisions:
