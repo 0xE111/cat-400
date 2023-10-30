@@ -144,6 +144,7 @@ proc textureCoord*(this: ptr ManualObject, x: float, y: float, z: float, w: floa
 proc textureCoord*(this: ptr ManualObject, uv: Vector2)
 proc textureCoord*(this: ptr ManualObject, uvw: Vector3)
 proc textureCoord*(this: ptr ManualObject, xyzw: Vector4)
+proc triangle*(this: ptr ManualObject, i1, i2, i3: uint32)
 proc quad*(this: ptr ManualObject, i1, i2, i3, i4: uint32)
 proc `end`*(this: ptr ManualObject): ptr ManualObjectSection
 proc convertToMesh*(this: ptr ManualObject, meshName: String, groupName: String = DEFAULT_RESOURCE_GROUP_NAME): MeshPtr

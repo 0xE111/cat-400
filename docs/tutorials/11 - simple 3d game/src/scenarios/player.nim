@@ -14,6 +14,8 @@ import ../messages
 import ../threads
 import ../utils
 
+const walkSpeed = 5 * 1000 / 60 / 60
+
 method receive*(self: ref ServerNetworkSystem, message: ref PlayerRotateMessage) =
   message.send(physicsThread)
 
@@ -73,11 +75,21 @@ method process*(self: ref physics.PhysicsSystem, message: ref PlayerMoveMessage)
     rotation[8] * direction[0] + rotation[9] * direction[1] + rotation[10] * direction[2],
   ]
 
-  const walkSpeed = 5 * 1000 / 60 / 60
   self.player[ref physics.Physics].body.bodySetLinearVel(
     finalDirection[0] * walkSpeed,
     finalDirection[1] * walkSpeed,
     finalDirection[2] * walkSpeed,
   )
 
-  # playerEntity[ref physics.Physics].startMovement()
+method receive*(self: ref ServerNetworkSystem, message: ref PlayerVerticalMoveMessage) =
+  message.send(physicsThread)
+
+method process*(self: ref physics.PhysicsSystem, message: ref PlayerVerticalMoveMessage) =
+  let body = self.player[ref physics.Physics].body
+  let linearVelocity = body.bodyGetLinearVel()
+  body.bodySetLinearVel(
+    linearVelocity[0],
+    walkSpeed * (if message.up: 1.0 else: -1.0),
+    linearVelocity[2],
+  )
+  self.playerMovementElapsed = 1/60

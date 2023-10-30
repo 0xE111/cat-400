@@ -10,7 +10,12 @@ import ../threads
 
 
 method receive*(self: ref network.ClientNetworkSystem, message: ref EntityMoveMessage) =
-  message.entity = self.entitiesMap[message.entity]  # convert server's entity to client's one
+  try:
+    message.entity = self.entitiesMap[message.entity]  # convert server's entity to client's one
+  except KeyError:  # TODO
+    warn "move message before entity creation", message=message
+    return
+
   debug "moving entity"
   message.send(videoThread)  # forward message to video thread
 

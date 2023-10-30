@@ -24,17 +24,6 @@ type
   PhysicsInitMessage* = object of Message
 
 
-# method init*(self: ref PhysicsSystem, physics: ref Physics) {.base.} =
-#   logging.debug &"{self.type.name}: initializing component"
-#   physics.body = self.world.bodyCreate()
-#   physics.body.bodySetPosition(0.0, 0.0, 0.0)
-
-# method dispose*(self: ref Physics) {.base.} =
-#   logging.debug &"{self.type.name}: destroying component"
-#   self.body.bodyDestroy()
-
-
-# ---- System ----
 proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   let
     self = cast[ptr PhysicsSystem](data)[]

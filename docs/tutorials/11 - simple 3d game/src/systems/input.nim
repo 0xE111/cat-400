@@ -74,3 +74,8 @@ method handleKeyboardState*(
 
   # if keyboard[SDL_SCANCODE_ESCAPE.int] > 0:
   #   raise newException(BreakLoopException, "")
+  let
+    up = keyboard[SDL_SCANCODE_SPACE.int] > 0
+    down = keyboard[SDL_SCANCODE_LCTRL.int] > 0
+  if up or down and not (up and down):
+    (ref PlayerVerticalMoveMessage)(up: up).send(networkThread)

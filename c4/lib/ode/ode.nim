@@ -91,23 +91,13 @@ else:
   type dTriIndex* = duint32
 
 type
-  dxWorld* {.bycopy.} = object
-  dxSpace* {.bycopy.} = object
-  dxBody* {.bycopy.} = object
-  dxGeom* {.bycopy.} = object
-  dxJoint* {.bycopy.} = object
-  dxJointNode* {.bycopy.} = object
-  dxJointGroup* {.bycopy.} = object
-  dxWorldProcessThreadingManager* {.bycopy.} = object
-
-  # TODO: use just `pointer`?
-  dWorldID* = ptr dxWorld
-  dSpaceID* = ptr dxSpace
-  dBodyID* = ptr dxBody
-  dGeomID* = ptr dxGeom
-  dJointID* = ptr dxJoint
-  dJointGroupID* = ptr dxJointGroup
-  dWorldStepThreadingManagerID* = ptr dxWorldProcessThreadingManager
+  dWorldID* = pointer
+  dSpaceID* = pointer
+  dBodyID* = pointer
+  dGeomID* = pointer
+  dJointID* = pointer
+  dJointGroupID* = pointer
+  dWorldStepThreadingManagerID* = pointer
 
   dJointType* = enum
     dJointTypeNone = 0, dJointTypeBall, dJointTypeHinge, dJointTypeSlider,
@@ -116,7 +106,7 @@ type
     dJointTypePR, dJointTypePU, dJointTypePiston, dJointTypeDBall, dJointTypeDHinge,
     dJointTypeTransmission
 
-  dVector3* = array[4, dReal]
+  dVector3* = array[3, dReal]
   dVector4* = array[4, dReal]
   dMatrix3* = array[4 * 3, dReal]
   dMatrix4* = array[4 * 4, dReal]
@@ -255,6 +245,8 @@ type
   dxThreadingThreadPool* {.bycopy.} = object
   dThreadingThreadPoolID* = ptr dxThreadingThreadPool
   dThreadReadyToServeCallback* = proc (callback_context: pointer)
+
+  dTriMeshDataID*  = pointer
 
 
 # ---- const ----
@@ -590,13 +582,13 @@ proc bodySetRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodySetRotation".}
 proc bodySetQuaternion*(body: dBodyID; q: dQuaternion) {.importc: "dBodySetQuaternion".}
 proc bodySetLinearVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetLinearVel".}
 proc bodySetAngularVel*(a2: dBodyID; x: dReal; y: dReal; z: dReal) {.importc: "dBodySetAngularVel".}
-proc bodyGetPosition*(a2: dBodyID): ptr array[3, ode.dReal] {.importc: "dBodyGetPosition".}
+proc bodyGetPosition*(a2: dBodyID): ptr dVector3 {.importc: "dBodyGetPosition".}
 proc bodyCopyPosition*(body: dBodyID; pos: dVector3) {.importc: "dBodyCopyPosition".}
 proc bodyGetRotation*(body: dBodyID): ptr dMatrix3 {.importc: "dBodyGetRotation".}
 proc bodyCopyRotation*(a2: dBodyID; R: dMatrix3) {.importc: "dBodyCopyRotation".}
 proc bodyGetQuaternion*(a2: dBodyID): ptr dQuaternion {.importc: "dBodyGetQuaternion".}
 proc bodyCopyQuaternion*(body: dBodyID; quat: dQuaternion) {.importc: "dBodyCopyQuaternion".}
-proc bodyGetLinearVel*(a2: dBodyID): ptr dReal {.importc: "dBodyGetLinearVel".}
+proc bodyGetLinearVel*(a2: dBodyID): ptr dVector3 {.importc: "dBodyGetLinearVel".}
 proc bodyGetAngularVel*(a2: dBodyID): ptr dReal {.importc: "dBodyGetAngularVel".}
 proc bodySetMass*(a2: dBodyID; mass: ptr dMass) {.importc: "dBodySetMass".}
 proc bodyGetMass*(a2: dBodyID; mass: ptr dMass) {.importc: "dBodyGetMass".}
@@ -999,6 +991,10 @@ proc threadingAllocateThreadPool*(thread_count: cuint; stack_size: csize_t; ode_
 proc threadingThreadPoolServeMultiThreadedImplementation*(pool: dThreadingThreadPoolID; impl: dThreadingImplementationID) {.importc: "dThreadingThreadPoolServeMultiThreadedImplementation".}
 proc threadingThreadPoolWaitIdleState*(pool: dThreadingThreadPoolID) {.importc: "dThreadingThreadPoolWaitIdleState".}
 proc threadingFreeThreadPool*(pool: dThreadingThreadPoolID) {.importc: "dThreadingFreeThreadPool".}
+
+proc dGeomTriMeshDataCreate*(): dTriMeshDataID {.importc: "dGeomTriMeshDataCreate".}
+proc dGeomTriMeshDataBuildSimple*(g: dTriMeshDataID, vertices: ptr dReal, vertexCount: int, indexes: ptr dTriIndex, indexCount: int) {.importc: "dGeomTriMeshDataBuildSimple".}
+proc dCreateTriMesh*(space: dSpaceID, data: dTriMeshDataID, callback: pointer, arrayCallback: pointer, rayCallback: pointer): dGeomID {.importc: "dCreateTriMesh".}
 {.pop.}
 
 

@@ -21,7 +21,7 @@ method process*(self: ref physics.PhysicsSystem, message: ref HelloMessage) =
 
   # when receiving HelloMessage from new client, send him whole world information
   for entity, physics in getComponents(ref physics.Physics):
-    (ref EntityCreateMessage)(entity: entity).send(networkThread)
+    (ref EntityCreateMessage)(entity: entity, shape: physics.shape).send(networkThread)
     let position = physics.body.bodyGetPosition()
     (ref EntityMoveMessage)(entity: entity, x: position[0], y: position[1], z: position[2]).send(networkThread)
 

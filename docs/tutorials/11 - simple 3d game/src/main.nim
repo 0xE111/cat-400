@@ -1,5 +1,7 @@
 import times
 
+import sdl2
+
 import c4/processes
 import c4/threads
 import c4/logging
@@ -58,7 +60,7 @@ when isMainModule:
       threadName = "video"
 
       var video = new(video.VideoSystem)
-      video.process((ref ogre_video.VideoInitMessage)())
+      video.process((ref ogre_video.VideoInitMessage)(windowWidth: 1200, windowHeight: 800))
       video.run(frequency=60)
 
     spawnThread inputThread:

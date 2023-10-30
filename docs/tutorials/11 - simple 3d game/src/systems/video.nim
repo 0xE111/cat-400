@@ -1,3 +1,5 @@
+import sdl2
+
 import c4/lib/ogre/ogre as libogre
 import c4/systems/video/ogre
 import c4/sugar
@@ -5,7 +7,6 @@ import c4/sugar
 
 type
   VideoSystem* = object of ogre.VideoSystem
-    boxMesh*: MeshPtr
 
   Video* = object of RootObj
     node*: ptr SceneNode
@@ -16,9 +17,10 @@ proc drawAxis*(self: ref VideoSystem) =
   axisObject.begin("BaseWhiteNoLighting", OT_LINE_LIST)
 
   # X axis, red
-  axisObject.position(0, 0, 0)
-  axisObject.colour(1, 0, 0)
-  axisObject.position(100, 0, 0)
+  for z in -10..10:
+    axisObject.position(-10.0, 0.0, z.float)
+    axisObject.colour(if z == 0: 1.0 else: 0.5, 0, 0)
+    axisObject.position(10.0, 0.0, z.float)
 
   # Y axis, green
   axisObject.position(0, 0, 0)
@@ -26,9 +28,10 @@ proc drawAxis*(self: ref VideoSystem) =
   axisObject.position(0, 100, 0)
 
   # Z axis, blue
-  axisObject.position(0, 0, 0)
-  axisObject.colour(0, 0, 1)
-  axisObject.position(0, 0, 100)
+  for x in -10..10:
+    axisObject.position(x.float, 0.0, -10.0)
+    axisObject.colour(0, 0, if x == 0: 1.0 else: 0.5)
+    axisObject.position(x.float, 0.0, 10.0)
 
   discard axisObject.end()
   discard axisObject.convertToMesh("axis")
@@ -90,11 +93,13 @@ proc createBoxMesh(self: ref VideoSystem) =
     quad(20, 21, 22, 23)
 
   discard boxObject.end()
-  self.boxMesh = boxObject.convertToMesh("box")
+  discard boxObject.convertToMesh("box")
 
 
-method process*(self: ref VideoSystem, message: ref VideoInitMessage) =
+method process*(self: ref VideoSystem, message: ref ogre.VideoInitMessage) =
   procCall self.as(ref ogre.VideoSystem).process(message)
+
+  discard setRelativeMouseMode(True32)
 
   self.camera.setNearClipDistance(0.01)
   self.sceneManager.setAmbientLight(initColourValue(0.5, 0.5, 0.5))
