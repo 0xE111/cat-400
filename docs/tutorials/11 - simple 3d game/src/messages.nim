@@ -12,7 +12,10 @@ type
     entity*: Entity
 
   EntityCreateMessage* = object of EntityMessage
-    shape*: seq[dVector3]
+    shape*: tuple[
+      vertices: seq[dVector3],
+      indexes: seq[array[3, int]],
+    ]
 
   EntityMoveMessage* = object of EntityMessage
     x*, y*, z*: float

@@ -20,12 +20,21 @@ type
     playerMovementElapsed*: float
     landscape*: Entity
 
+  Shape* = tuple[
+    vertices: seq[dVector3],
+    indexes: seq[array[3, int]],
+
+    rawVertices: ptr UncheckedArray[dReal],
+    rawIndexes: ptr UncheckedArray[dTriIndex],
+  ]
+
   Physics* = object of ode.Physics
     # additionally store previous position & rotation;
     # position/rotation update messages are sent only when values really change
     prevPosition: dVector3  # TODO: replace with ODE's bodySetMovedCallback
     prevRotation: dQuaternion
-    shape*: seq[dVector3]
+    shape*: Shape
+
 
 proc createBoxBody(self: ref PhysicsSystem): dBodyID =
   result = self.world.bodyCreate()
@@ -117,40 +126,49 @@ proc createLandscape(self: ref PhysicsSystem): Entity =
   body.bodySetPosition(0.0, 0.0, 0.0)
 
   let physics = (ref Physics)(body: body)
-  # var points: seq[array[2, float]]
-  # for i in 0..<10:
-  #   points.add([rand(-10..10).float, rand(-10..10).float])
-  # var points = @[[0.0, 5.0], [3.0, -3.0], [-3.0, -3.0]]  # , [40, 61]]
-
-  var points = @[[-1.0, 1.0], [2.0, 4.0], [5.0, 1.0]]
-  let delaunay = delaunator.fromPoints[array[2, float], float](points)
-  for index in @[0, 1, 2]:  # delaunay.triangles:
-    let point = points[index]
-    physics.shape.add([point[0].dReal, index.dReal, point[1].dReal])
-  assert physics.shape.len > 0, "delaunay failed to triangulate points"
-
   result[ref Physics] = physics
 
-  var
-    numPoints = physics.shape.len
-    rawValues = alloc0(sizeof(dReal) * numPoints * 4)  # https://github.com/nim-lang/Nim/issues/11180#issuecomment-489430610
-    values = cast[ptr UncheckedArray[dReal]](rawValues)
-    rawIndexes = alloc0(sizeof(dTriIndex) * numPoints)
-    indexes = cast[ptr UncheckedArray[dTriIndex]](rawIndexes)
+  # ---- create a 2d grid of points ----
+  var points: seq[array[2, float]]
+  for i in 0..<100:
+    points.add([rand(-10..10).float, rand(-10..10).float])
 
-  for i in 0..<numPoints:
-    let point = physics.shape[i]
-    values[i*4+0] = point[0]
-    values[i*4+1] = point[1]
-    values[i*4+2] = point[2]
-    values[i*4+3] = 0.dReal
-    indexes[i] = i.dTriIndex
+  # ---- triangulate the points ----
+  let delaunay = delaunator.fromPoints[array[2, float], float](points)
+  # ---- populate the physics shape (vertixes and indexes) ----
+  for point in points:
+    physics.shape.vertices.add([point[0].dReal, rand(0..2).dReal, point[1].dReal, 0.dReal])
+
+  let numTriangles = int(delaunay.triangles.len / 3)
+  assert numTriangles > 0, "failed to triangulate points"
+  for triangleIndexes in delaunay.triangles.distribute(numTriangles):
+    physics.shape.indexes.add(
+      [triangleIndexes[0].int, triangleIndexes[1].int, triangleIndexes[2].int]
+    )
+
+  # ---- populate raw vertices for ODE ----
+  let numVertices = physics.shape.vertices.len
+  let rawVerticesPtr = alloc0(sizeof(dReal) * numVertices * 4)  # https://github.com/nim-lang/Nim/issues/11180#issuecomment-489430610
+  physics.shape.rawVertices = cast[ptr UncheckedArray[dReal]](rawVerticesPtr)
+  for i, vertex in physics.shape.vertices:
+    physics.shape.rawVertices[i*4+0] = vertex[0]
+    physics.shape.rawVertices[i*4+1] = vertex[1]
+    physics.shape.rawVertices[i*4+2] = vertex[2]
+    physics.shape.rawVertices[i*4+3] = vertex[3]
+
+  # ---- populta raw indexes for ODE ----
+  let rawIndexesPtr = alloc0(sizeof(dTriIndex) * numTriangles * 3)
+  physics.shape.rawIndexes = cast[ptr UncheckedArray[dTriIndex]](rawIndexesPtr)
+  for i, triangleIndexes in physics.shape.indexes:
+    physics.shape.rawIndexes[i*3+0] = triangleIndexes[0].dTriIndex
+    physics.shape.rawIndexes[i*3+1] = triangleIndexes[1].dTriIndex
+    physics.shape.rawIndexes[i*3+2] = triangleIndexes[2].dTriIndex
 
   let triMeshData = dGeomTriMeshDataCreate()
-  for i in 0..<numPoints:
-    echo $indexes[i] & ": " & $values[i*4+0] & " " & $values[i*4+1] & " " & $values[i*4+2] & " " & $values[i*4+3]
-
-  triMeshData.dGeomTriMeshDataBuildSimple(cast[ptr dReal](rawValues), numPoints, cast[ptr dTriIndex](rawIndexes), numPoints)
+  triMeshData.dGeomTriMeshDataBuildSimple(
+    cast[ptr dReal](physics.shape.rawVertices), numVertices,
+    cast[ptr dTriIndex](physics.shape.rawIndexes), numTriangles * 3,
+  )
   # dealloc(rawValues)
   # dealloc(rawIndexes)
 

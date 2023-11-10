@@ -106,7 +106,7 @@ type
     dJointTypePR, dJointTypePU, dJointTypePiston, dJointTypeDBall, dJointTypeDHinge,
     dJointTypeTransmission
 
-  dVector3* = array[3, dReal]
+  dVector3* = array[4, dReal]  # yes, it's 4 not 3
   dVector4* = array[4, dReal]
   dMatrix3* = array[4 * 3, dReal]
   dMatrix4* = array[4 * 4, dReal]

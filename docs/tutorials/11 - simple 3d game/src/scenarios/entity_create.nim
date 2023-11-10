@@ -20,7 +20,7 @@ method receive*(self: ref network.ClientNetworkSystem, message: ref EntityCreate
 method process*(self: ref VideoSystem, message: ref EntityCreateMessage) =
 
   let node = self.sceneManager.getRootSceneNode().createChildSceneNode()
-  if message.shape.len > 0:
+  if message.shape.vertices.len > 0:
 
     let manualObject = self.sceneManager.createManualObject()
 
@@ -34,10 +34,10 @@ method process*(self: ref VideoSystem, message: ref EntityCreateMessage) =
 
     # -------- draw as lines --------
     manualObject.begin("BaseWhiteNoLighting", OT_LINE_LIST)
-    for i in 0..<int(message.shape.len / 3):
-      let a = message.shape[i * 3]
-      let b = message.shape[i * 3 + 1]
-      let c = message.shape[i * 3 + 2]
+    for triangleIndexes in message.shape.indexes:
+      let a = message.shape.vertices[triangleIndexes[0]]
+      let b = message.shape.vertices[triangleIndexes[1]]
+      let c = message.shape.vertices[triangleIndexes[2]]
 
       manualObject.position(a[0], a[1], a[2])
       manualObject.position(b[0], b[1], b[2])
