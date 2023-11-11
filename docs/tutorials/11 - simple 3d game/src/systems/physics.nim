@@ -69,6 +69,9 @@ proc project(vec: dVector3, onto: dVector3): dVector3 =
 proc `$`(body: dBodyID): string =
   body.repr()
 
+proc getAngle(vec1: dVector3, vec2: dVector3): float =
+  arccos(vec1 * vec2 / ((vec1*vec1) * (vec2*vec2)))
+
 
 proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
 
@@ -117,6 +120,13 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   assert maxContacts == 1
   let contactNormal = contact[0].geom.normal
   let velocity = dynamicBody.bodyGetLinearVel()[]
+  if velocity[0] == 0.0 and velocity[1] == 0.0 and velocity[2] == 0.0:
+    return
+
+  let angle = getAngle(contactNormal, velocity)
+  if angle <= 0.5 * PI:  # moving away from collision surface
+    return
+
   let forbiddenDirection = velocity.project(contactNormal)
   let newVelocity = velocity - forbiddenDirection
   dynamicBody.bodySetLinearVel(newVelocity[0], newVelocity[1], newVelocity[2])
