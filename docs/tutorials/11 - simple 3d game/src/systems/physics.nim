@@ -24,6 +24,7 @@ type
     vertices: seq[dVector3],
     indexes: seq[array[3, int]],
 
+    # TODO: this info is duplicated
     rawVertices: ptr UncheckedArray[dReal],
     rawIndexes: ptr UncheckedArray[dTriIndex],
   ]
@@ -56,6 +57,14 @@ proc `*`(vec: dVector3, scalar: dReal): dVector3 =
   for i in 0..2:
     result[i] = vec[i] * scalar
 
+proc `*`(scalar: dReal, vec: dVector3): dVector3 =
+  vec * scalar
+
+proc `*`(vec1: dVector3, vec2: dVector3): dReal =
+  vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2]
+
+proc project(vec: dVector3, onto: dVector3): dVector3 =
+  onto * ((vec * onto) / (onto * onto))
 
 proc `$`(body: dBodyID): string =
   body.repr()
@@ -82,15 +91,12 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
     kinematicBody = body2
     dynamicBody = body1
   else:
-    # warn "unsupported collision type"
+    warn "unsupported collision type", body1IsKinematic=body1.bodyIsKinematic().bool, body2IsKinematic=body2.bodyIsKinematic().bool
     return
 
   debug "near callback", body1, body2
-  let dynamicPosition = dynamicBody.bodyGetPosition()[]
-  let kinematicPosition = kinematicBody.bodyGetPosition()[]
-  let velocity = dynamicBody.bodyGetLinearVel()[]
 
-  const maxContacts = 4
+  const maxContacts = 1
   var contact {.global.}: array[maxContacts, dContact]
   for i in 0..<maxContacts:
     contact[i] = dContact()
@@ -108,15 +114,12 @@ proc nearCallback(data: pointer, geom1: dGeomID, geom2: dGeomID) =
   #   let contact = jointCreateContact(self.world, self.contactGroup, contact[i].addr)
   #   contact.jointAttach(body1, body2)
 
-  # echo "KINEMATIC POS: " & $kinematicPosition
-  # echo "DYNAMIC POS: " & $dynamicPosition
-
-  let forbiddenDirection = kinematicPosition - dynamicPosition
-  let newVelocity = forbiddenDirection * -0.1
-  # dynamicBody.bodySetLinearVel(newVelocity[0], newVelocity[1], newVelocity[2])
-  dynamicBody.bodySetLinearVel(0.0, 0.0, 0.0)
-  debug "trimmed velocity due to collision", velocity, forbiddenDirection  # , newVelocity
-
+  assert maxContacts == 1
+  let contactNormal = contact[0].geom.normal
+  let velocity = dynamicBody.bodyGetLinearVel()[]
+  let forbiddenDirection = velocity.project(contactNormal)
+  let newVelocity = velocity - forbiddenDirection
+  dynamicBody.bodySetLinearVel(newVelocity[0], newVelocity[1], newVelocity[2])
 
 proc createLandscape(self: ref PhysicsSystem): Entity =
   result = newEntity()
@@ -137,7 +140,7 @@ proc createLandscape(self: ref PhysicsSystem): Entity =
   let delaunay = delaunator.fromPoints[array[2, float], float](points)
   # ---- populate the physics shape (vertixes and indexes) ----
   for point in points:
-    physics.shape.vertices.add([point[0].dReal, rand(0..2).dReal, point[1].dReal, 0.dReal])
+    physics.shape.vertices.add([point[0].dReal, rand(0..1).dReal, point[1].dReal, 0.dReal])
 
   let numTriangles = int(delaunay.triangles.len / 3)
   assert numTriangles > 0, "failed to triangulate points"
@@ -178,28 +181,30 @@ proc createLandscape(self: ref PhysicsSystem): Entity =
 
 method process*(self: ref PhysicsSystem, message: ref PhysicsInitMessage) =
   procCall self.as(ref ode.PhysicsSystem).process(message)
+  # self.world.worldSetGravity(0.0, -9.81, 0.0)
   self.nearCallback = nearCallback
 
   let body = self.createBoxBody()
-  body.bodySetPosition(0.0, 3.0, 10.0)
+  body.bodySetPosition(0.0, 3.0, 0.0)
   self.player = newEntity()
   self.player[ref Physics] = (ref Physics)(body: body)
+  # body.bodySetGravityMode(1.cint)
 
-  let
-    xMin = -2.dReal
-    xMax = 6.dReal
-    zMin = -2.dReal
-    zMax = 6.dReal
-    step = 1.dReal
+  # let
+  #   xMin = -2.dReal
+  #   xMax = 6.dReal
+  #   zMin = -2.dReal
+  #   zMax = 6.dReal
+  #   step = 1.dReal
 
-  for i in 0..int((xMax - xMin) / step):
-    for j in 0..int((zMax - zMin) / step):
-      let body = self.createBoxBody()
-      body.bodySetPosition(xMin + i.dReal*step, 4.0.dReal, zMin + j.dReal*step)
-      # body.bodySetKinematic()
-      let entity = newEntity()
-      entity[ref Physics] = (ref Physics)(body: body)
-      body.bodySetLinearVel(0.0, -2.0, 0.0)
+  # for i in 0..int((xMax - xMin) / step):
+  #   for j in 0..int((zMax - zMin) / step):
+  #     let body = self.createBoxBody()
+  #     body.bodySetPosition(xMin + i.dReal*step, 4.0.dReal, zMin + j.dReal*step)
+  #     # body.bodySetKinematic()
+  #     let entity = newEntity()
+  #     entity[ref Physics] = (ref Physics)(body: body)
+  #     body.bodySetLinearVel(0.0, -2.0, 0.0)
 
   self.landscape = self.createLandscape()
 
