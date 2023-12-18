@@ -86,17 +86,6 @@ Although these modules are part of `Cat-400`, they may be used separately in any
 
 There are several wrappers which are subpackages of "Cat-400" and may be installed and used separately, see [lib folder](c4/lib).
 
-## Contribute to the project
-
-Developing a game framework, well... takes time! If you want to speed things up, you may contribute by
-1) testing, creating issues (or better closing them with PRs)
-2) sharing the framework with friends
-3) making donations - send some bitcoin here:
-```
-bc1qxwkqjmfmczcxe7zx7hjske7fpkp6e3qdrm72gv
-```
-4) providing a grant if you are a company interested in gamedev & nim
-
 ## Statistics
 
 [![Stargazers over time](https://starchart.cc/c0ntribut0r/cat-400.svg)](https://starchart.cc/c0ntribut0r/cat-400)
